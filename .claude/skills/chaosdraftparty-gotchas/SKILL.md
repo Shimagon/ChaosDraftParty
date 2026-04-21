@@ -38,6 +38,9 @@ description: ChaosDraftParty（Unity 6 + NGO + Relay + URP のソロ卒業制作
 16. [manage_scriptable_object create の type_name は完全修飾必須](#16-manage_scriptable_object-create-の-type_name-は完全修飾必須)
 17. [gitignored フォルダの .meta を忘れない](#17-gitignored-フォルダの-meta-を忘れない)
 18. [TODO を信じる前に git ls-files で実プロジェクト状態を確認](#18-todo-を信じる前に-git-ls-files-で実プロジェクト状態を確認)
+19. [batch_execute は默認 25 件上限、parallel=true でも実は逐次](#19-batch_execute-は默認-25-件上限paralleltrue-でも実は逐次)
+20. [manage_scene load は path パラメータ（scene_path じゃない）](#20-manage_scene-load-は-path-パラメータscene_path-じゃない)
+21. [scene 未保存状態では load 拒否される](#21-scene-未保存状態では-load-拒否される)
 
 ---
 
@@ -432,6 +435,73 @@ find Assets/_Project -name "*.cs" -type f | wc -l
 - `ProjectSettings/*.asset` の差分有無
 
 **汎用ルール:** **TODO はプラン、git は真実**。両方確認してから着手。
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 19. batch_execute は默認 25 件上限、parallel=true でも実は逐次
+
+**症状:** 30 件の create コマンドを `batch_execute` に渡すと即エラー。
+```
+Error calling tool 'batch_execute': batch_execute supports up to 25 commands (configured in Unity); received 30
+```
+
+**原因:** デフォルト上限 25（Unity MCP Tools window で最大 100 まで設定変更可）。
+
+**回避策:**
+- **分割**: 25 ずつ複数 batch_execute に分ける
+- **設定変更**: `Window → MCP for Unity → Advanced → Batch` で上限引き上げ
+- **execute_code 代替**: C# 直接記述なら無制限（縮む島の 64 タイル生成もこの方式）
+
+**並列性について:** `parallel=true` ヒント渡しても `parallelApplied: false` が返る場合あり（本プロジェクトで実測）。Unity の main thread 制約で実質逐次。レイテンシは逐次 tool call と大差なく、**token 数の節約が主目的**。
+
+**判定:**
+- ~25 件以下の均質操作 → `batch_execute`（token 安い）
+- 25-64 件程度 → 同じく `batch_execute` 2 分割か、上限引き上げ
+- 数百件や複雑ロジック（座標計算 + ループ + 条件分岐）→ `execute_code`（Roslyn） が最速・最安
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 20. manage_scene load は path パラメータ（scene_path じゃない）
+
+**症状:** `manage_scene(action="load", scene_path="Assets/..")` だと：
+```
+Either 'name'/'path' or 'buildIndex' must be provided for 'load' action.
+```
+
+**原因:** tool schema 上 `scene_path` も受けるはずだが、`load` 実装は `path` / `name` / `buildIndex` のみ見ている。Schema と実装の食い違い。
+
+**回避策:** `path` を使う：
+```python
+manage_scene(action="load", path="Assets/_Project/Scenes/Foo.unity")
+```
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 21. scene 未保存状態では load 拒否される
+
+**症状:** `manage_scene load` で `Current scene has unsaved changes. Please save or discard changes before loading a new scene.`
+
+**原因:** 未保存の dirty scene がある状態では上書き load を Unity が拒否（データ損失防止）。
+
+**回避策:** 先に保存してから load：
+```python
+manage_scene(action="save")
+manage_scene(action="load", path="Assets/_Project/Scenes/Other.unity")
+```
+
+または dirty を捨てたいなら：
+```python
+# execute_code で強制捨て
+UnityEditor.SceneManagement.EditorSceneManager.OpenScene(newPath, UnityEditor.SceneManagement.OpenSceneMode.Single);
+```
+
+**予防:** scene 切替ワークフローを定型化 — `save → load` で必ずペア。
 
 **初遭遇:** 2026-04-22
 
