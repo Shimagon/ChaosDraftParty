@@ -48,6 +48,14 @@ description: ChaosDraftParty（Unity 6 + NGO + Relay + URP のソロ卒業制作
 26. [delete_script / apply_text_edits は uri、それ以外は path の派閥](#26-delete_script--apply_text_edits-は-uriそれ以外は-path-の派閥)
 27. [SO 参照の set_property は {"guid": "..."} 形式が確実](#27-so-参照の-set_property-は-guid--形式が確実)
 28. [Prefab インスタンス化は manage_gameobject + prefab_path、manage_prefabs ではない](#28-prefab-インスタンス化は-manage_gameobject--prefab_pathmanage_prefabs-ではない)
+29. [日本語フォント DL は jsdelivr の 50MB 制限と LFS を避ける](#29-日本語フォント-dl-は-jsdelivr-の-50mb-制限と-lfs-を避ける)
+30. [TMP Essentials は TMP_PackageResourceImporter.ImportResources で無対話インストール](#30-tmp-essentials-は-tmp_packageresourceimporterimportresources-で無対話インストール)
+31. [TMP_FontAsset.CreateFontAsset は Font.dynamic 必須](#31-tmp_fontassetcreatefontasset-は-fontdynamic-必須)
+32. [ScreenSpaceOverlay Canvas は manage_camera screenshot に写らない](#32-screenspaceoverlay-canvas-は-manage_camera-screenshot-に写らない)
+33. [component_properties は SerializedProperty 名（m_Controller 等）必須](#33-component_properties-は-serializedproperty-名m_controller-等必須)
+34. [manage_vfx は component 追加が前提、trail_create 等は存在しない](#34-manage_vfx-は-component-追加が前提trail_create-等は存在しない)
+35. [manage_vfx は一部プロパティを silent ignore する](#35-manage_vfx-は一部プロパティを-silent-ignore-する)
+36. [.meta 削除後 Unity は Library/ キャッシュから同 GUID 再生成（このマシン限定）](#36-meta-削除後-unity-は-library-キャッシュから同-guid-再生成このマシン限定)
 
 ---
 
@@ -707,6 +715,192 @@ manage_prefabs(action="create_from_gameobject", target="Tmp",
 manage_gameobject(action="delete", target="Tmp")
 manage_gameobject(action="create", prefab_path="Assets/.../Tmp.prefab")
 ```
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 29. 日本語フォント DL は jsdelivr の 50MB 制限と LFS を避ける
+
+**症状:**
+- `curl https://github.com/googlefonts/noto-cjk/raw/main/.../NotoSansJP-Regular.otf` → HTML redirect page が降る（LFS pointer ページ）
+- `curl https://raw.githubusercontent.com/.../NotoSansJP-Regular.otf` → exit 56 (接続切断、LFS のため)
+- `curl https://cdn.jsdelivr.net/gh/googlefonts/noto-cjk@main/...NotoSansJP-Regular.otf` → 156 bytes の「Package size exceeded 50 MB」エラーテキスト
+- `curl https://fonts.google.com/download?family=Noto+Sans+JP` → HTML redirect
+- `npm pack @fontsource/noto-sans-jp` → 81MB 展開、`.woff`/`.woff2` のみで `.ttf` なし
+
+**原因:** noto-cjk 系は LFS 管理、CDN/raw ともに通常ダウンロードできない。Google Fonts の DL API は CORS / referer 制限。
+
+**回避策:**
+- **`google/fonts` リポは LFS 不使用** → `https://raw.githubusercontent.com/google/fonts/main/apache/kosugimaru/KosugiMaru-Regular.ttf` で直接取得可能
+- 推奨日本語 OSS フォント（小さい + 商用可）:
+  - **Kosugi Maru** (Apache 2.0、3.4MB) — `google/fonts/main/apache/kosugimaru/KosugiMaru-Regular.ttf`
+  - **Kosugi** (Apache 2.0)
+  - **Sawarabi Gothic** (OFL)
+  - **M PLUS 1p** (OFL、より大きい)
+- Noto Sans JP が必要な場合は `git clone https://github.com/notofonts/noto-cjk` + LFS pull（容量大）
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 30. TMP Essentials は TMP_PackageResourceImporter.ImportResources で無対話インストール
+
+**症状:** メニュー `Window/TextMeshPro/Import TMP Essential Resources` を `execute_menu_item` で発火しても、対話ダイアログを要求する UI ベースの挙動で、バックグラウンドから確認不能。`Assets/TextMesh Pro/` が生成されない。
+
+**回避策:** `execute_code` から直接 API 呼出（`unity_reflect` で確認した通り）：
+```csharp
+TMPro.TMP_PackageResourceImporter.ImportResources(
+    importEssentials: true,
+    importExamples: false,
+    interactive: false   // ← これが鍵
+);
+AssetDatabase.Refresh();
+```
+
+これで `Assets/TextMesh Pro/` に Fonts/Shaders/Resources が展開される。
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 31. TMP_FontAsset.CreateFontAsset は Font.dynamic 必須
+
+**症状:** `TMPro.TMP_FontAsset.CreateFontAsset(font)` が `NullReferenceException` で失敗。
+
+**原因:** 渡された `Font` アセットが `dynamic=false` だと TMP が内部で atlas rasterizer を初期化できず NRE。
+
+**回避策:** TrueTypeFontImporter の設定を Dynamic に：
+```csharp
+var imp = (UnityEditor.TrueTypeFontImporter)AssetImporter.GetAtPath(fontPath);
+imp.fontTextureCase = UnityEditor.FontTextureCase.Dynamic;
+imp.includeFontData = true;
+imp.SaveAndReimport();
+
+var font = AssetDatabase.LoadAssetAtPath<Font>(fontPath);
+var fontAsset = TMPro.TMP_FontAsset.CreateFontAsset(font);
+```
+
+**余談:** `font.dynamic` プロパティが `false` に見えるケースあり（Unity 6 の表示バグ？）、実挙動では Dynamic atlas に設定されていれば CreateFontAsset 成功。
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 32. ScreenSpaceOverlay Canvas は manage_camera screenshot に写らない
+
+**症状:** `Canvas.renderMode = ScreenSpaceOverlay` で UI 構築 → `manage_camera screenshot` したら UI が消えて 3D だけ写る。
+
+**原因:** `ScreenSpaceOverlay` は Camera のレンダリングパス外、Unity のゲームビュー最終合成時に重ねる。`manage_camera screenshot` は Camera.Render を呼ぶだけで overlay 段階を含まない。
+
+**回避策:** Canvas モードを `ScreenSpaceCamera` に変更、Main Camera を割当：
+```csharp
+canvas.renderMode = RenderMode.ScreenSpaceCamera;
+canvas.worldCamera = Camera.main;
+canvas.planeDistance = 1f;  // カメラから 1m 前
+```
+
+これで UI が Camera のレンダーパスに組込まれ、screenshot に写る。
+
+**注意:** 実機 Build でも UI は ScreenSpaceCamera で良い（多くの 3D ゲームの標準）。Overlay は独立解像度の UI（ローディング画面等）限定。
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 33. component_properties は SerializedProperty 名（m_Controller 等）必須
+
+**症状:** `manage_prefabs modify_contents` の `component_properties={"Animator": {"runtimeAnimatorController": {...}}}` で `SerializedProperty 'runtimeAnimatorController' not found`。
+
+**原因:** Unity の AssetDatabase は **SerializedProperty 内部名**（`m_` プレフィックス + PascalCase）で値書込。C# の public プロパティ名（`runtimeAnimatorController`）は getter/setter であって SerializedField ではない。
+
+**回避策:** SerializedProperty 名を使う：
+- `runtimeAnimatorController` → **`m_Controller`**
+- `sharedMaterial` → **`m_Materials`** (配列)
+- `enabled` → **`m_Enabled`**
+- `mass` (Rigidbody) → **`m_Mass`**
+- `color` (Light) → **`m_Color`**
+- `intensity` (Light) → **`m_Intensity`**
+
+**探す方法:**
+1. Unity Inspector を右クリック → Debug mode にすると SerializedProperty 名が見える
+2. asset ファイル（.prefab や .asset）を text エディタで開いて確認
+3. `unity_reflect` で探しても public プロパティしか出ない、SerializedProperty は出ない → ファイル直読みが早い
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 34. manage_vfx は component 追加が前提、trail_create 等は存在しない
+
+**症状:** `manage_vfx(action="trail_create", ...)` で `Unknown action 'trail_create'`。
+
+**原因:** `manage_vfx` は **既存 component の設定変更**専用。component 自体の追加は `manage_components` の仕事。
+
+**正しいフロー:**
+```python
+# 1. GameObject 作成
+manage_gameobject(action="create", name="TailTrail")
+
+# 2. component 追加（manage_components）
+manage_components(action="add", target="TailTrail", component_type="TrailRenderer")
+
+# 3. manage_vfx で設定
+manage_vfx(action="trail_set_properties", target="TailTrail", 
+           properties={"time": 2.0, "startWidth": 0.4, ...})
+manage_vfx(action="trail_set_color", target="TailTrail",
+           properties={"startColor": [...], "endColor": [...]})
+```
+
+利用可能な action prefix:
+- `particle_*` (ParticleSystem)
+- `vfx_*` (VisualEffect / VFX Graph)
+- `line_*` (LineRenderer)
+- `trail_*` (TrailRenderer)
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 35. manage_vfx は一部プロパティを silent ignore する
+
+**症状:** `trail_set_properties` に color を含めても無反応。response の `"Updated: ..."` リストで silent 省略されてる。
+
+**実測:**
+- `trail_set_properties` に `startColor`/`endColor` 渡す → **ignored**（`trail_set_color` で別途）
+- `particle_set_emission` に `bursts` 渡す → **ignored**（別の action で設定？）
+- `particle_set_main` に `loop` 渡す → **ignored**
+
+**回避策:**
+1. response の `"Updated: <list>"` を必ず確認。指定したキーが全部含まれているか verify
+2. 含まれてないキーは別の専用 action が必要（`trail_set_color`, etc）
+3. 不明な場合は `execute_code` で直接 C# 書いて設定（全プロパティ操作可）
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 36. .meta 削除後 Unity は Library/ キャッシュから同 GUID 再生成（このマシン限定）
+
+**実験（2026-04-22）:**
+1. `meta_test.png` 生成 → `.meta` に GUID `3a0956c7...`
+2. `rm meta_test.png.meta`（`.meta` のみ削除、本体残す）
+3. `refresh_unity` → `.meta` 再生成
+4. **GUID が元と同じ `3a0956c7...`**
+
+**原因:** Unity の `Library/metadata/` には各アセットの GUID インデックスが path 単位でキャッシュされてる。`.meta` が消えても同じ path でアセットが残ってれば Library/ から GUID を復元。
+
+**ただし注意:** これは **このマシン限定の恩恵**。別マシン clone 時に `.meta` が無い状態（git 忘れ等）なら、Library/ もゼロなので **新 GUID が生成されて参照全滅**。
+
+**追加実験（asset 本体も削除）:**
+- Material が texture 参照している状態で `texture.png` + `texture.png.meta` 両方削除 → `refresh_unity`
+- 結果: Material は shader 参照保持、texture reference は **NULL (Missing)** になる
+- 復旧: git 履歴から元ファイル復元（`git checkout HEAD~ -- path`）が最短。再制作なら Material 側で再 assign 必要
+
+**教訓:**
+- **`.meta` を絶対コミットする**（HANDOFF.md の最重要ルールの再確認）
+- Unity 内での `.meta` 再生成が同 GUID でも油断しない、他マシンでは失敗する
+- 参照切れ `.mat` を見つけたら即 git log で直近削除の履歴追跡
 
 **初遭遇:** 2026-04-22
 
