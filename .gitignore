@@ -56,5 +56,8 @@ $RECYCLE.BIN/
 unity-create.log
 *.log
 
+# Screenshots（MCP 動作確認・デバッグ用、commit 不要）
+[Aa]ssets/Screenshots/
+
 # MCP / tooling
 .claude/settings.local.json
