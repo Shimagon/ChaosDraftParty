@@ -106,6 +106,19 @@ Unity 6.0 テンプレの `com.unity.inputsystem@1.12.0` は Unity 6.4 では `B
 2. `Window → MCP for Unity → Start Server`
 3. Claude Code 側で `claude mcp add --scope local --transport http UnityMCP http://127.0.0.1:8080/mcp`
 4. `Install Skills` ボタンで skill もインストール
+5. **Claude Code を 1 回再起動** — 既存セッションには新 MCP が反映されない
+
+### ⚠️ Unity MCP の既知の罠（2026-04-21 学習）
+
+1. **`Configure All Detected Clients` ボタンは前の登録を消すことがある**。初回だけ使う。以降は個別の「Configure」ボタンか `claude mcp add` を使う。
+2. **登録が消えたら再登録**：
+   ```bash
+   cd ~/Documents/Dev/ChaosDraftParty
+   claude mcp add --scope local --transport http UnityMCP http://127.0.0.1:8080/mcp
+   ```
+3. **Unity UI の 🔴 Not Configured 表示は遅延する**。実際 `claude mcp list` で `UnityMCP: ... - ✓ Connected` なら機能的に繋がっている。UI を閉じて開き直せば更新される。
+4. **新規 MCP 登録後は Claude Code 再起動必須** — 既存セッションには反映されず、`mcp__UnityMCP__*` tools が見えない。
+5. **MCP server エントリは `~/.claude.json` の `projects['<絶対実体パス>'].mcpServers`** に書かれる。symlink 経由でアクセスしたときと実体パスでアクセスしたときで claude mcp list の表示が変わるので、**常に実体パス（`~/Documents/Dev/ChaosDraftParty`）で Claude Code を起動する**。
 
 ### 他 MCP（user scope、全プロジェクトで有効）
 - `github` / `sentry` / `semgrep` / `circleci` / `playwright` / `vercel` / Google (Gmail/Calendar/Drive)
