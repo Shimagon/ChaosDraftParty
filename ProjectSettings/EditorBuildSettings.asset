@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/_Project/Scenes/ShrinkingIslandProto.unity
+    guid: eb8ed8cb8086c4565a0df0960b64d6c4
   m_configObjects: {}

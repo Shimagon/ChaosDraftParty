@@ -41,6 +41,12 @@ description: ChaosDraftParty（Unity 6 + NGO + Relay + URP のソロ卒業制作
 19. [batch_execute は默認 25 件上限、parallel=true でも実は逐次](#19-batch_execute-は默認-25-件上限paralleltrue-でも実は逐次)
 20. [manage_scene load は path パラメータ（scene_path じゃない）](#20-manage_scene-load-は-path-パラメータscene_path-じゃない)
 21. [scene 未保存状態では load 拒否される](#21-scene-未保存状態では-load-拒否される)
+22. [create_script バリデータが helper method 呼び出しを重複定義誤判定](#22-create_script-バリデータが-helper-method-呼び出しを重複定義誤判定)
+23. [apply_text_edits は precondition_sha256 必須（楽観ロック）](#23-apply_text_edits-は-precondition_sha256-必須楽観ロック)
+24. [Tests asmdef includePlatforms 空だと PlayMode 默認](#24-tests-asmdef-includeplatforms-空だと-playmode-默認)
+25. [PlayMode テスト後 Unity MCP session が一時切断](#25-playmode-テスト後-unity-mcp-session-が一時切断)
+26. [delete_script / apply_text_edits は uri、それ以外は path の派閥](#26-delete_script--apply_text_edits-は-uriそれ以外は-path-の派閥)
+27. [SO 参照の set_property は {"guid": "..."} 形式が確実](#27-so-参照の-set_property-は-guid--形式が確実)
 
 ---
 
@@ -502,6 +508,162 @@ UnityEditor.SceneManagement.EditorSceneManager.OpenScene(newPath, UnityEditor.Sc
 ```
 
 **予防:** scene 切替ワークフローを定型化 — `save → load` で必ずペア。
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 22. create_script バリデータが helper method 呼び出しを重複定義誤判定
+
+**症状:** `create_script` で テストクラスを作ろうとすると、private helper method を複数テストから呼んでいるだけなのに：
+```
+Duplicate method signature detected: 'CreateDefaultConfig' with 0 parameter(s).
+This may indicate a corrupted edit.
+```
+
+**原因:** script validator のバグ（false positive）。helper method 定義 1 個 + その呼び出し N 個を「N+1 個の定義」と誤認。
+
+**回避策:**
+- **インライン化**：helper を捨てて各 [Test] 内に直接書く
+- または helper 呼び出しに引数を与えて signature をバラす（`CreateDefaultConfig(int seed)` 等、オーバーロード不可のため別名にする）
+
+**実害:** `[Test]` 属性付き method が大量にあるテストクラスでヘルパー多用スタイルが書きにくい。テストは独立性重要なのでインライン化の方が実は望ましい、怪我の功名。
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 23. apply_text_edits は precondition_sha256 必須（楽観ロック）
+
+**症状:** `apply_text_edits` 初回呼出で：
+```json
+{
+  "success": false,
+  "code": "precondition_required",
+  "data": {
+    "current_sha256": "ffda5ca1..."
+  }
+}
+```
+
+**原因:** stale_file 防止の楽観的ロック。ファイル SHA を事前に提示しないと拒否。他エディタ同時編集や古い SHA への上書きを防ぐ。
+
+**回避策:** エラー response の `current_sha256` を拾って再送：
+```python
+# 1 回目（エラー、sha 取得目的）
+result = apply_text_edits(uri=..., edits=[...])
+sha = result["data"]["current_sha256"]
+
+# 2 回目（実行）
+apply_text_edits(
+    uri=...,
+    precondition_sha256=sha,
+    edits=[...]
+)
+```
+
+または `get_sha` ツールで事前取得：
+```python
+sha = get_sha(uri="Assets/...")["sha256"]
+apply_text_edits(uri=..., precondition_sha256=sha, edits=[...])
+```
+
+**script_apply_edits はこのロックなし**（構造化編集で方が安全判定）。頻繁な編集なら script_apply_edits 選ぶ。
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 24. Tests asmdef includePlatforms 空だと PlayMode 默認
+
+**症状:** NUnit `[Test]` 属性付きテストが `mode: PlayMode` としてリストされ、`run_tests(mode="EditMode")` で 0 件実行。Addressables 付属テストだけ動く。
+
+**原因:** Unity Test Framework の規約 — Tests asmdef の `includePlatforms` が空 or `Editor` 含まない場合、テストは PlayMode 扱い（実機ビルドでも走るテスト）。
+
+**回避策:** EditMode 専用にしたい（通常は速度優先でこう）：
+```json
+{
+  "name": "ChaosDraftParty.Tests",
+  "includePlatforms": ["Editor"],
+  ...
+}
+```
+
+**性能差:** PlayMode は play 遷移オーバーヘッド約 9 秒、EditMode は 0.6 秒。純ロジックテスト（GameConfig 計算等）は EditMode が正解。
+
+**PlayMode が必要な時:** MonoBehaviour の `Start()` / `FixedUpdate()` を回したい、NGO の actual ネットワーク挙動、コルーチン、Physics シミュレーション — これらは PlayMode 必須。
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 25. PlayMode テスト後 Unity MCP session が一時切断
+
+**症状:** PlayMode テスト実行後、`refresh_unity` が 60 秒タイムアウト、`mcpforunity://editor/state` が `"Unity session not available; please retry"` を返す状態が 15-30 秒続く。
+
+**原因:** Play Mode の enter/exit は Unity の domain reload を大きく揺するため、MCP Bridge の内部状態が更新ラグを起こす。ping (`manage_editor telemetry_ping`) は通るが resource 読みは失敗する中間状態あり。
+
+**回避策:**
+- PlayMode テスト後は **15 秒ほど待つ**か `telemetry_ping` で接続確認
+- `recommended_retry_after_ms` を見て指数バックオフ
+- 可能なら EditMode テストに切り替える（セッション揺れなし）
+
+**注意:** この現象中、ツール呼出は通る場合があるが state は古い可能性。重要な変更前は必ず `editor/state` で `ready_for_tools=true` 確認。
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 26. delete_script / apply_text_edits は uri、それ以外は path の派閥
+
+Unity MCP ツールのパラメータ命名が微妙に不統一。
+
+| ツール | ファイル指定 |
+|---|---|
+| `create_script` | `path` |
+| `manage_script` | `path` + `name` |
+| `delete_script` | **`uri`** |
+| `apply_text_edits` | **`uri`** |
+| `script_apply_edits` | `path` + `name` |
+| `find_in_file` | **`uri`** |
+| `manage_asset` | `path` |
+| `manage_scene` | `path` (load/save 時、`scene_path` ではない、罠 #20) |
+
+**回避策:** 呼び出し前に tool schema を確認。URI 系は `mcpforunity://path/Assets/...` か `Assets/...` 両方受け付けることが多い。
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 27. SO 参照の set_property は {"guid": "..."} 形式が確実
+
+**症状:** `manage_components set_property` で `[SerializeField] GameConfig config` に SO アセット参照を代入したい。instance ID、asset path、`{"guid":"..."}`、`{"path":"..."}` の 4 形式が受け付けられるが、どれが確実？
+
+**実測:**
+- ✅ `{"guid": "d4705ac63c3494ab18f4d7ecc624dbdb"}` — 確実に動く（GUID は `.asset.meta` から取得 or `AssetDatabase.AssetPathToGUID`）
+- ✅ `{"path": "Assets/_Project/ScriptableObjects/Configs/GameConfig.asset"}` — 動く
+- ⚠️ asset path 直接文字列 — 状況依存
+- ⚠️ instance ID — runtime 依存（アセットは持続 ID ない）
+
+**推奨:** GUID 形式。マシン跨ぎで安定、リネーム耐性あり。
+```python
+manage_components(
+    action="set_property",
+    target="Player",
+    component_type="ChaosDraftParty.Core.PlayerController",
+    property="config",
+    value={"guid": "d4705ac63c3494ab18f4d7ecc624dbdb"}
+)
+```
+
+**GUID 取得:**
+```csharp
+// execute_code 内で
+var guid = AssetDatabase.AssetPathToGUID("Assets/.../GameConfig.asset");
+return guid;
+```
+
+または `.asset.meta` ファイルの `guid:` 行を読む。
 
 **初遭遇:** 2026-04-22
 
