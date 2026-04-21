@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:Style src="project://database/Assets/_Project/UI/HUD.uss" />
+    <ui:VisualElement name="HUDRoot" style="flex-grow: 1; padding: 16px;">
+        <ui:VisualElement name="TopBar" style="flex-direction: row; justify-content: space-between;">
+            <ui:Label text="ラウンド 1/4" class="hud-text" />
+            <ui:Label text="残り時間 90秒" class="hud-text" />
+        </ui:VisualElement>
+        <ui:VisualElement name="Spacer" style="flex-grow: 1;" />
+        <ui:VisualElement name="SkillBar" style="flex-direction: row; justify-content: center;">
+            <ui:VisualElement class="skill-slot">
+                <ui:Label text="ダッシュ" class="skill-label" />
+                <ui:Label text="Q" class="skill-key" />
+            </ui:VisualElement>
+            <ui:VisualElement class="skill-slot">
+                <ui:Label text="ボム" class="skill-label" />
+                <ui:Label text="E" class="skill-key" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

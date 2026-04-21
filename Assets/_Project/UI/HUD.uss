@@ -1,0 +1,32 @@
+.hud-text {
+    font-size: 28px;
+    color: rgb(255, 242, 102);
+    -unity-font-style: bold;
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: rgba(0, 0, 0, 0.8);
+}
+
+.skill-slot {
+    width: 140px;
+    height: 140px;
+    background-color: rgba(20, 20, 40, 0.75);
+    border-width: 2px;
+    border-color: rgba(255, 242, 102, 0.8);
+    border-radius: 12px;
+    margin: 8px;
+    padding: 12px;
+    align-items: center;
+    justify-content: center;
+}
+
+.skill-label {
+    font-size: 24px;
+    color: white;
+    -unity-font-style: bold;
+}
+
+.skill-key {
+    font-size: 18px;
+    color: rgb(255, 200, 100);
+    margin-top: 4px;
+}

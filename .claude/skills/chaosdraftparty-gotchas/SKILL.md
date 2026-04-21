@@ -56,6 +56,7 @@ description: ChaosDraftParty（Unity 6 + NGO + Relay + URP のソロ卒業制作
 34. [manage_vfx は component 追加が前提、trail_create 等は存在しない](#34-manage_vfx-は-component-追加が前提trail_create-等は存在しない)
 35. [manage_vfx は一部プロパティを silent ignore する](#35-manage_vfx-は一部プロパティを-silent-ignore-する)
 36. [.meta 削除後 Unity は Library/ キャッシュから同 GUID 再生成（このマシン限定）](#36-meta-削除後-unity-は-library-キャッシュから同-guid-再生成このマシン限定)
+37. [render_ui は Edit Mode で blank、Play Mode 必須](#37-render_ui-は-edit-mode-で-blankplay-mode-必須)
 
 ---
 
@@ -901,6 +902,23 @@ manage_vfx(action="trail_set_color", target="TailTrail",
 - **`.meta` を絶対コミットする**（HANDOFF.md の最重要ルールの再確認）
 - Unity 内での `.meta` 再生成が同 GUID でも油断しない、他マシンでは失敗する
 - 参照切れ `.mat` を見つけたら即 git log で直近削除の履歴追跡
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 37. render_ui は Edit Mode で blank、Play Mode 必須
+
+**症状:** `manage_ui render_ui` で UXML をプレビューしようとしたら、保存された PNG が真っ白（全黒、`hasContent: false`）。
+
+**原因:** UI Toolkit は UIDocument 経由で Panel Settings の RenderTexture に描画されるが、これは **Play Mode でのみ actual render がトリガー**される。Edit Mode では PanelSettings に RenderTexture を assign するだけで描画パスは走らない。
+
+**回避策:**
+- **Play Mode 中に render_ui を呼ぶ** — 1 回目で WaitForEndOfFrame 待ちキュー、2 回目で PNG 取得
+- または Edit Mode で visual 確認したいなら **UI Builder window を開く** (`UIToolkit/UIBuilder/OpenUIBuilder` 等のメニュー項目)
+- または UXML + USS を直接 read して構造を把握（`manage_ui read` + `get_visual_tree`）
+
+**Play Mode の副作用に注意:** 罠 #25（PlayMode テスト後 Unity MCP session 一時切断）と同じ現象が render_ui でも起こる可能性。短時間 Play Mode で済ませて、Play 抜けて MCP stabilize まで待つ。
 
 **初遭遇:** 2026-04-22
 
