@@ -57,6 +57,7 @@ description: ChaosDraftParty（Unity 6 + NGO + Relay + URP のソロ卒業制作
 35. [manage_vfx は一部プロパティを silent ignore する](#35-manage_vfx-は一部プロパティを-silent-ignore-する)
 36. [.meta 削除後 Unity は Library/ キャッシュから同 GUID 再生成（このマシン限定）](#36-meta-削除後-unity-は-library-キャッシュから同-guid-再生成このマシン限定)
 37. [render_ui は Edit Mode で blank、Play Mode 必須](#37-render_ui-は-edit-mode-で-blankplay-mode-必須)
+38. [`claude mcp add -e` は `--` より前に置かないと env var が MCP に届かない](#38-claude-mcp-add--e-は----より前に置かないと-env-var-が-mcp-に届かない)
 
 ---
 
@@ -919,6 +920,29 @@ manage_vfx(action="trail_set_color", target="TailTrail",
 - または UXML + USS を直接 read して構造を把握（`manage_ui read` + `get_visual_tree`）
 
 **Play Mode の副作用に注意:** 罠 #25（PlayMode テスト後 Unity MCP session 一時切断）と同じ現象が render_ui でも起こる可能性。短時間 Play Mode で済ませて、Play 抜けて MCP stabilize まで待つ。
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 38. `claude mcp add -e` は `--` より前に置かないと env var が MCP に届かない
+
+**症状:** `claude mcp add meshy --scope user -- npx -y @meshy-ai/meshy-mcp-server -e MESHY_API_KEY=msy_...` で登録して `claude mcp list` 見ると `✗ Failed to connect`。
+
+**原因:** `--` 以降は実行コマンドとその引数として扱われる。`-e KEY=VAL` が `--` の後にあると、claude CLI ではなく npx への引数として渡り、npx はそのまま MCP server の argv に流す。結果、環境変数は設定されず、server は API キーを読めず認証失敗。
+
+**正解:** `-e` を `--` の前に置く。
+```bash
+# OK
+claude mcp add meshy --scope user -e MESHY_API_KEY=msy_... -- npx -y @meshy-ai/meshy-mcp-server
+
+# NG（silent 失敗、認証エラーになる）
+claude mcp add meshy --scope user -- npx -y @meshy-ai/meshy-mcp-server -e MESHY_API_KEY=msy_...
+```
+
+**確認:** 登録後 `claude mcp list | grep meshy` で `✓ Connected` なら OK、`✗ Failed to connect` なら再登録。
+
+**一般則:** `claude mcp add <name> [--scope <s>] [-e K=V ...] [--transport ...] -- <command> <args...>` の順番。claude 自身のフラグは `--` 前、実行コマンドは `--` 後。
 
 **初遭遇:** 2026-04-22
 
