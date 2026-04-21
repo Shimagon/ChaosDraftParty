@@ -47,6 +47,7 @@ description: ChaosDraftParty（Unity 6 + NGO + Relay + URP のソロ卒業制作
 25. [PlayMode テスト後 Unity MCP session が一時切断](#25-playmode-テスト後-unity-mcp-session-が一時切断)
 26. [delete_script / apply_text_edits は uri、それ以外は path の派閥](#26-delete_script--apply_text_edits-は-uriそれ以外は-path-の派閥)
 27. [SO 参照の set_property は {"guid": "..."} 形式が確実](#27-so-参照の-set_property-は-guid--形式が確実)
+28. [Prefab インスタンス化は manage_gameobject + prefab_path、manage_prefabs ではない](#28-prefab-インスタンス化は-manage_gameobject--prefab_pathmanage_prefabs-ではない)
 
 ---
 
@@ -664,6 +665,48 @@ return guid;
 ```
 
 または `.asset.meta` ファイルの `guid:` 行を読む。
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 28. Prefab インスタンス化は manage_gameobject + prefab_path、manage_prefabs ではない
+
+**症状:** `manage_prefabs` というツールがあるのに、プレハブをシーンに**インスタンス化**する action が見当たらない。
+
+**原因:** ツールの責務分担:
+- `manage_prefabs` = **prefab アセット自体**の操作（create_from_gameobject, modify_contents, open_prefab_stage 等）
+- `manage_gameobject` = **シーン内 GameObject** の操作 + プレハブインスタンス化
+
+**正解:**
+```python
+# プレハブをシーンに出す
+manage_gameobject(
+    action="create",
+    name="PlayerCharacter_Instance",
+    prefab_path="Assets/_Project/Prefabs/Player/PlayerCharacter.prefab",
+    position=[0, 1, 0]
+)
+```
+
+`primitive_type` と `prefab_path` はどちらか一方のみ指定（両方だと `prefab_path` が優先）。
+
+**完全フロー（Player 系の daily workflow）:**
+```python
+# 1. シーン内でオブジェクト組み立て
+manage_gameobject(action="create", name="Tmp", primitive_type="Capsule")
+manage_components(action="add", target="Tmp", component_type="MyController")
+manage_components(action="set_property", target="Tmp", component_type="MyController",
+                  property="config", value={"guid": "..."})
+
+# 2. プレハブ化
+manage_prefabs(action="create_from_gameobject", target="Tmp",
+               prefab_path="Assets/.../Tmp.prefab")
+
+# 3. 再インスタンス化
+manage_gameobject(action="delete", target="Tmp")
+manage_gameobject(action="create", prefab_path="Assets/.../Tmp.prefab")
+```
 
 **初遭遇:** 2026-04-22
 
