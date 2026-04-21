@@ -62,3 +62,11 @@ unity-create.log
 
 # MCP / tooling
 .claude/settings.local.json
+
+# Meshy 生成中間物・API キー（絶対コミット禁止）
+meshy_output/
+.env
+.env.*
+*.env.local
+.meshy
+Meshy_API_Key*

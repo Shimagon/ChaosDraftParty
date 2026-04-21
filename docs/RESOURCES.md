@@ -75,7 +75,7 @@
 |---|---|---|---|
 | Flux Dev (FAL.ai) | $0.025/画像 | スキルアイコン10種、ルールカード6種 | M2 |
 | Recraft V3 | $0.04ラスタ / $0.08ベクタ | UIアイコン SVG | M2 |
-| Meshy Pro | $20/月 | ステージ小物のみ（**キャラ不可**） | M3 |
+| **Meshy Pro** 🟢 **契約済 (2026-04-22)** | $20/月 (1000 credits) | ステージ小物のみ（**キャラ不可**）、M1-M3 で ~1400 credits/2 ヶ月 | **今すぐ活用可** |
 | ElevenLabs Starter | $6/月、商用可 | パルス弾/ボム/しっぽ切断 SFX | M3 |
 | Stable Audio 2.5 | 25cr 無料、$1M未満は商用可 | ミニゲームBGM ループ | M4 |
 | VOICEVOX | 無料 OSS（**キャラ別クレジット必須**） | 日本語アナウンサー | M4 |
@@ -88,6 +88,9 @@
 
 | 名称 | install | 用途 |
 |---|---|---|
+| **`meshy-dev/meshy-3d-agent`** 🟢 導入済 | `npx skills add https://github.com/meshy-dev/meshy-3d-agent -g -y` | 公式 Meshy skill、credit 見積もりが組込み |
+| **`opusgamelabs/game-creator`** 🟢 導入済 | `npx skills add https://github.com/opusgamelabs/game-creator -g -y` | ゲーム制作文脈の Meshy/3D 使い方 |
+| **`.claude/skills/meshy-unity-workflow/`** 🟢 プロジェクト専用 | project scope (git 管理) | ChaosDraftParty 向け Meshy→Unity prefab 化完全 workflow、20 プロンプト例入り |
 | `rmyndharis/antigravity-skills --skill unity-developer` | 上記 | Unity 総合メタ戦略 |
 | `obra/superpowers --skill test-driven-development` | `npx skills add ...` | スキル効果式の TDD |
 | `jwynia/agent-skills --skill presentation-design` | 同上 | 発表構成レビュー |

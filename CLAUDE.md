@@ -67,7 +67,7 @@ Testing: ParrelSync (GitHub)
 
 - **Synty Studios** — ローポリ3Dキャラ・ステージ
 - **Mixamo** — キャラクターアニメーション（Adobe、無料）
-- **Meshy AI** — ステージ小物・装飾 **限定**（キャラには使わない）
+- **Meshy AI Pro**（🟢 2026-04-22 契約済、$20/月 1000 credits） — ステージ小物・装飾 **限定**（キャラには使わない、Community 公開禁止）。MCP `@meshy-ai/meshy-mcp-server` + skill `meshy-dev/meshy-3d-agent` + プロジェクト skill `.claude/skills/meshy-unity-workflow/` で運用。詳細は `docs/RESOURCES.md` と当該 skill 参照
 
 ---
 
