@@ -28,19 +28,23 @@
 
 ### 1. asmdef と Core 基盤
 
-- [ ] **asmdef 6枚作成**（Core / Network / Skills / Minigames / UI / Tests）
-  - 参照関係：UI → Core, Network → Core, Skills → Core, Minigames → Core+Network+Skills
-  - DoD：Unity Editor でコンパイル成功、Console エラー 0
-- [ ] **`GameConfig.cs`**（ScriptableObject）— 全バランス値の集約点
-  - 場所：`Assets/_Project/ScriptableObjects/Configs/GameConfig.asset`
-  - 含む：移動速度基本値、ジャンプ初速、重力、マッチ尺、ラウンド尺、ドラフト尺
-  - DoD：Inspector で値が全部見える、`Resources.Load` or Addressables で参照できる
+- [x] **asmdef 6枚作成**（Core / Network / Skills / Minigames / UI / Tests）
+  - 初回 commit `c5cba93` で既存確認（2026-04-22）、UI→Core / Skills→Core+Network / Minigames→Core+Network+Skills / Tests→全依存
+  - Core に UGS + NGO + Cinemachine + Addressables の refs 込み
+- [x] **`GameConfig.cs`**（ScriptableObject）— 全バランス値集約
+  - `Assets/_Project/Scripts/Core/Configs/GameConfig.cs` + `Assets/_Project/ScriptableObjects/Configs/GameConfig.asset` (GUID d4705ac6..)
+  - 含む：移動/ジャンプ/重力、マッチ/ラウンド/ドラフト/ウォームアップ尺、凹関数スタック倍率 (1.0→1.20→1.35→1.45)、triggerGraceMs=200
+  - `GetStackMultiplier(count)` / `GravityAcceleration` プロパティ済
 - [ ] **`GameManager.cs`**（DontDestroyOnLoad、Singleton）
   - シーン遷移、セッション状態（Lobby / MatchInProgress / Result）保持
   - DoD：Boot→MainMenu→Lobby の遷移がキー操作で動く
 - [ ] **`Bootstrap.cs`**（Bootシーンのエントリーポイント）
   - Unity Services 初期化 → Auth サインイン → MainMenu へ
   - DoD：Unity 起動 → Console に `[Boot] Authenticated as <playerId>` が出る
+- [~] **Skills モジュール基盤**（M2 先取り）
+  - `Skills/SkillDefinition.cs` — SO、id/displayName/category/activation/cooldownSec/magnitude/icon/vfx/sfx
+  - `Skills/ISkillEffect.cs` + `SkillContext` struct — サーバー権威発動 IF
+  - まだ 10 スキル個別 SO インスタンスは未作成、M2 で追加
 
 ### 2. シーン骨格
 
@@ -77,6 +81,10 @@
 
 ### 5. 縮む島（最初のミニゲーム）
 
+- [~] **縮む島プロトシーン**（視覚確認済、2026-04-21）
+  - `Assets/_Project/Scenes/ShrinkingIslandProto.unity` に 8×8 チェス盤タイル + Player + カメラ/ライト配置、URP Asset 動作確認
+  - `execute_code` 経由で 64 タイル + 縮小デモ実装済（1 リング削除で 64→16）
+  - まだ `TileManager.cs` クラス化されていない、次のタスクで正式化
 - [ ] **`TileManager.cs`**（8×8 タイル生成、外周から消失）
   - 参照：TechSpec 8.2、CLAUDE.md State Machines
   - メソッド：`Initialize()` / `ScheduleShrinkage(float interval)` / `RemoveTile(int x, int z, [ServerRpc])`

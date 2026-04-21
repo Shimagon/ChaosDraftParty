@@ -28,6 +28,16 @@ description: ChaosDraftParty（Unity 6 + NGO + Relay + URP のソロ卒業制作
 6. [`npx skills add` は `-y` フラグがないと対話プロンプトで止まる](#6-npx-skills-add-は--y-フラグがないと対話プロンプトで止まる)
 7. [Configure All Detected Clients ボタンで既存 MCP 登録が消える](#7-configure-all-detected-clients-ボタンで既存-mcp-登録が消える)
 8. [新規 MCP 登録は既存 Claude セッションに反映されない](#8-新規-mcp-登録は既存-claude-セッションに反映されない)
+9. [MCP ツール並列実行の安全性マップ](#9-mcp-ツール並列実行の安全性マップ)
+10. [execute_code の名前空間 auto-import は root のみ](#10-execute_code-の名前空間-auto-import-は-root-のみ)
+11. [safety_checks が blocked パターン一覧](#11-safety_checks-が-blocked-パターン一覧)
+12. [C# 12 機能の稼働範囲（Roslyn Dep 有効時）](#12-c-12-機能の稼働範囲roslyn-dep-有効時)
+13. [create_script の scheduledRefresh=false 問題](#13-create_script-の-scheduledrefreshfalse-問題)
+14. [Write tool は既存ファイルへの上書きが silent fail](#14-write-tool-は既存ファイルへの上書きが-silent-fail)
+15. [editor/state の advice.ready_for_tools が真の準備指標](#15-editorstate-の-adviceready_for_tools-が真の準備指標)
+16. [manage_scriptable_object create の type_name は完全修飾必須](#16-manage_scriptable_object-create-の-type_name-は完全修飾必須)
+17. [gitignored フォルダの .meta を忘れない](#17-gitignored-フォルダの-meta-を忘れない)
+18. [TODO を信じる前に git ls-files で実プロジェクト状態を確認](#18-todo-を信じる前に-git-ls-files-で実プロジェクト状態を確認)
 
 ---
 
@@ -193,6 +203,237 @@ claude mcp add --scope local --transport http UnityMCP http://127.0.0.1:8080/mcp
 **回避策:** Claude Code 再起動。次セッションから利用可。
 
 **初遭遇:** 2026-04-21
+
+---
+
+## 9. MCP ツール並列実行の安全性マップ
+
+**実測日:** 2026-04-22（Sandbox シーンで検証）
+
+| パターン | 結果 | 推奨 |
+|---|---|---|
+| **read-only 並列**（`find_gameobjects` / `read_console` / `manage_scene get_*` / resource 読み）| 🟢 5 発同時全成功、結果独立 | 積極並列 OK |
+| **独立オブジェクトへの write 並列**（`manage_gameobject create` ×3）| 🟢 全成功、instanceID 連番（内部シリアライズ） | 並列 OK だが `batch_execute` の方が token 効率良い |
+| **同一オブジェクト・違うプロパティ write 並列**（position / rotation / scale）| 🟢 merge 動作、全変更保持 | 安全 |
+| **同一オブジェクト・同一プロパティ write 並列** | 🟡 last-write-wins（送信順の最後が勝つ） | 意図した順序性あるなら逐次にせよ |
+| `execute_code` 複数並列 | ⚠️ 未検証（`Thread.Sleep` 使うと Unity 主 thread 凍結しそう）。理屈上はシリアライズされるはず、ただし Roslyn compile の同時実行で干渉の可能性 | 逐次推奨 |
+| **別 Claude Code セッション**から同 Unity に同時アクセス | 🔴 `set_active_instance` 未設定だと route 破綻、複数 token 衝突 | `unity_instance` 引数 or `set_active_instance` |
+| Bash / WebFetch / 研究 Agent / skill install 並列 | 🟢 独立プロセス | 積極並列 OK |
+
+**内部機構:** MCP for Unity は複数リクエストを内部キューで main thread 順次実行。Claude からは「並列に見える」が Unity 側は serial。そのため `batch_execute` を使うのと**レイテンシはさほど変わらない**（ただし token 数は batch の方が安い）。
+
+**結論:**
+- 複数 write → **`batch_execute`** を第一選択
+- 読み混じり → 並列 tool call OK
+- 純読み → 積極並列で OK
+- 同オブジェクト同プロパティ並列は避ける（バグの温床）
+
+---
+
+## 10. execute_code の名前空間 auto-import は root のみ
+
+**実測日:** 2026-04-22
+
+| ネームスペース | 短縮形（FQN 不要） |
+|---|---|
+| `UnityEngine` 直下 | ✅ `GameObject` / `Vector3` / `Shader` / `Material` / `Camera` / `PrimitiveType` 等 |
+| `UnityEditor` 直下 | ✅ `AssetDatabase` / `EditorUtility` / `Selection` / `PrefabUtility` 等 |
+| `UnityEngine.Rendering` | ❌ 必要（例: `UnityEngine.Rendering.GraphicsSettings`） |
+| `UnityEngine.Rendering.Universal` | ❌ 必要 |
+| `UnityEditor.SceneManagement` | ❌ 必要（`EditorSceneManager` をそのまま書くと compile error） |
+| `UnityEditor.Animations` | ❌ 必要（`AnimatorController` 等） |
+| `System.*` 全般（Collections.Generic, Text, IO, Linq, Threading...）| ❌ 必要 |
+
+**使用頻度の高い FQN 早見表:**
+```csharp
+UnityEditor.SceneManagement.EditorSceneManager.SaveScene(scene, path);
+UnityEngine.Rendering.GraphicsSettings.defaultRenderPipeline = urp;
+UnityEngine.Rendering.Universal.UniversalRendererData rd;
+UnityEngine.Rendering.Universal.UniversalRenderPipelineAsset.Create(rd);
+System.Collections.Generic.List<int> list = new() { 1, 2, 3 };
+System.Text.StringBuilder sb = new();
+System.Linq.Enumerable.Range(1, 10).Sum();
+```
+
+---
+
+## 11. safety_checks が blocked パターン一覧
+
+**実測日:** 2026-04-22（実際に弾かれたパターン）
+
+| パターン | 状態 |
+|---|---|
+| `while (true)` | 🔴 blocked |
+| `System.IO.File.Delete` | 🔴 blocked |
+| `Process.Start` / `System.Diagnostics.Process.Start` | 🔴 blocked |
+
+エラー形式：
+```
+Blocked pattern detected: Code contains blocked pattern: '<pattern>'.
+Disable safety checks with safety_checks=false if this is intentional.
+```
+
+**解除方法:** `safety_checks=false` パラメータを `execute_code` 呼出に付ける（慎重に）。
+
+**未検証だが blocked と予想:**
+- `File.WriteAllText` / `File.Delete` 系
+- `Registry` 操作
+- `Environment.Exit`
+- 長時間 `Thread.Sleep`
+
+---
+
+## 12. C# 12 機能の稼働範囲（Roslyn Dep 有効時）
+
+**前提:** MCP for Unity の Deps タブで Roslyn (C# 12+ Compiler) インストール済み。
+**実測日:** 2026-04-22
+
+✅ 動く：
+- **target-typed new**: `List<int> l = new() { 1, 2, 3 };`
+- **switch expression**: `var r = x switch { 1 => "a", _ => "b" };`
+- **pattern matching**: `o is int i && i > 0`
+- **`using` declaration（ブロックなし）**: `using var ms = new MemoryStream();`
+- **tuple**: `(int a, int b) t = (10, 20);`
+- **null-conditional / null-coalescing**: `g?.name ?? "null"`
+- **collection initializer**: `new Dictionary<string, int> { ["a"] = 1 }`
+- **LINQ**: `System.Linq.Enumerable.Range(1, 5).Sum()`
+
+❌ 動かない（メソッドボディ構文制限）：
+- ローカル `class` / `record` / `struct` 宣言
+- トップレベル `using` ディレクティブ（罠 #1 参照）
+- 名前空間宣言
+
+---
+
+## 13. create_script の scheduledRefresh=false 問題
+
+**症状:** `mcp__UnityMCP__create_script` が成功を返し `scheduledRefresh: false` となる。スクリプトファイルは作成されるが、Unity が自動的に refresh / compile しない。以降 `manage_scriptable_object create` で型を使おうとすると未定義エラー。
+
+**原因:** Unity Editor がフォーカス外だと `create_script` の自動 refresh トリガーが作動しない。`assets.external_changes_dirty: true` にはなるが、`is_updating: false` のまま。
+
+**診断:** `editor/state` の `external_changes_dirty: true` && `is_updating: false` && `staleness.is_stale: true` が同時に立つ。
+
+**回避策:** 明示的に `refresh_unity` を呼ぶ：
+```python
+refresh_unity(mode="force", compile="request", wait_for_ready=True)
+```
+
+**予防策:** `create_script` / `script_apply_edits` / ファイル追加後は **必ず** `refresh_unity(wait_for_ready=True)` を挟んで、そのあと `read_console(types=["error"])` で compile 確認、それから新しい型を使う tool を呼ぶ。
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 14. Write tool は既存ファイルへの上書きが silent fail
+
+**症状:** `Write` tool で既存 asmdef/設定ファイル 6 枚を上書きしようとしたら全 6 件 `File has not been read yet. Read it first before writing to it.` エラー。しかしその後ファイル内容を確認すると**元のまま**。
+
+**原因:** Claude Code の Write tool は既存ファイル上書き時に **事前 Read を必須**とするガード。ガードに引っかかると書込処理はスキップされる（silent skip、エラーは出すがファイルは変更されない）。これは仕様通り、データ破壊防止の安全装置。
+
+**回避策:**
+- 既存ファイル変更は **Edit tool** か **`Read` 後に `Write`**
+- 完全上書きを意図するなら Read tool で事前に読む → Write で上書き
+- 6 個同時上書き等の一括操作は、Read 6 個 → Write 6 個、または `Bash` でスクリプト書き
+
+**得られた教訓:** 上書きに見える操作で元ファイルが保持されるので、データ安全性は高い。ただし意図した上書きが通らないので、結果を必ず確認する。
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 15. editor/state の advice.ready_for_tools が真の準備指標
+
+**確認日:** 2026-04-22
+
+`mcpforunity://editor/state` リソースの最重要フィールド:
+
+```json
+"advice": {
+  "ready_for_tools": true,        // これが true になるまで次操作を待つ
+  "blocking_reasons": [],          // false 時の理由 (e.g., ["stale_status", "compiling"])
+  "recommended_retry_after_ms": 0, // false 時は >0、推奨待機時間
+  "recommended_next_action": "none"
+},
+"staleness": {
+  "age_ms": 200,                   // state 情報の古さ
+  "is_stale": false                // true なら情報自体が古い = 再取得しろ
+}
+```
+
+**ワークフロー:**
+```
+1. refresh_unity(wait_for_ready=True) を呼ぶ
+2. それでも ready_for_tools=false なら recommended_retry_after_ms 待って再取得
+3. blocking_reasons を見て対処（compiling なら待つ、stale_status なら再 refresh）
+4. ready_for_tools=true && is_stale=false を確認してから次ツール発動
+```
+
+これを守らないと「型が見つからない」「ファイルが無い」等のフライング系エラーで詰まる。
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 16. manage_scriptable_object create の type_name は完全修飾必須
+
+**症状:** `type_name: "GameConfig"` だと型解決失敗エラー。
+
+**原因:** Unity の SerializedObject 型参照はアセンブリ + 完全修飾名で保存される。`asset` ファイルの `m_Script` フィールドには `fileID` + `guid` の形で保存される。
+
+**回避策:** namespace 込みで書く。
+```python
+manage_scriptable_object(
+    action="create",
+    type_name="ChaosDraftParty.Core.Configs.GameConfig",  # 完全修飾
+    folder_path="Assets/_Project/ScriptableObjects/Configs",
+    asset_name="GameConfig"
+)
+```
+
+**前提条件:** スクリプトがコンパイル済み + domain reload 完了（罠 #15 参照）。
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 17. gitignored フォルダの .meta を忘れない
+
+**症状:** `.gitignore` で `Assets/Foo/` をフォルダごと ignore したが、Unity が自動生成する `Assets/Foo.meta`（フォルダ自体の meta ファイル）は ignore 対象外 → Unity が .meta だけ tracked・フォルダ中身は untracked の不整合状態、他マシン clone 時に .meta だけあってフォルダ無い状態で GUID 迷子発生
+
+**回避策:** フォルダを ignore したら必ず **folder.meta も ignore**。
+```gitignore
+# Unity 自動生成 .meta もセットで ignore
+[Aa]ssets/Screenshots/
+[Aa]ssets/Screenshots.meta
+```
+
+**汎用ルール:** `Assets/X/` を ignore したら `Assets/X.meta` も ignore。`Packages/X/` を ignore したら `Packages/X.meta` も ignore。meta ペアは対称を保つ。
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 18. TODO を信じる前に git ls-files で実プロジェクト状態を確認
+
+**症状:** `docs/TODO.md` に「asmdef 6枚作成」が `[ ]` 未着手状態で載っていたので新規作成を試みたら、**全 6 枚既に初回コミット `c5cba93` で作成・commit 済み**だった。Write tool ガードのおかげで上書き事故は免れたが、30 秒の無駄作業。
+
+**原因:** TODO.md が実装状態の反映を遅延していた。CLAUDE.md や HANDOFF.md に構造説明はあったが、具体ファイルまでチェックせず TODO を額面通り受け取った。
+
+**回避策:** 「作業開始前に必ず git ls-files で実ファイル状態を見る」ことを作業パターンに組み込む。
+```bash
+# 作業対象領域の現状確認
+git ls-files "Assets/_Project/Scripts/*/" | head -30
+find Assets/_Project -name "*.cs" -type f | wc -l
+```
+
+特に：
+- asmdef / .cs / .asset ファイルの有無
+- `Packages/manifest.json` のパッケージ列
+- `ProjectSettings/*.asset` の差分有無
+
+**汎用ルール:** **TODO はプラン、git は真実**。両方確認してから着手。
+
+**初遭遇:** 2026-04-22
 
 ---
 
