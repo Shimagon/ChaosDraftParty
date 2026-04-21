@@ -20,8 +20,9 @@
 | 期間 | 2026-04 〜 2026-09 / M1–M6 |
 | 現フェーズ | **M1（2026-04）** |
 | リポジトリ | **`Shimagon/ChaosDraftParty`**（GitHub private、HTTPS origin） |
-| ローカルパス | `~/Documents/Dev/ChaosDraftParty/`（旧パス `~/Documents/課題/やりたいこと/卒業制作/` は symlink） |
-| Unity | **6.4.3f1**（Apple Silicon） |
+| ローカルパス | macOS: `~/Documents/Dev/ChaosDraftParty/`（旧パス `~/Documents/課題/やりたいこと/卒業制作/` は symlink）／ Windows: `C:\Dev\ChaosDraftParty\` 推奨（ASCII 英字、日本語・空白厳禁） |
+| Unity | **6.4.3f1**（Apple Silicon / Windows x64 両対応） |
+| 対応 OS | macOS（MacBook）＋ Windows（デスクトップ PC）両開発 |
 | 使用 IDE | VSCode / Rider / Claude Code |
 
 ## 2. 環境セットアップの既知の地雷
