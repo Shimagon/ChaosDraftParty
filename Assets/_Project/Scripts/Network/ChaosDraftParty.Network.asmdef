@@ -1,0 +1,23 @@
+{
+    "name": "ChaosDraftParty.Network",
+    "rootNamespace": "ChaosDraftParty.Network",
+    "references": [
+        "ChaosDraftParty.Core",
+        "Unity.Netcode.Runtime",
+        "Unity.Netcode.Components",
+        "Unity.Services.Core",
+        "Unity.Services.Authentication",
+        "Unity.Services.Relay",
+        "Unity.Services.Lobbies",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

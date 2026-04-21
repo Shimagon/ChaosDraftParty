@@ -1,0 +1,19 @@
+{
+    "name": "ChaosDraftParty.Minigames",
+    "rootNamespace": "ChaosDraftParty.Minigames",
+    "references": [
+        "ChaosDraftParty.Core",
+        "ChaosDraftParty.Network",
+        "ChaosDraftParty.Skills",
+        "Unity.Netcode.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

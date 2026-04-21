@@ -1,0 +1,24 @@
+{
+    "name": "ChaosDraftParty.Core",
+    "rootNamespace": "ChaosDraftParty.Core",
+    "references": [
+        "Unity.InputSystem",
+        "Unity.Services.Core",
+        "Unity.Services.Authentication",
+        "Unity.Services.Relay",
+        "Unity.Services.Lobbies",
+        "Unity.Netcode.Runtime",
+        "Unity.Cinemachine",
+        "Unity.Addressables",
+        "Unity.ResourceManager"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
