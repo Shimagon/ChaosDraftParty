@@ -11,6 +11,7 @@
 - [ゲーム設計書 v9.5](仕様書/ChaosDraftParty_Spec_v9.5.docx) — ゲームデザイン全体
 - [技術仕様書 v1.0](仕様書/ChaosDraftParty_TechSpec_v1.docx) — API / データ / アルゴリズム
 - [CLAUDE.md](CLAUDE.md) — Claude Code 向け開発ガイド（実装判断の原則）
+- [docs/HANDOFF.md](docs/HANDOFF.md) — **別マシン/新セッション引き継ぎ用のノート**（地雷地図・登録済みツール・パッケージバージョン意図）
 
 ## 技術スタック
 
