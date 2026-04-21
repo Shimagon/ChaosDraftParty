@@ -2,6 +2,8 @@
 
 このファイルは Claude Code による自動読込を前提とした、本プロジェクトのハンドオフガイドです。実装判断に迷ったら本書または `ChaosDraftParty_TechSpec_v1.docx`（技術仕様書）を参照してください。
 
+**新規マシンでの開発環境セットアップは [README.md](README.md) を参照**（Unity / MCP / NotebookLM / ターミナル起動ルール）。
+
 ---
 
 ## プロジェクト概要
