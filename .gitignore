@@ -58,6 +58,7 @@ unity-create.log
 
 # Screenshots（MCP 動作確認・デバッグ用、commit 不要）
 [Aa]ssets/Screenshots/
+[Aa]ssets/Screenshots.meta
 
 # MCP / tooling
 .claude/settings.local.json

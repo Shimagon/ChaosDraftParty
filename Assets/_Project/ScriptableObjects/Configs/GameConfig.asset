@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4bf8b5d638e7c46ff9956b0e5de9625d, type: 3}
+  m_Name: GameConfig
+  m_EditorClassIdentifier: ChaosDraftParty.Core::ChaosDraftParty.Core.Configs.GameConfig
+  playerBaseSpeed: 6
+  playerJumpSpeed: 7
+  gravityMultiplier: 1
+  roundsPerMatch: 4
+  matchesPerSeason: 3
+  roundDurationSec: 90
+  countdownSec: 3
+  roundEndingSec: 3
+  draftDurationSec: 5
+  matchResultSec: 15
+  warmupSec: 10
+  ruleCardRevealSec: 5
+  stackMul1: 1
+  stackMul2: 1.2
+  stackMul3: 1.35
+  stackMulCap: 1.45
+  triggerGraceMs: 200
