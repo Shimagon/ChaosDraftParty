@@ -109,6 +109,29 @@ Unity 6.0 テンプレの `com.unity.inputsystem@1.12.0` は Unity 6.4 では `B
 4. `Install Skills` ボタンで skill もインストール
 5. **Claude Code を 1 回再起動** — 既存セッションには新 MCP が反映されない
 
+### MCP for Unity Deps（2026-04-21 Install All 実施）
+
+Unity の `Window → MCP for Unity → Deps タブ → Install All` で導入済み：
+
+| Dep | 状態 | 効果 | 導入先 |
+|---|---|---|---|
+| **Roslyn (C# 12+ Compiler)** | ✓ インストール | `execute_code` で C# 12 構文（record/pattern matching/file-scoped ns 等）、Unity Editor 全 API を動的実行可能 | `Assets/Plugins/Roslyn/*.dll` （LFS、4 DLL + meta、git commit 済） |
+| **ProBuilder** | ✓ インストール（`com.unity.probuilder` 6.0.9） | `manage_probuilder` 有効、縮む島タイル・ステージ壁を Claude が編集 | `Packages/manifest.json` + `ProjectSettings/Packages/com.unity.probuilder/` |
+| **Cinemachine** | ✓ 既存（3.1.6） | カメラ全般 | `Packages/manifest.json`（既導入） |
+
+### Windows デスクトップ側での動作
+
+**結論：両方とも `git pull` だけで自動で動く**。Roslyn DLL はプラットフォーム中立な .NET DLL、`.meta` 対でコミット済み → Windows で clone/pull すれば Unity が認識し MCP for Unity の Deps タブで ✓ 表示。ProBuilder は `manifest.json` に書かれるので Windows 側の Unity 起動時に自動解決。
+
+```bash
+# Windows デスクトップ側で
+git pull origin main
+git lfs pull           # Roslyn DLLs を LFS から取得
+# Unity Hub でプロジェクトを Open → パッケージ自動解決を待つ
+# → Window → MCP for Unity → Deps → Roslyn/ProBuilder 共に ✓ 表示されるはず
+# もし ✓ にならなかったら Install All を押すだけ（冪等）
+```
+
 ### ⚠️ Unity MCP の既知の罠（2026-04-21 学習）
 
 1. **`Configure All Detected Clients` ボタンは前の登録を消すことがある**。初回だけ使う。以降は個別の「Configure」ボタンか `claude mcp add` を使う。
