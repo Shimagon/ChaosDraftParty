@@ -60,6 +60,8 @@ description: ChaosDraftParty（Unity 6 + NGO + Relay + URP のソロ卒業制作
 38. [`claude mcp add -e` は `--` より前に置かないと env var が MCP に届かない](#38-claude-mcp-add--e-は----より前に置かないと-env-var-が-mcp-に届かない)
 39. [URP Volume は Camera.volumeTrigger 未割当だと完全無効（silent fail）](#39-urp-volume-は-cameravolumetrigger-未割当だと完全無効silent-fail)
 40. [URP RendererData.postProcessData = null で Post-Process 全体無効（最重要）](#40-urp-rendererdatapostprocessdata--null-で-post-process-全体無効最重要)
+41. [TMP FontAsset の 1-arg CreateFontAsset は m_AtlasTextures 未初期化バグ](#41-tmp-fontasset-の-1-arg-createfontasset-は-m_atlastextures-未初期化バグ)
+42. [カスタム URP Skybox Shader のハードル — Procedural tuning が速い](#42-カスタム-urp-skybox-shader-のハードル--procedural-tuning-が速い)
 
 ---
 
@@ -1018,6 +1020,68 @@ AssetDatabase.SaveAssets();
 **なぜ重要**: ChaosDraftParty は罠 #2 で URP Asset を自前生成した → postProcessData が null のまま。Unity テンプレから始めた新規プロジェクトでは自動割当済のはず（今回は Unity 6 空プロジェクト + 後付 URP のパターン）。
 
 **恒久対策**: URP Asset 生成コード内で必ず postProcessData 割当を含める。`.claude/skills/chaosdraftparty-gotchas/` の罠 #2（URP Asset 自動生成）にも追記必要。
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 41. TMP FontAsset の 1-arg CreateFontAsset は m_AtlasTextures 未初期化バグ
+
+**症状:** `TMP_FontAsset.CreateFontAsset(font)` で作成した FontAsset を Text に assign すると：
+```
+UnassignedReferenceException: The variable m_AtlasTextures of TMP_FontAsset has not been assigned.
+```
+
+**原因:** 1-arg overload は atlas サイズ等の defaults で生成するが、**atlas texture 配列が lazy init** で、最初の文字追加まで null のまま。Text の set_font 時に atlas を参照しようとして null ref。
+
+**回避策:** 7-arg overload で明示初期化 + 事前 TryAddCharacters：
+```csharp
+var fontAsset = TMP_FontAsset.CreateFontAsset(
+    font, 90, 9,
+    UnityEngine.TextCore.LowLevel.GlyphRenderMode.SDFAA,
+    1024, 1024,
+    TMPro.AtlasPopulationMode.Dynamic,
+    true);  // enableMultiAtlasSupport
+
+// 事前にアルファベット追加 (atlas 初期化させる)
+uint[] codepoints = new uint[62];
+for (int i = 0; i < 26; i++) codepoints[i] = (uint)('A' + i);
+for (int i = 0; i < 26; i++) codepoints[26 + i] = (uint)('a' + i);
+for (int i = 0; i < 10; i++) codepoints[52 + i] = (uint)('0' + i);
+fontAsset.TryAddCharacters(codepoints);
+```
+
+**関連:** 再生成（delete + recreate）時に fallback FontAsset の material reference が dangling になる別の問題あり（`m_Material doesn't exist anymore`）。fallback 使うなら fallback 側も同時再生成が安全。
+
+**初遭遇:** 2026-04-22（Outfit_Dynamic 作成時）
+
+---
+
+## 42. カスタム URP Skybox Shader のハードル — Procedural tuning が速い
+
+**症状:** HLSL で `Shader "ChaosDraftParty/GradientSkybox"` を自作、RenderSettings.skybox に設定 → **全画面ピンク**（Missing Shader 扱い）。Console にエラー出ず。
+
+**原因:**
+- URP Skybox は `Queue=Background RenderType=Background PreviewType=Skybox` 必要
+- 3D スカイボックスの位置計算（direction vector）が URP standard include と不整合
+- `Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl` include だけでは不十分、`UnitySkybox.hlsl` 等も要る可能性
+
+**回避策（短期）:** `Skybox/Procedural` を Material 化して tuning：
+```csharp
+var mat = new Material(Shader.Find("Skybox/Procedural"));
+mat.SetFloat("_AtmosphereThickness", 1.2f);
+mat.SetColor("_SkyTint", new Color(0.75f, 0.85f, 1.0f));
+mat.SetColor("_GroundColor", new Color(0.4f, 0.3f, 0.2f));
+mat.SetFloat("_SunSize", 0.06f);
+mat.SetFloat("_Exposure", 1.0f);
+RenderSettings.skybox = mat;
+// Directional Light で太陽位置を低く (夕焼け角度)
+dl.transform.rotation = Quaternion.Euler(15f, 120f, 0f);
+```
+
+効果: 青空 Procedural Skybox の Unity 臭が消え、暖色夕焼け空に。**工数 30 秒**。
+
+**長期策:** Shader Graph で Gradient Skybox 作る or Unity Asset Store の無料 `Skybox Mobile Stylized` 等を採用。自作は GraphicsPass 挿入点とライブラリ include が面倒、**DIY は費用対効果低い**。
 
 **初遭遇:** 2026-04-22
 
