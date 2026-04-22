@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbc8d3bb7308345c8b8e44c3ece5c698, type: 3}
+  m_Name: SeasonRule_reverse_multiplier
+  m_EditorClassIdentifier: ChaosDraftParty.Core::ChaosDraftParty.Core.Season.SeasonRuleDefinition
+  id: reverse_multiplier
+  displayName: "\u9006\u8EE2\u500D\u7387"
+  description: "3 \u8A66\u5408\u76EE\u306E\u307F\u3001\u4E0B\u4F4D\u30B9\u30B3\u30A2\u306F
+    1.5 \u500D\u3001\u4E0A\u4F4D\u30B9\u30B3\u30A2\u306F 0.8 \u500D"
+  activationMatchIndex: 2
+  magnitude: 0.8
+  secondaryMagnitude: 1.5
+  icon: {fileID: 0}
+  accentColor: {r: 0.7, g: 0.3, b: 1, a: 1}

@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbc8d3bb7308345c8b8e44c3ece5c698, type: 3}
+  m_Name: SeasonRule_winner_takes_all
+  m_EditorClassIdentifier: ChaosDraftParty.Core::ChaosDraftParty.Core.Season.SeasonRuleDefinition
+  id: winner_takes_all
+  displayName: "\u52DD\u8005\u7DCF\u53D6\u308A"
+  description: "3 \u8A66\u5408\u76EE\u306E\u52DD\u8005\u304C\u30B7\u30FC\u30BA\u30F3\u52DD\u8005\u306B\u78BA\u5B9A"
+  activationMatchIndex: 2
+  magnitude: 1
+  secondaryMagnitude: 1
+  icon: {fileID: 0}
+  accentColor: {r: 1, g: 0.8, b: 0.2, a: 1}
