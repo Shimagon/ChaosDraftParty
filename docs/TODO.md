@@ -35,19 +35,18 @@
   - `Assets/_Project/Scripts/Core/Configs/GameConfig.cs` + `Assets/_Project/ScriptableObjects/Configs/GameConfig.asset` (GUID d4705ac6..)
   - 含む：移動/ジャンプ/重力、マッチ/ラウンド/ドラフト/ウォームアップ尺、凹関数スタック倍率 (1.0→1.20→1.35→1.45)、triggerGraceMs=200
   - `GetStackMultiplier(count)` / `GravityAcceleration` プロパティ済
-- [~] **`GameManager.cs`**（DontDestroyOnLoad、Singleton、2026-04-22 stub 作成 commit `3fed9c2`）
+- [~] **`GameManager.cs`**（DontDestroyOnLoad、Singleton、2026-04-22 stub 作成 + compile OK）
   - `Assets/_Project/Scripts/Core/Managers/GameManager.cs`
   - SessionState enum (Bootstrapping/MainMenu/Lobby/MatchInProgress/InterMatch/SeasonEnding/SessionEnd)
   - OnStateChanged event / BeginMatch/BeginRound/EndMatch/EndSession API
-  - Unity session down で compile 未検証、次回 Unity 復帰時に verify 必要
+  - Compile 検証済 (2026-04-22 Unity 復帰後)
   - DoD 残: Boot→MainMenu→Lobby の遷移がキー操作で動く（実シーンとの連携テスト要）
-- [~] **`Bootstrap.cs`**（Boot シーンエントリー、2026-04-22 stub 作成 commit `3fed9c2`）
+- [~] **`Bootstrap.cs`**（Boot シーンエントリー、2026-04-22 stub 作成 + compile OK）
   - `Assets/_Project/Scripts/Core/Managers/Bootstrap.cs`
   - async Start で UnityServices.InitializeAsync + AuthenticationService.SignInAnonymouslyAsync
   - 成功後 GameManager.SetState(MainMenu) + LoadScene("MainMenu")
-  - Unity session down で compile 未検証
   - DoD 残: Boot シーンに配置、Unity 起動 → Console に `[Boot] Authenticated as <playerId>`
-- [~] **`MinigameBase.cs`**（abstract 基底、2026-04-22 commit `3fed9c2`）
+- [~] **`MinigameBase.cs`**（abstract 基底、2026-04-22 compile OK）
   - `Assets/_Project/Scripts/Minigames/MinigameBase.cs`
   - MinigamePhase enum、StartMinigame/BeginPlay/Tick/CompleteMinigame 基本 API
   - CheckVictoryCondition は abstract (サブクラスで実装)
@@ -64,9 +63,10 @@
 - [x] **SeasonRuleDefinition + 3 SO**（M5 先取り 2026-04-22 完了、commit `5bcf2e5`）
   - `Core/Season/SeasonRuleDefinition.cs` — activationMatchIndex / magnitude / secondaryMagnitude
   - SO 3 つ: winner_takes_all / reverse_multiplier / double_skill
-- [~] **CharacterDefinition + 4 SO**（class 作成済、SO は Unity session 復帰後に作成）
-  - `Core/CharacterDefinition.cs` — id/displayName/primaryColor/secondaryColor/prefab 参照
-  - SO 未作成: char_red / char_blue / char_yellow / char_green（次回セッションで）
+- [x] **CharacterDefinition + 4 SO**（2026-04-22 完了）
+  - `Core/CharacterDefinition.cs` — id/displayName/primaryColor/secondaryColor/prefab/portraitSprite
+  - SO 4 個: Character_char_red / char_blue / char_yellow / char_green、primary+secondary color 設定済
+  - 7 EditMode tests 全 pass で compile 検証済
 
 ### 2. シーン骨格
 
