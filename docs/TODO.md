@@ -155,7 +155,39 @@
 
 - **[docs/HANDOFF.md](HANDOFF.md)** — 地雷地図・登録済みツール・パッケージ意図
 - **[docs/RESOURCES.md](RESOURCES.md)** — MCP/Skills/OSS/API の Tier S/A/B/C 分類、6ヶ月採用タイムライン、macOS/Windows 並記セットアップ
+- **[docs/VISUAL_TARGET.md](VISUAL_TARGET.md)** — Fall Guys 75% + 原神 25% ハイブリッド、$145 見栄え投資、月次ビジュアル実装ロードマップ
 - **[README.md](../README.md)** — 新規マシン向け両 OS セットアップ手順
+
+## ビジュアル実装マイルストーン（VISUAL_TARGET.md 連動）
+
+### M1 残週（ROI 最大、2 日で 30→45%）
+- [ ] Global Post-Process Volume を Boot に配置、`DontDestroyOnLoad`
+- [ ] Bloom/Color Adjust/Vignette/Tonemapping(Neutral)/White Balance プリセット
+- [ ] URP Asset: Soft Shadow ON、Cascade 2、Shadow Distance 50m
+- [ ] Directional Light 暖色化 (`#FFE8C8` / Intensity 1.2) + Light Probe 散布
+
+### M2（5月、45→60%）
+- [ ] Feel ($25-50) 購入 & MMFeedbacks テンプレ 5 種作成
+- [ ] Cinemachine 3 Impulse Source、Noise Profile (Handheld)
+- [ ] PrimeTween（無料）で UI bouncy 全般
+
+### M3（6月、60→75%）
+- [ ] **Flat Kit ($40)** 購入 → Synty キャラ material 一括 Stylized Lit 差替
+- [ ] 自作 Inverted Hull Outline（RenderObjects Feature + 反転法線）
+- [ ] Blender で Synty humanoid に豆化 blendshape 追加（`torso_fat` `head_small` `limb_short`）
+- [ ] Meshy Pro 本格稼働（~600 credits で ステージ 20 小物）
+
+### M4（7月、75→82%）
+- [ ] **Linework ($50)** 購入、Unity 6 Render Graph ネイティブ
+- [ ] Adaptive Probe Volumes（APV）設定 + 3 プロファイル（昼/夕/夜）
+- [ ] ミニゲーム別 Scenario Blend
+
+### M5（8月、82→90%）
+- [ ] **Beautify 3 ($55)** 購入
+- [ ] カラーゾーニング：4 ミニゲーム支配色（#9BDCE5 / #FF9B7A / #BFFF6E / #C8A2FF）
+- [ ] MVP スロモー（timeScale 0.4 × 1.5s + DollyTrack）
+- [ ] Confetti VFX Graph（勝利演出）
+- [ ] ドラフト画面 DOF
 
 ## 既知の罠（毎作業前に一瞥）
 
