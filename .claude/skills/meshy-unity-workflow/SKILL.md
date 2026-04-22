@@ -313,4 +313,26 @@ feat(assets): ステージ小物 N 個取込 (mcp__meshy text_to_3d + refine、m
 
 ---
 
+## ✅ 初回ラウンドトリップ検証済（2026-04-22）
+
+**wooden_crate で実走検証成功**。30 credits 消費 (20 preview + 10 refine)、残 1570/1600。
+
+確認できたこと：
+- `model_type: "lowpoly"` でも **Refine PBR 可能**（ai_model/topology 等は ignored だが refine は通る）
+- Preview 20 cr（lowpoly）→ 2 分で完了
+- Refine + PBR 10 cr → 2 分で完了、5 テクスチャ（base_color/metallic/roughness/normal/emission）自動 DL
+- Unity 側は **`com.unity.cloud.gltfast` v6.18.0** 必須（未インストールだと `.glb` を Unity が認識せず `LoadAssetAtPath<GameObject>` が null）
+- glTFast 導入後は GLB が自動で prefab 化され、URP Shader Graph `glTF-pbrMetallicRoughness` マテリアル自動生成、**roughness 反転問題なし**（glTFast が自動処理）
+- prefab を import 済の glb 同一 GameObject から `manage_prefabs create_from_gameobject` しようとすると「既に prefab link」エラー → `unlink_if_instance: true` で解消
+- `Assets/ThirdParty/Meshy/Props/<slug>.glb` + 5 テクスチャ PNG 保存、`Assets/_Project/Prefabs/Props/<slug>.prefab`（BoxCollider 付）が最終形
+
+### 事前インストール（初回のみ）
+```bash
+# Unity MCP で：
+mcp__UnityMCP__manage_packages(action="add_package", package="com.unity.cloud.gltfast")
+```
+
+---
+
 **初版:** 2026-04-22
+**初検証:** 2026-04-22 wooden_crate ラウンドトリップ成功
