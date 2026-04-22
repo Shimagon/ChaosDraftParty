@@ -58,6 +58,8 @@ description: ChaosDraftParty（Unity 6 + NGO + Relay + URP のソロ卒業制作
 36. [.meta 削除後 Unity は Library/ キャッシュから同 GUID 再生成（このマシン限定）](#36-meta-削除後-unity-は-library-キャッシュから同-guid-再生成このマシン限定)
 37. [render_ui は Edit Mode で blank、Play Mode 必須](#37-render_ui-は-edit-mode-で-blankplay-mode-必須)
 38. [`claude mcp add -e` は `--` より前に置かないと env var が MCP に届かない](#38-claude-mcp-add--e-は----より前に置かないと-env-var-が-mcp-に届かない)
+39. [URP Volume は Camera.volumeTrigger 未割当だと完全無効（silent fail）](#39-urp-volume-は-cameravolumetrigger-未割当だと完全無効silent-fail)
+40. [URP RendererData.postProcessData = null で Post-Process 全体無効（最重要）](#40-urp-rendererdatapostprocessdata--null-で-post-process-全体無効最重要)
 
 ---
 
@@ -943,6 +945,79 @@ claude mcp add meshy --scope user -- npx -y @meshy-ai/meshy-mcp-server -e MESHY_
 **確認:** 登録後 `claude mcp list | grep meshy` で `✓ Connected` なら OK、`✗ Failed to connect` なら再登録。
 
 **一般則:** `claude mcp add <name> [--scope <s>] [-e K=V ...] [--transport ...] -- <command> <args...>` の順番。claude 自身のフラグは `--` 前、実行コマンドは `--` 後。
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 39. URP Volume は Camera.volumeTrigger 未割当だと完全無効（silent fail）
+
+**症状:** URP Volume Profile を作成し、Global Volume に割当、Camera.renderPostProcessing=true でも**ポストエフェクトが全く見えない**。Bloom/Color Adjustments/Vignette すべて反映なし。
+
+**原因:** `UniversalAdditionalCameraData.m_VolumeTrigger` が `None (Transform)` のまま。Volume Stack の Update は `VolumeTrigger.position` を基に近接 Volume を集める設計、`null` だと Stack 構築失敗し全 override が無視される。エラー出ない **silent fail**。
+
+**診断:**
+```csharp
+var urpCam = cam.GetComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>();
+Debug.Log($"VolumeTrigger: {urpCam.volumeTrigger?.name ?? "NULL ← ここ！"}");
+Debug.Log($"VolumeLayerMask: {urpCam.volumeLayerMask.value}");
+```
+
+もし `volumeTrigger.name` を読もうとすると `UnassignedReferenceException` が出る（Inspector で見ていなかったから気づかない）。
+
+**回避策:**
+```csharp
+var urpCam = cam.GetComponent<UniversalAdditionalCameraData>();
+urpCam.volumeTrigger = cam.transform;  // 自カメラが Trigger
+urpCam.volumeLayerMask = -1;           // Everything
+EditorUtility.SetDirty(urpCam);
+```
+
+**恒久対策:** 新規 Camera 作成時は必ず **VolumeTrigger=Self、VolumeLayerMask=Everything** を明示設定。GameManager.cs 等で自動補正ロジックを仕込む。
+
+**初遭遇:** 2026-04-22
+
+---
+
+## 40. URP RendererData.postProcessData = null で Post-Process 全体無効（最重要）
+
+**症状:** URP Volume Profile + Global Volume + Camera PostFx ON + VolumeTrigger 全部正設定でも、ポストエフェクト完全に無効。
+
+**原因:** **URP の Renderer Data asset の `postProcessData` フィールドがデフォルト null**。コードで URP Asset を新規生成した場合（`UniversalRenderPipelineAsset.Create(rendererData)`）、Renderer Data の postProcessData は未割当。これで URP の Render Pipeline は「post data 無し」と判断して **Post Pass 全体をスキップ**。
+
+**診断:**
+```csharp
+var rpa = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
+var rdField = rpa.GetType().GetField("m_RendererDataList",
+    BindingFlags.NonPublic | BindingFlags.Instance);
+var rds = rdField.GetValue(rpa) as ScriptableRendererData[];
+var rdSo = new SerializedObject(rds[0]);
+var prop = rdSo.FindProperty("postProcessData");
+Debug.Log($"postProcessData: {prop.objectReferenceValue?.name ?? "NULL ← ここ！"}");
+```
+
+**回避策:** URP パッケージ標準の PostProcessData asset を assign：
+```csharp
+var guids = AssetDatabase.FindAssets("t:PostProcessData");
+string path = null;
+foreach (var g in guids)
+{
+    var p = AssetDatabase.GUIDToAssetPath(g);
+    if (p.Contains("render-pipelines.universal")) { path = p; break; }
+}
+var data = AssetDatabase.LoadAssetAtPath<UnityEngine.Rendering.Universal.PostProcessData>(path);
+
+var rdSo = new SerializedObject(rd);
+rdSo.FindProperty("postProcessData").objectReferenceValue = data;
+rdSo.ApplyModifiedProperties();
+AssetDatabase.SaveAssets();
+```
+
+**パス確定**: `Packages/com.unity.render-pipelines.universal/Runtime/Data/PostProcessData.asset`
+
+**なぜ重要**: ChaosDraftParty は罠 #2 で URP Asset を自前生成した → postProcessData が null のまま。Unity テンプレから始めた新規プロジェクトでは自動割当済のはず（今回は Unity 6 空プロジェクト + 後付 URP のパターン）。
+
+**恒久対策**: URP Asset 生成コード内で必ず postProcessData 割当を含める。`.claude/skills/chaosdraftparty-gotchas/` の罠 #2（URP Asset 自動生成）にも追記必要。
 
 **初遭遇:** 2026-04-22
 

@@ -231,5 +231,98 @@ Fall Guys や原神には **ない** 独自演出：
 
 ---
 
+## 11. Unity 臭 / AI 臭を消す戦略
+
+ユーザーの要請（2026-04-22）：「Unity 臭 / AI 臭を極力感じさせたくない」
+本節は生成物が「Unity Asset Store 詰め合わせ」にも「AI 生成品」にも見えないための**7 手 + 固有 signature**。
+
+### Unity 臭の典型原因（撤去対象）
+
+1. デフォルト Skybox（青空 Procedural Skybox）
+2. URP Lit プラスチック質感
+3. LiberationSans（TMP デフォルト）
+4. グレー UGUI、9-slice 立体ボタン
+5. OS 標準カーソル
+6. Synty マテリアルそのまま
+7. Unity スプラッシュ（Personal/学生は義務）
+8. Cinemachine 初期値（damping 標準、noise なし）
+9. グリッド配置（Snap で全部きっちり）
+10. Standard Particle プリセット
+
+### AI 臭の典型原因（撤去対象）
+
+1. 対称性（Meshy の symmetry_mode: auto が強制対称）
+2. 均一 weathering
+3. Texture 反復パターン
+4. 色パレット不統一（プロンプトごとバラバラ）
+5. プロンプトバイアス（"stylized" "game asset" 多用）
+6. PBR 過剰主張
+7. ポリフロー汚（edge loop 不在）
+8. 背景と小物の質感差
+
+### 両方消す 7 手（$0 で効く）
+
+**手1. カスタム LUT で画面全体を「自分の色」に**
+- 8x8 LUT を Photoshop で 1 枚作成（warm shadows / cool highlights / 低彩度）
+- URP Volume `Color Lookup` で全シーン適用
+- **これだけで 9 割のゲームが「そのスタジオの色」に変わる**
+
+**手2. Skybox を自前で**
+- Meshy `text_to_image` 3cr で空 1 枚生成 → Procedural Skybox と差替
+- または Gradient Skybox Shader Graph 自作（5 分）
+- **デフォルト青空だけで Unity 臭の 30%**
+
+**手3. Meshy 生成物の AI 臭消し（4 ステップ）**
+```
+① 同一プロンプト 3 回生成 → バリエから 1 つ厳選（対称性の偶然退避）
+② symmetry_mode: "off" 明示（デフォルト auto は強制対称）
+③ Unity 側で Decal 1-2 枚貼る（手書き落書き、擦れ、色差）→ 局所非対称
+④ カスタム LUT 通す → project 色に統一
+```
+ポリフロー問題は手動リトポ非現実、カメラから見える面だけ気にすれば十分
+
+**手4. フォントと UI の個性化**
+- 英語フォント: **`Outfit`**（SIL OFL）or `Titan One`（無料）、LiberationSans 絶対使わない
+- UI Toolkit: `border-radius: 12-16px` + drop-shadow + text color gradient
+- カーソル: 16×16 pixel custom、`Cursor.SetCursor`
+
+**手5. Cinemachine に独自の香り**
+- 全 camera に Basic Multi Channel Perlin（Handheld Profile、Amplitude 0.2、Frequency 0.5）薄く常時
+- Damping 標準 0.8 を **0.5（きびきび） or 1.2（手持ち風）** にずらす
+- Blend カーブを **Animation Curve editor で手動 2 点足し**、Ease In-Out Cubic 避ける
+
+**手6. ポスト処理で「空気」作成**
+- Lens Flare 微弱（強光源全てに）
+- Film Grain 0.15（AI 生成の滑らかさ隠し）
+- Chromatic Aberration 0.1（縁が虹色、Unity 臭消し）
+- 暖色 Vignette 0.25（画面端引き締め）
+
+**手7. 手作業揺らぎ（ハンドメイド感）**
+- オブジェクト配置 Snap OFF、position.y に ±0.01-0.03 ランダム
+- rotation に ±2° 揺らぎ
+- `execute_code` で一括 5 分
+
+### ChaosDraftParty 独自 Signature（Unity/AI 臭より「このゲーム独自感」）
+
+| 演出 | 発動条件 | 実装 |
+|---|---|---|
+| スキル発動 → 0.15s モーションブラー + CA +0.3 | 発動 instant | Volume override 瞬時切替 |
+| RuleCard 発動 → 画面全体が color filter で 0.3s 染まる | RuleCard reveal | Color Lookup LUT 瞬時変更 |
+| カオス度メーター MAX → カメラ揺れ + vignette 強化 | ラウンド終盤 | Cinemachine Impulse + Volume transition |
+| ドラフト画面 → 背景 DOF + 前景スロー | ドラフト 5 秒 | `Time.timeScale = 0.7` + CinemachineDoF |
+| MVP スロモー → アルファグロー輪郭 + フラッシュ | 試合終了 | カスタム Render Feature 1 回限り |
+
+### 月次追加タスク（既存計画に織込み済）
+
+- **M1 残週 +0.5 日**: Skybox Gradient 差替、カーソル 16×16、Outfit 英フォント
+- **M3 +1 日**: カスタム LUT 作成、Meshy `symmetry_mode: off` 化、3 回生成ワークフロー確立
+- **M4 +0.5 日**: Cinemachine Perlin 全 camera、Film Grain 0.15 + CA 0.1
+- **M5 +1 日**: Signature 演出 5 種、Meshy 生成物への Decal 追加
+
+**追加コスト $0**、工数 +3 日（全体計画内で吸収）
+
+---
+
 **初版**: 2026-04-22
 **最終レビュー予定**: M2 着手時（2026-05-01）、Feel 導入時に更新
+**§11 追記**: 2026-04-22 Unity 臭/AI 臭消し戦略、ユーザー明示要求
