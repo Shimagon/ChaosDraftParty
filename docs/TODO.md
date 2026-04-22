@@ -70,12 +70,13 @@
 
 ### 2. シーン骨格
 
-- [ ] **Boot シーン**（Bootstrap 配置のみ）
-- [ ] **MainMenu シーン**（Host / Join ボタン、Quit）
-- [ ] **Lobby シーン**（プレイヤーリスト表示、全員 Ready → マッチ開始）
-- [ ] **Match シーン**（ミニゲームが読み込まれる親シーン、Additive ロード想定）
-- [ ] **Results シーン**（最終スコア表示）
-- [ ] `Build Settings → Scenes In Build` に 5シーン登録、順序固定
+- [~] **Boot シーン**（骨格作成済、Bootstrap 配置は次 task）
+- [~] **MainMenu シーン**（骨格作成済、Host / Join ボタン配置は次 task）
+- [~] **Lobby シーン**（骨格作成済）
+- [~] **Match シーン**（骨格作成済）
+- [~] **Results シーン**（骨格作成済）
+- [x] `Build Settings → Scenes In Build` 登録完了（2026-04-22 commit 予定）
+  - index 0: Boot / 1: MainMenu / 2: Lobby / 3: Match / 4: Results / 5: ShrinkingIslandProto
 
 ### 3. Network / Relay / Lobby
 
