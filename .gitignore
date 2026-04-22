@@ -1,3 +1,7 @@
+# Build tool artifacts
+tools/blender/preview/
+tools/**/__pycache__/
+
 # Unity generated
 [Ll]ibrary/
 [Tt]emp/
