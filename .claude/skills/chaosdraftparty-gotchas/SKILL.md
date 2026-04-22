@@ -62,6 +62,8 @@ description: ChaosDraftParty（Unity 6 + NGO + Relay + URP のソロ卒業制作
 40. [URP RendererData.postProcessData = null で Post-Process 全体無効（最重要）](#40-urp-rendererdatapostprocessdata--null-で-post-process-全体無効最重要)
 41. [TMP FontAsset の 1-arg CreateFontAsset は m_AtlasTextures 未初期化バグ](#41-tmp-fontasset-の-1-arg-createfontasset-は-m_atlastextures-未初期化バグ)
 42. [カスタム URP Skybox Shader のハードル — Procedural tuning が速い](#42-カスタム-urp-skybox-shader-のハードル--procedural-tuning-が速い)
+43. [Unity bridge が長時間 down する罠（create_script 連発後）](#43-unity-bridge-が長時間-down-する罠create_script-連発後)
+44. [Unity session down 時の手書き .meta 戦略](#44-unity-session-down-時の手書き-meta-戦略)
 
 ---
 
@@ -1084,6 +1086,63 @@ dl.transform.rotation = Quaternion.Euler(15f, 120f, 0f);
 **長期策:** Shader Graph で Gradient Skybox 作る or Unity Asset Store の無料 `Skybox Mobile Stylized` 等を採用。自作は GraphicsPass 挿入点とライブラリ include が面倒、**DIY は費用対効果低い**。
 
 **初遭遇:** 2026-04-22
+
+---
+
+## 43. Unity bridge が長時間 down する罠（create_script 連発後）
+
+**症状:** `create_script` や `manage_scriptable_object` を複数回連続で叩いた後、Unity session が `"Unity session not available; please retry"` 状態に陥り 15-20 分以上回復しない。`telemetry_ping` は success 返すが `editor/state` resource は常に no_unity_session。Unity プロセス自体は生きている（pgrep で PID 確認可）。
+
+**原因推定:**
+- MCP bridge は健在（`curl http://127.0.0.1:8080/health` で healthy）
+- だが Unity Editor 内の bridge クライアントが domain reload 中 or 連続 API 処理で deadlock 気味
+- telemetry_ping はキューに入るだけ（queued）で実際に処理されない
+- AssemblyReload 中は全ての Editor API が固まる、これが長引くと session available 判定に失敗
+
+**回避策:**
+- Claude 側でやれることなし、**Unity Editor 側で手動復旧必要**
+- 具体的には: Unity Editor のコンソールで入力イベント発生（ウィンドウクリック等）、または Unity 再起動
+- 予防: `create_script` を連発しない、1 ファイル作ったら `refresh_unity(wait_for_ready=true)` で **必ずコンパイル完了を待つ**、それから次のファイル
+
+**autonomous session での運用:**
+- 5 分待って復帰しなければ、**Unity 不要の作業にシフト**（ファイル直書き、.meta 手動生成、docs 更新、commit/push）
+- ScheduleWakeup で 15-20 分後に再試行
+- 連続 3 回 (1 時間) 復帰しなければユーザー判断を仰ぐ方針
+
+**初遭遇:** 2026-04-22（autonomous session 中、create_script 6 連発 + SO 作成 23 連発後）
+
+---
+
+## 44. Unity session down 時の手書き .meta 戦略
+
+**症状:** Unity session down 中に .cs ファイル作成したい、でも Unity が refresh しないと `.meta` 生成されず、commit しても他マシン pull 時に GUID mismatch リスク。
+
+**解決策:** **.meta を手動生成してコミット**。Unity は valid GUID の .meta を尊重する。
+
+**手順:**
+```bash
+python3 -c "import secrets; [print(secrets.token_hex(16)) for _ in range(N)]"
+```
+
+各 .cs 用に .meta 生成:
+```yaml
+fileFormatVersion: 2
+guid: <16 byte hex、python secrets.token_hex(16)>
+```
+
+MonoScript 用の最小 .meta はこの 2 行で足りる（既存の `GameConfig.cs.meta` 参照）。MonoImporter の他 field はデフォルトで OK。
+
+**注意:**
+- .asset / .prefab / .mat / .png 等の複雑な asset は **手書き禁止**。Unity の import 処理が独自のフィールド（guid 以外）を書き込むので、空 meta だと assets の内容と不整合
+- .cs / .asmdef / .shader 等の **ソース系のみ** OK
+- GUID は 16 バイト (32 hex) fixed length、secrets.token_hex(16) がちょうど
+
+**この戦略の効果:**
+- autonomous 中に .cs ファイル 3 件作成 → 手書き .meta 3 件 → commit 安全
+- 他マシン pull 時、その meta で Unity 初期 import、GUID 保持
+- 後で自分のマシンの Unity が refresh しても既存 meta 尊重、GUID 変わらず
+
+**初遭遇:** 2026-04-22（autonomous セッションで Unity down 時）
 
 ---
 
