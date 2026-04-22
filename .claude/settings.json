@@ -273,5 +273,34 @@
       "Bash(git branch -D:*)",
       "Bash(sudo:*)"
     ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "mcp__UnityMCP__(create_script|script_apply_edits|apply_text_edits|execute_code|refresh_unity|delete_script|manage_scriptable_object|manage_components|manage_prefabs|manage_animation|manage_shader|deploy_package)",
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "Unity 操作後のエラー検出ウォッチャー。\n\nSTEP 1: mcp__UnityMCP__read_console(action='get', count=10, types=['error'], format='detailed') でエラー取得。\n\nSTEP 2: エラー 0 件なら何もせず {} のみ出力して終了。\n\nSTEP 3: エラーあれば、以下を判定：\n- 直近の Claude の操作（直前の tool 実行内容）が原因と見られるか\n- 各エラーに file:line が含まれているか\n\nSTEP 4: 出力 JSON:\n{\n  \"hookSpecificOutput\": {\n    \"hookEventName\": \"PostToolUse\",\n    \"additionalContext\": \"⚠ Unity Console Errors (N件):\\n1. <file:line> <CS####> <msg>\\n2. ...\\n\\n原因推定: <直近の tool 操作と結びつけて>\\n推奨: Claude が自動修正 or ユーザーに報告すべき\"\n  }\n}\n\n重要: 自分で修正を試みない（ReadOnly 的に振る舞う）。検知と分類のみ。修正は Claude 本体が行う。",
+            "model": "haiku",
+            "timeout": 30,
+            "statusMessage": "Unity console チェック中..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "ChaosDraftParty 完了検証エージェント。Claude が停止しようとしている。完了宣言して良いか検証。\n\nSTEP 1: mcp__UnityMCP__read_console(action='get', count=15, types=['error'], format='detailed') でエラー確認。\n\nSTEP 2: エラー 0 件 & git status 問題なし → {} を出力して終了（Claude stop 許可）。\n\nSTEP 3: エラーあれば：\n\nA) 修正を試みる（最大 3 回）：\n  - file:line が明示されてれば、mcp__UnityMCP__find_in_file / Read でコンテキスト取得\n  - mcp__UnityMCP__apply_text_edits or script_apply_edits or execute_code で修正\n  - mcp__UnityMCP__refresh_unity(mode='force', compile='request', wait_for_ready=true) で再コンパイル\n  - 再度 read_console でエラー消えたか確認\n\nB) 3 回試して消えない or 明らかに Claude の守備範囲外なら、block 出力：\n{\n  \"decision\": \"block\",\n  \"reason\": \"Unity console に以下の未解決エラーあり。ユーザー報告前に対処が必要:\\n- <err1>\\n- <err2>\",\n  \"hookSpecificOutput\": {\n    \"hookEventName\": \"Stop\",\n    \"additionalContext\": \"未解決エラー詳細と試行ログ:\\n<詳細>\\n\\n次の手順提案:\\n1. ...\\n2. ...\"\n  }\n}\n\nC) 修正成功で console clean なら {} を出力（stop 許可、修正内容はコミット不要、次ターンで Claude が判断）。\n\n安全性:\n- FontAsset の m_Material missing 等の「ユーザーの前テスト残骸」は軽い cleanup のみ（必要なら削除）\n- 既存のプロジェクトコード（.cs や .prefab）を破壊する大規模変更は絶対やらない\n- 判断に迷ったら block + ユーザー報告\n- タイムアウト 300s 内に終わらせる",
+            "model": "sonnet",
+            "timeout": 300,
+            "statusMessage": "完了前検証中（エラー自動修正ループ）..."
+          }
+        ]
+      }
+    ]
   }
 }
