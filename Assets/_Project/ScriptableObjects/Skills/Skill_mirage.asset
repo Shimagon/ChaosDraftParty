@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a1022af10d094815ba822d596a5aea4, type: 3}
+  m_Name: Skill_mirage
+  m_EditorClassIdentifier: ChaosDraftParty.Skills::ChaosDraftParty.Skills.SkillDefinition
+  id: mirage
+  displayName: "\u30DF\u30E9\u30AF\u30EB"
+  description: "\u6575\u306E\u79FB\u52D5\u5165\u529B\u3092 2 \u79D2\u53CD\u8EE2"
+  category: 1
+  activation: 0
+  cooldownSec: 20
+  durationSec: 2
+  magnitude: 1
+  radius: 0
+  icon: {fileID: 21300000, guid: 55612b4d7bf7e407a8adcc127db39ac7, type: 3}
+  vfxPrefab: {fileID: 0}
+  sfxActivate: {fileID: 0}
