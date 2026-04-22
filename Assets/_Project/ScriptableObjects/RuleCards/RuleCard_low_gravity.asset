@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4b5dce79fb854efeb446ffba0883ee6, type: 3}
+  m_Name: RuleCard_low_gravity
+  m_EditorClassIdentifier: ChaosDraftParty.Core::ChaosDraftParty.Core.RuleCards.RuleCardDefinition
+  id: low_gravity
+  displayName: "\u4F4E\u91CD\u529B"
+  description: "\u91CD\u529B\u304C 70% \u306B\u306A\u308B (\u6EDE\u7A7A\u6642\u9593\u5897)"
+  magnitude: 0.7
+  radius: 0
+  durationSec: 0
+  icon: {fileID: 0}
+  accentColor: {r: 0.5, g: 0.8, b: 1, a: 1}

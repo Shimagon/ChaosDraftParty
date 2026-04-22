@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4b5dce79fb854efeb446ffba0883ee6, type: 3}
+  m_Name: RuleCard_high_speed
+  m_EditorClassIdentifier: ChaosDraftParty.Core::ChaosDraftParty.Core.RuleCards.RuleCardDefinition
+  id: high_speed
+  displayName: "\u9AD8\u901F\u5316"
+  description: "\u5168\u54E1\u306E\u79FB\u52D5\u901F\u5EA6\u304C 1.5 \u500D"
+  magnitude: 1.5
+  radius: 0
+  durationSec: 0
+  icon: {fileID: 0}
+  accentColor: {r: 1, g: 0.3, b: 0.3, a: 1}
