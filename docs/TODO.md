@@ -41,10 +41,22 @@
 - [ ] **`Bootstrap.cs`**（Bootシーンのエントリーポイント）
   - Unity Services 初期化 → Auth サインイン → MainMenu へ
   - DoD：Unity 起動 → Console に `[Boot] Authenticated as <playerId>` が出る
-- [~] **Skills モジュール基盤**（M2 先取り）
+- [x] **Skills モジュール基盤**（M2 先取り 2026-04-22 完了）
   - `Skills/SkillDefinition.cs` — SO、id/displayName/category/activation/cooldownSec/magnitude/icon/vfx/sfx
   - `Skills/ISkillEffect.cs` + `SkillContext` struct — サーバー権威発動 IF
-  - まだ 10 スキル個別 SO インスタンスは未作成、M2 で追加
+  - **10 SO 全作成済** (commit `3f472d5`): dash/jump_boost/grapple/hover/pulse/bomb/shield/mirage/radar/revive
+- [x] **RuleCardDefinition + 6 SO**（M3 先取り 2026-04-22 完了、commit `64732af`）
+  - `Core/RuleCards/RuleCardDefinition.cs` — id/displayName/magnitude/radius/durationSec/accentColor
+  - SO 6 つ: shrink_all / low_gravity / high_speed / short_cd / fog_of_war / bounce_walls
+- [x] **MinigameDefinition + 4 SO**（M3 先取り 2026-04-22 完了、commit `2375d66`）
+  - `Minigames/MinigameDefinition.cs` — victoryCondition enum (LastSurvivor/HighScore/HotPotato)
+  - SO 4 つ: shrinking_island / bomb_tag / tail_hunt_battle / tail_hunt_escape
+- [x] **SeasonRuleDefinition + 3 SO**（M5 先取り 2026-04-22 完了、commit `5bcf2e5`）
+  - `Core/Season/SeasonRuleDefinition.cs` — activationMatchIndex / magnitude / secondaryMagnitude
+  - SO 3 つ: winner_takes_all / reverse_multiplier / double_skill
+- [~] **CharacterDefinition + 4 SO**（class 作成済、SO は Unity session 復帰後に作成）
+  - `Core/CharacterDefinition.cs` — id/displayName/primaryColor/secondaryColor/prefab 参照
+  - SO 未作成: char_red / char_blue / char_yellow / char_green（次回セッションで）
 
 ### 2. シーン骨格
 
