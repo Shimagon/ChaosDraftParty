@@ -280,6 +280,50 @@ Meshy の `roughness` マップは glTF 標準（**white=rough**）。URP/Lit �
 
 ---
 
+## 👥 Claude × User 分業モデル
+
+Meshy は Web UI（https://www.meshy.ai/workspace）と MCP API の**両方**アクセス可能。役割分担：
+
+### Pattern A: Claude フル自動（大量バッチ）
+- 20+ プロンプト一気に投げる
+- 命名・フォルダ整理・Unity 取込まで自動
+- Credit: 20-30cr/個 × 個数
+- **適用:** M1-M3 初期スポーン小物の量産
+
+### Pattern B: User Web UI で選別 → Claude で取込（微調整向き）🎯
+1. **User** が https://www.meshy.ai/workspace で生成・比較・色調整
+2. 気に入った task の ID を Claude に渡す（URL 末尾 or Library から）
+3. **Claude** が `meshy_download_model(task_id=…)` + `mcp__UnityMCP__*` で Unity 取込・Prefab 化
+- **適用:** ボス級装飾、看板、特徴的な prop 等「見栄えが重要」なもの
+
+### Pattern C: Retexture だけ Claude に任せる
+「この木箱もっと明るく」等の微調整：
+```python
+mcp__meshy__meshy_retexture(
+    input_task_id="<元タスク>",
+    text_style_prompt="brighter vibrant warm wood, cheerful tone",
+    enable_pbr=True
+)
+```
+- Credit: **10cr**（Refine 30cr の 1/3）
+- 形状は変えずテクスチャだけ、試行錯誤に最適
+
+### Pattern D: User 側で rig/animate/変形（Web UI のみの機能）
+- Web UI のドラッグ変形、マテリアルスライダー、rig 詳細調整は Claude MCP で再現しきれない
+- Web UI で完成させた task ID を Claude に渡して取込
+
+### Unity Plugin の是非
+
+公式 Meshy Unity Plugin（https://www.meshy.ai/product/plugins）は **入れなくて良い**：
+- GLB 取込は `com.unity.cloud.gltfast` が担当
+- Meshy API 操作は MCP が担当
+- Plugin が足すのは「Unity 内から過去生成を GUI でブラウズ」だけ、Web UI の方がリッチ
+- 入れるデメリット：別の依存、ワークスペース登録の二重管理
+
+**入れる価値があるのは**：User が Unity Editor から一歩も出ずに Meshy を触りたい UX こだわり時のみ。Claude 経由なら常に不要。
+
+---
+
 ## 🔁 再現性と credit 節約
 
 - **seed は Meshy API に無い**（2026-04 時点）→ 完全再現不可。気に入った生成は **即コミット**
