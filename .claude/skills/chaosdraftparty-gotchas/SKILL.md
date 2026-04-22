@@ -1146,6 +1146,104 @@ MonoScript 用の最小 .meta はこの 2 行で足りる（既存の `GameConfi
 
 ---
 
+## #45. `manage_asset create` の color プロパティは URP Lit に反映されない
+
+**症状:** `manage_asset action=create asset_type=Material properties={color:{...}}` で作ると `.mat` は生成されるが `_BaseColor` が 1,1,1,1 のまま、シーンに貼ると真っ白。
+
+**原因:** MCP の create_material は legacy の `color` 属性に書き込むが、URP Lit は `_BaseColor` しか認識しない。
+
+**解決策:** `execute_code` で後追い設定。
+
+```csharp
+var mat = UnityEditor.AssetDatabase.LoadAssetAtPath<Material>("Assets/.../Foo.mat");
+mat.SetColor("_BaseColor", new Color(0.85f, 0.72f, 0.56f, 1f));
+mat.SetFloat("_Smoothness", 0.2f);
+UnityEditor.EditorUtility.SetDirty(mat);
+UnityEditor.AssetDatabase.SaveAssets();
+```
+
+**URP Unlit Transparent 用:**
+```csharp
+mat.SetColor("_BaseColor", new Color(1f, 0.96f, 0.88f, 0.7f));
+mat.SetFloat("_Surface", 1f);
+mat.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+mat.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+mat.SetFloat("_ZWrite", 0f);
+mat.renderQueue = 3000;
+mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+```
+
+**検証:** 作った直後に screenshot 撮って目視。console error 0 件では色不正を検出できない。
+
+**初遭遇:** 2026-04-22（MainMenu 3D ステージで Floor/Pillar/Cloud マテリアル全部白になった）
+
+---
+
+## #46. ScreenSpaceCamera Canvas 下に空 GameObject 作ると localPosition.z が残留
+
+**症状:** `manage_gameobject action=create parent=Canvas` で Transform 空 GO を作ると、Canvas のスケール（0.00122）を補正した localPosition = `(0, -814, 7330)` などの異常値が入る。後から TextMeshProUGUI で RectTransform に変えても z は残留 → **world Z が 0**、Canvas (z=-9) より手前だが Main Camera (z=-10) からは逆方向の誤位置で描画されないケースあり。
+
+**解決策:** 作成後に明示リセット。
+
+```csharp
+var sub = canvas.transform.Find("Subtitle");
+sub.localPosition = new Vector3(sub.localPosition.x, sub.localPosition.y, 0f);
+sub.GetComponent<RectTransform>().anchoredPosition3D = new Vector3(x, y, 0f);
+```
+
+**ベスト:** `execute_code` で `new GameObject("Name").AddComponent<TextMeshProUGUI>()` する方が初手から RectTransform できれい。
+
+**検証:** `GetWorldCorners()` で Canvas と同じ Z 値か確認。
+
+**初遭遇:** 2026-04-22（MainMenu Subtitle 不可視バグ）
+
+---
+
+## #47. TMP enableVertexGradient=true を dict で設定 → テキスト完全透明
+
+**症状:** `manage_components set_property {m_enableVertexGradient:true, m_fontColorGradient:{topLeft:{r,g,b,a},...}}` で 4 頂点グラデ設定 → TMP のフェイスが透明になり outline/shadow も機能せず、テキスト完全不可視。
+
+**原因:** TMP の `VertexGradient` は struct で、MCP の set_property が nested Color パッキングに対応しきれていない。
+
+**解決策 A（安全）:** グラデ諦めて solid color + Outline + Shadow 三段で立体感。
+
+```csharp
+tmp.enableVertexGradient = false;
+tmp.color = new Color(1f, 0.88f, 0.40f, 1f);
+// + AddComponent<Outline>() & <Shadow>() で太ドロップシャドウ
+```
+
+**解決策 B（グラデほしい時）:** `execute_code` から C# で直接構築。
+```csharp
+tmp.enableVertexGradient = true;
+tmp.colorGradient = new TMPro.VertexGradient(
+    new Color(1, 0.95f, 0.55f, 1), new Color(1, 0.92f, 0.45f, 1),
+    new Color(0.95f, 0.42f, 0.18f, 1), new Color(0.92f, 0.35f, 0.15f, 1));
+```
+
+**初遭遇:** 2026-04-22（MainMenu Title 再設計で 2 回 commit してから気付いた）
+
+---
+
+## #48. 完成判定に console error 0 件だけでは不十分、必ず Game View スクショ
+
+**症状:** `refresh_unity` + `read_console error 0` で「完璧」と commit、実は背景白飛び + テキスト不可視 + 変なオレンジ点 = 酷評。error 0 件はコンパイル + 例外の話で、**見た目の正しさを保証しない**。
+
+**強制手順:**
+
+1. commit 前に `manage_camera action=screenshot include_image=true max_resolution=900` を **必ず** 撮る
+2. 主要オブジェクトが意図通りの色・位置で写ってるか目視
+3. 不自然あれば `execute_code` で状態 dump（material 色、rect world corners、TMP vertexCount）→ バグ特定
+4. 直して再スクショ → OK なら commit
+5. commit message の検証節に `screenshot: Assets/Screenshots/xxx.png で verified` を明記
+
+**DoD 更新:** feedback_perfect_small_save_autonomous.md の「完璧の基準」5 項目に 6 を追加：
+> 6. Visual 系の変更なら Game View スクショで目視 OK
+
+**初遭遇:** 2026-04-22（MainMenu Commit A-C error 0 件で push → ユーザー「本当に確認してる？笑」）
+
+---
+
 ## 追加候補（まだ踏んでない、踏んだら書く）
 
 - [ ] Prefab に ClientNetworkTransform つけた時の挙動
