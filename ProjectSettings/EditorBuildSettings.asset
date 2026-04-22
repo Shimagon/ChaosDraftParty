@@ -6,6 +6,21 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/_Project/Scenes/Boot.unity
+    guid: 4f8e8ae4b56f74117ac9e8883202c824
+  - enabled: 1
+    path: Assets/_Project/Scenes/MainMenu.unity
+    guid: e73f7ea0018204422a6f4d3bc0dc2c5e
+  - enabled: 1
+    path: Assets/_Project/Scenes/Lobby.unity
+    guid: 92df02362c694400690772a9db7ffdca
+  - enabled: 1
+    path: Assets/_Project/Scenes/Match.unity
+    guid: 29e444a7f1eb44feca2bb517197f41d7
+  - enabled: 1
+    path: Assets/_Project/Scenes/Results.unity
+    guid: aea4fc24a442542e89609f3811306a5d
+  - enabled: 1
     path: Assets/_Project/Scenes/ShrinkingIslandProto.unity
     guid: eb8ed8cb8086c4565a0df0960b64d6c4
   m_configObjects: {}
