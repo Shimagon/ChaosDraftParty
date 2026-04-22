@@ -35,12 +35,22 @@
   - `Assets/_Project/Scripts/Core/Configs/GameConfig.cs` + `Assets/_Project/ScriptableObjects/Configs/GameConfig.asset` (GUID d4705ac6..)
   - 含む：移動/ジャンプ/重力、マッチ/ラウンド/ドラフト/ウォームアップ尺、凹関数スタック倍率 (1.0→1.20→1.35→1.45)、triggerGraceMs=200
   - `GetStackMultiplier(count)` / `GravityAcceleration` プロパティ済
-- [ ] **`GameManager.cs`**（DontDestroyOnLoad、Singleton）
-  - シーン遷移、セッション状態（Lobby / MatchInProgress / Result）保持
-  - DoD：Boot→MainMenu→Lobby の遷移がキー操作で動く
-- [ ] **`Bootstrap.cs`**（Bootシーンのエントリーポイント）
-  - Unity Services 初期化 → Auth サインイン → MainMenu へ
-  - DoD：Unity 起動 → Console に `[Boot] Authenticated as <playerId>` が出る
+- [~] **`GameManager.cs`**（DontDestroyOnLoad、Singleton、2026-04-22 stub 作成 commit `3fed9c2`）
+  - `Assets/_Project/Scripts/Core/Managers/GameManager.cs`
+  - SessionState enum (Bootstrapping/MainMenu/Lobby/MatchInProgress/InterMatch/SeasonEnding/SessionEnd)
+  - OnStateChanged event / BeginMatch/BeginRound/EndMatch/EndSession API
+  - Unity session down で compile 未検証、次回 Unity 復帰時に verify 必要
+  - DoD 残: Boot→MainMenu→Lobby の遷移がキー操作で動く（実シーンとの連携テスト要）
+- [~] **`Bootstrap.cs`**（Boot シーンエントリー、2026-04-22 stub 作成 commit `3fed9c2`）
+  - `Assets/_Project/Scripts/Core/Managers/Bootstrap.cs`
+  - async Start で UnityServices.InitializeAsync + AuthenticationService.SignInAnonymouslyAsync
+  - 成功後 GameManager.SetState(MainMenu) + LoadScene("MainMenu")
+  - Unity session down で compile 未検証
+  - DoD 残: Boot シーンに配置、Unity 起動 → Console に `[Boot] Authenticated as <playerId>`
+- [~] **`MinigameBase.cs`**（abstract 基底、2026-04-22 commit `3fed9c2`）
+  - `Assets/_Project/Scripts/Minigames/MinigameBase.cs`
+  - MinigamePhase enum、StartMinigame/BeginPlay/Tick/CompleteMinigame 基本 API
+  - CheckVictoryCondition は abstract (サブクラスで実装)
 - [x] **Skills モジュール基盤**（M2 先取り 2026-04-22 完了）
   - `Skills/SkillDefinition.cs` — SO、id/displayName/category/activation/cooldownSec/magnitude/icon/vfx/sfx
   - `Skills/ISkillEffect.cs` + `SkillContext` struct — サーバー権威発動 IF
