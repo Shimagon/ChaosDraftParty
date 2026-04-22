@@ -1,0 +1,18 @@
+{
+    "name": "ChaosDraftParty.EditorTools",
+    "rootNamespace": "ChaosDraftParty.EditorTools",
+    "references": [
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

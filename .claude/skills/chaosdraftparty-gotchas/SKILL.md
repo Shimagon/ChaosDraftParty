@@ -1055,7 +1055,49 @@ fontAsset.TryAddCharacters(codepoints);
 
 **関連:** 再生成（delete + recreate）時に fallback FontAsset の material reference が dangling になる別の問題あり（`m_Material doesn't exist anymore`）。fallback 使うなら fallback 側も同時再生成が安全。
 
-**初遭遇:** 2026-04-22（Outfit_Dynamic 作成時）
+### ⚠️ 再発: 7-arg だけでは **Editor 再起動で m_AtlasTextures が null 化**（2026-04-22 夜 遭遇）
+
+**追加症状:** 上記の 7-arg で作成した FontAsset を `AssetDatabase.CreateAsset` で .asset に保存、scene 側で使用 → その場は OK → **Unity を閉じて再起動するとまた UnassignedReferenceException が出る**。.asset YAML を開くと `m_Material: {fileID: 0}` / `m_AtlasTextures: [{fileID: 0}]` / `m_GlyphTable: []` / `m_CharacterTable: []` と **全部空**。
+
+**原因:** `CreateFontAsset` は atlas `Texture2D` と fill `Material` を内部で生成するが、**これらは RAM 上のオブジェクト**。`AssetDatabase.CreateAsset` は FontAsset 本体のみディスクに書き、atlas texture と material は匿名のまま放置される → Editor 閉じると GC → 再起動時 .asset の ObjectReference が dangling pointer（`fileID: 0`）。
+
+**恒久回避策:** atlas texture と material を **必ず FontAsset の sub-asset として追加** する：
+```csharp
+var fontAsset = TMP_FontAsset.CreateFontAsset(
+    sourceFont, 90, 9,
+    GlyphRenderMode.SDFAA, 1024, 1024,
+    AtlasPopulationMode.Dynamic, true);
+
+AssetDatabase.CreateAsset(fontAsset, assetPath);
+
+// --- これが無いと再起動で null になる ---
+if (fontAsset.material != null) {
+    fontAsset.material.name = fontAsset.name + " Material";
+    fontAsset.material.hideFlags = HideFlags.HideInHierarchy;
+    AssetDatabase.AddObjectToAsset(fontAsset.material, fontAsset);
+}
+foreach (var tex in fontAsset.atlasTextures) {
+    if (tex == null) continue;
+    tex.name = fontAsset.name + " Atlas";
+    tex.hideFlags = HideFlags.HideInHierarchy;
+    AssetDatabase.AddObjectToAsset(tex, fontAsset);
+}
+
+// 事前 populate（atlas 0 も追加される）
+fontAsset.TryAddCharacters(preloadString);
+
+EditorUtility.SetDirty(fontAsset);
+AssetDatabase.SaveAssets();
+AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
+```
+
+**検証:** 再生成後、Project window で .asset を展開 → `FontAsset_Atlas`（Texture2D）と `FontAsset Material`（Material）が子として visible なら OK。無ければ dangling。
+
+**恒久対策スクリプト:** `Assets/_Project/Scripts/Editor/TMPFontAssetRepair.cs` に Editor 用 menu item `Tools/ChaosDraftParty/Repair TMP Font Asset (Kosugi Maru)` を実装。ボタン 1 つで再生成可。
+
+**MCP 経由 execute_code で行うと再発必至:** Editor script として保存して UI 経由で実行する方が安全（atlas texture が確実に sub-asset 化される、ImportAsset が走る）。
+
+**初遭遇:** 2026-04-22（Outfit_Dynamic 作成時） / **再発:** 2026-04-22 夜（Editor 再起動で復活）
 
 ---
 
