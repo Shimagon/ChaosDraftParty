@@ -255,11 +255,6 @@ namespace ChaosDraftParty.EditorTools
                 var bodyMat = LoadOrCreateSoftPlasticMat(
                     $"Assets/_Project/Art/Materials/EGGYBOT_{names[i]}_BodyGloss.mat",
                     colors[i], smoothness: 0.82f, spec: 1.10f, rim: 0.55f);
-                // Blush: same matte-ish as head for consistency
-                var blushCol = Color.Lerp(colors[i], new Color(0.9f, 0.30f, 0.40f, 1f), 0.55f);
-                var blushMat = LoadOrCreateSoftPlasticMat(
-                    $"Assets/_Project/Art/Materials/EGGYBOT_{names[i]}_Blush.mat",
-                    blushCol, smoothness: 0.05f, spec: 0.05f, rim: 0.15f);
 
                 foreach (var smr in inst.GetComponentsInChildren<SkinnedMeshRenderer>())
                 {
@@ -267,14 +262,12 @@ namespace ChaosDraftParty.EditorTools
                     if (n == "BodyUpperClear") smr.sharedMaterial = clearMat;
                     else if (n == "Eye_L" || n == "Eye_R") smr.sharedMaterial = eyeMat;
                     else if (n == "EyeShine_L" || n == "EyeShine_R") smr.sharedMaterial = shineMat;
-                    else if (n == "Blush_L" || n == "Blush_R") smr.sharedMaterial = blushMat;
                     else if (n == "Head") smr.sharedMaterial = headMat;
                     else smr.sharedMaterial = bodyMat;
                 }
                 foreach (var mr in inst.GetComponentsInChildren<MeshRenderer>())
                 {
                     if (mr.gameObject.name == "Mouth") mr.sharedMaterial = eyeMat;
-                    else if (mr.gameObject.name == "Blush_L" || mr.gameObject.name == "Blush_R") mr.sharedMaterial = blushMat;
                 }
 
                 var bobber = inst.AddComponent<ChaosDraftParty.UI.PropAnimator>();

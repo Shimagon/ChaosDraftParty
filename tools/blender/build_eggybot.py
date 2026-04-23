@@ -153,29 +153,26 @@ eye_r = add_sphere("Eye_R", ( EYE_DX, EYE_Y, EYE_Z), 0.048, 24, 14, mat_dark)
 hi_l = add_sphere("EyeShine_L", (-EYE_DX - 0.018, EYE_Y - 0.032, EYE_Z + 0.022), 0.015, 16, 10, mat_white)
 hi_r = add_sphere("EyeShine_R", ( EYE_DX - 0.018, EYE_Y - 0.032, EYE_Z + 0.022), 0.015, 16, 10, mat_white)
 
-# Cheek blush — flat disk 貼り付け風（tattoo like）
-#   sphere を強く z-squash で flat disk 化、顔面に密着
-blush_l = add_sphere("Blush_L", (-0.20, -0.25, 0.80), 0.065, 24, 14, mat_blush)
-squash(blush_l, 1.10, 0.15, 0.90)  # flat disk: y 極薄
-blush_r = add_sphere("Blush_R", ( 0.20, -0.25, 0.80), 0.065, 24, 14, mat_blush)
-squash(blush_r, 1.10, 0.15, 0.90)
+# ほっぺ削除（user 指示「なくてもいい」）。浮いて見える問題解消。
 
 # ============================================================
-# 7. Mouth smile
+# 7. Mouth smile — 見えやすい位置とサイズに
 # ============================================================
-MOUTH_Z = 0.77
+MOUTH_Z = 0.78
 bpy.ops.mesh.primitive_torus_add(
-    location=(0, -0.28, MOUTH_Z),
-    major_radius=0.060,
-    minor_radius=0.007,
+    location=(0, -0.305, MOUTH_Z),
+    major_radius=0.075,
+    minor_radius=0.012,
     rotation=(math.pi/2, 0, 0),
-    major_segments=32,
-    minor_segments=8,
+    major_segments=36,
+    minor_segments=10,
 )
 mouth = bpy.context.object
 mouth.name = "Mouth"
 mouth.data.materials.append(mat_dark)
-bpy.ops.mesh.primitive_cube_add(size=0.5, location=(0, -0.28, MOUTH_Z + 0.02))
+# Cube size 0.5、cube center を torus の TRUE top (MOUTH_Z + 0.25) に配置
+# → cube 下面が torus 中心 z と一致、top 半分だけ cut で smile 残る
+bpy.ops.mesh.primitive_cube_add(size=0.5, location=(0, -0.305, MOUTH_Z + 0.25))
 boolean_difference(mouth, bpy.context.object)
 
 # ============================================================
@@ -232,7 +229,7 @@ bpy.ops.object.mode_set(mode='OBJECT')
 # 9. Parent meshes to armature
 # ============================================================
 mesh_objects = [body_lower, head, arm_l, arm_r, leg_l, leg_r,
-                body_upper, eye_l, eye_r, hi_l, hi_r, mouth, blush_l, blush_r]
+                body_upper, eye_l, eye_r, hi_l, hi_r, mouth]
 bpy.ops.object.select_all(action='DESELECT')
 for m in mesh_objects:
     m.select_set(True)
