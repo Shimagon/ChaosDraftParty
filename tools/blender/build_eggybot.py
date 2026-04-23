@@ -94,12 +94,18 @@ def boolean_difference(target, cutter):
 # 3. Pink Parts — 分離 mesh で保持（bone rig 対応、手足アニメ可能）
 #    接合線は SSAO + 同一 material で目立たなくする戦略
 # ============================================================
-PARTING_Z = 0.30  # 下げて pot と dome をほぼ半々に (before 0.40)
+PARTING_Z = 0.30
 
-# Body Lower (pot) — named to match CharacterLabBuilder expectations
-body_lower = add_sphere("BodyLower", (0, 0, 0.30), 0.34, 56, 28, mat_pink)
+# Body Lower (pot) — pink opaque + 中空化（頭が入るスペース）
+body_lower = add_sphere("BodyLower", (0, 0, 0.30), 0.34, 64, 32, mat_pink)
 bpy.ops.mesh.primitive_cube_add(size=2, location=(0, 0, PARTING_Z + 1.0))
 boolean_difference(body_lower, bpy.context.object)
+# Hollow pot: wall thickness 0.025、頭が上から retract できる空間を確保
+bpy.context.view_layer.objects.active = body_lower
+sol_pot = body_lower.modifiers.new(name="SHELL", type='SOLIDIFY')
+sol_pot.thickness = -0.025
+sol_pot.offset = 1.0
+bpy.ops.object.modifier_apply(modifier="SHELL")
 
 # Head — より球に近く、底面 flatten は最小に抑え lemon 型 / 変形回避
 head = add_sphere("Head", (0, 0, 0.82), 0.29, 64, 32, mat_pink)
@@ -111,17 +117,18 @@ for v in head.data.vertices:
         ratio = min(1.0, max(0.0, (0.74 - wz) / 0.08))
         v.co.z += ratio * 0.015
 
-# Arms — separate mesh、少し大きく、body にちょい食い込み
-arm_l = add_sphere("Arm_L", (-0.33, 0, 0.24), 0.140, 32, 16, mat_pink)
-squash(arm_l, 1.15, 0.92, 0.96)
-arm_r = add_sphere("Arm_R", ( 0.33, 0, 0.24), 0.140, 32, 16, mat_pink)
-squash(arm_r, 1.15, 0.92, 0.96)
+# Arms — カービー風、側面 body の下寄り（dome から出ない z<PARTING_Z）
+#   斜め外向きに延びる楕円体 (drop shape)
+arm_l = add_sphere("Arm_L", (-0.30, 0, 0.18), 0.120, 32, 16, mat_pink)
+squash(arm_l, 1.30, 0.88, 0.92)  # 横に伸びた stub shape
+arm_r = add_sphere("Arm_R", ( 0.30, 0, 0.18), 0.120, 32, 16, mat_pink)
+squash(arm_r, 1.30, 0.88, 0.92)
 
-# Legs — separate mesh
-leg_l = add_sphere("Leg_L", (-0.13, 0.025, 0.05), 0.135, 32, 16, mat_pink)
-squash(leg_l, 1.15, 1.15, 0.72)
-leg_r = add_sphere("Leg_R", ( 0.13, 0.025, 0.05), 0.135, 32, 16, mat_pink)
-squash(leg_r, 1.15, 1.15, 0.72)
+# Legs — カービー式 big round feet
+leg_l = add_sphere("Leg_L", (-0.13, 0.020, 0.04), 0.130, 32, 16, mat_pink)
+squash(leg_l, 1.22, 1.10, 0.78)
+leg_r = add_sphere("Leg_R", ( 0.13, 0.020, 0.04), 0.130, 32, 16, mat_pink)
+squash(leg_r, 1.22, 1.10, 0.78)
 
 # ============================================================
 # 5. Body Upper Clear (Glass dome) — separate mesh
@@ -146,11 +153,12 @@ eye_r = add_sphere("Eye_R", ( EYE_DX, EYE_Y, EYE_Z), 0.048, 24, 14, mat_dark)
 hi_l = add_sphere("EyeShine_L", (-EYE_DX - 0.018, EYE_Y - 0.032, EYE_Z + 0.022), 0.015, 16, 10, mat_white)
 hi_r = add_sphere("EyeShine_R", ( EYE_DX - 0.018, EYE_Y - 0.032, EYE_Z + 0.022), 0.015, 16, 10, mat_white)
 
-# Cheek blush — oval pink spots slightly embedded in cheek area (head sides)
-blush_l = add_sphere("Blush_L", (-0.22, -0.20, 0.78), 0.055, 20, 12, mat_blush)
-squash(blush_l, 1.10, 0.50, 1.10)  # oval
-blush_r = add_sphere("Blush_R", ( 0.22, -0.20, 0.78), 0.055, 20, 12, mat_blush)
-squash(blush_r, 1.10, 0.50, 1.10)
+# Cheek blush — flat disk 貼り付け風（tattoo like）
+#   sphere を強く z-squash で flat disk 化、顔面に密着
+blush_l = add_sphere("Blush_L", (-0.20, -0.25, 0.80), 0.065, 24, 14, mat_blush)
+squash(blush_l, 1.10, 0.15, 0.90)  # flat disk: y 極薄
+blush_r = add_sphere("Blush_R", ( 0.20, -0.25, 0.80), 0.065, 24, 14, mat_blush)
+squash(blush_r, 1.10, 0.15, 0.90)
 
 # ============================================================
 # 7. Mouth smile
