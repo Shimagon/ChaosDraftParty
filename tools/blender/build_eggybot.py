@@ -124,9 +124,16 @@ sol_pot.use_even_offset = True
 sol_pot.use_quality_normals = True
 bpy.ops.object.modifier_apply(modifier="SHELL")
 
-# shade smooth で normal 均質
+# shade smooth で base surface 滑らか
 bpy.context.view_layer.objects.active = body_lower
 bpy.ops.object.shade_smooth()
+
+# Edge Split modifier — rim の角を crisp (プラスチックの切れ目らしく)
+es_pot = body_lower.modifiers.new(name="EDGE_SPLIT", type='EDGE_SPLIT')
+es_pot.split_angle = math.radians(35)  # 35° 以上の折れはシャープに
+es_pot.use_edge_angle = True
+es_pot.use_edge_sharp = False
+bpy.ops.object.modifier_apply(modifier="EDGE_SPLIT")
 
 # Head — より球に近く、底面 flatten は最小に抑え lemon 型 / 変形回避
 head = add_sphere("Head", (0, 0, 0.82), 0.29, 64, 32, mat_pink)
@@ -138,18 +145,18 @@ for v in head.data.vertices:
         ratio = min(1.0, max(0.0, (0.74 - wz) / 0.08))
         v.co.z += ratio * 0.015
 
-# Arms — カービー風、側面 body の下寄り（dome から出ない z<PARTING_Z）
-#   斜め外向きに延びる楕円体 (drop shape)
-arm_l = add_sphere("Arm_L", (-0.30, 0, 0.18), 0.120, 32, 16, mat_pink)
-squash(arm_l, 1.30, 0.88, 0.92)  # 横に伸びた stub shape
-arm_r = add_sphere("Arm_R", ( 0.30, 0, 0.18), 0.120, 32, 16, mat_pink)
-squash(arm_r, 1.30, 0.88, 0.92)
+# Arms — pot の外側 equator に attach、pot hollow を侵さない
+#   pot inner radius 0.32、arm の nearest vertex > 0.32 になるよう center を外に
+arm_l = add_sphere("Arm_L", (-0.42, 0, 0.12), 0.105, 32, 16, mat_pink)
+squash(arm_l, 1.25, 0.85, 0.90)
+arm_r = add_sphere("Arm_R", ( 0.42, 0, 0.12), 0.105, 32, 16, mat_pink)
+squash(arm_r, 1.25, 0.85, 0.90)
 
-# Legs — カービー式 big round feet
-leg_l = add_sphere("Leg_L", (-0.13, 0.020, 0.04), 0.130, 32, 16, mat_pink)
-squash(leg_l, 1.22, 1.10, 0.78)
-leg_r = add_sphere("Leg_R", ( 0.13, 0.020, 0.04), 0.130, 32, 16, mat_pink)
-squash(leg_r, 1.22, 1.10, 0.78)
+# Legs — pot の下側 outer に attach、hollow を侵さない
+leg_l = add_sphere("Leg_L", (-0.22, 0.02, -0.06), 0.120, 32, 16, mat_pink)
+squash(leg_l, 1.20, 1.10, 0.78)
+leg_r = add_sphere("Leg_R", ( 0.22, 0.02, -0.06), 0.120, 32, 16, mat_pink)
+squash(leg_r, 1.20, 1.10, 0.78)
 
 # ============================================================
 # 5. Body Upper Clear (Glass dome) — separate mesh
