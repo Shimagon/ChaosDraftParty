@@ -115,8 +115,9 @@ bpy.ops.object.transform_apply(scale=True)
 
 # ============================================================
 # 5. Head (pink opaque), sitting on top of body
+# 頭は 2頭身 reference に合わせてやや大きめ（体の 80% サイズ）
 # ============================================================
-head = add_sphere("Head", (0, 0, 0.82), 0.22, 48, 24, mat_pink)
+head = add_sphere("Head", (0, 0, 0.88), 0.26, 48, 24, mat_pink)
 
 # ============================================================
 # 6. Arms — short nub spheres on lower body sides
@@ -139,20 +140,30 @@ leg_r.select_set(True); bpy.context.view_layer.objects.active = leg_r
 bpy.ops.object.transform_apply(scale=True)
 
 # ============================================================
-# 8. Eyes — small dark spheres on head front (-Y)
+# 8. Eyes — big round dark spheres (reference: 2頭身 big round eyes)
+#    + small white highlight dot in each eye
 # ============================================================
-eye_l = add_sphere("Eye_L", (-0.07, -0.20, 0.84), 0.018, 16, 8, mat_dark)
-eye_r = add_sphere("Eye_R", ( 0.07, -0.20, 0.84), 0.018, 16, 8, mat_dark)
+EYE_Y = -0.24     # 頭表面から少し前に出す（radius 0.26 の頭に対し）
+EYE_Z = 0.91
+EYE_DX = 0.10
+eye_l = add_sphere("Eye_L", (-EYE_DX, EYE_Y, EYE_Z), 0.040, 20, 12, mat_dark)
+eye_r = add_sphere("Eye_R", ( EYE_DX, EYE_Y, EYE_Z), 0.040, 20, 12, mat_dark)
+
+# White highlights (small spec dot on upper-left of each eye)
+mat_white = make_material("EGGYBOT_EyeShine", (1.0, 1.0, 1.0), 1.0)
+hi_l = add_sphere("EyeShine_L", (-EYE_DX - 0.012, EYE_Y - 0.028, EYE_Z + 0.015), 0.010, 12, 8, mat_white)
+hi_r = add_sphere("EyeShine_R", ( EYE_DX - 0.012, EYE_Y - 0.028, EYE_Z + 0.015), 0.010, 12, 8, mat_white)
 
 # ============================================================
-# 9. Mouth — small U-shaped curve via torus, rotated + placed on head front
+# 9. Mouth — U-shaped smile torus on head front (size up for bigger head)
 # ============================================================
+MOUTH_Z = 0.84
 bpy.ops.mesh.primitive_torus_add(
-    location=(0, -0.205, 0.80),
-    major_radius=0.035,
-    minor_radius=0.004,
+    location=(0, -0.245, MOUTH_Z),
+    major_radius=0.055,
+    minor_radius=0.006,
     rotation=(math.pi/2, 0, 0),
-    major_segments=24,
+    major_segments=28,
     minor_segments=8,
 )
 mouth = bpy.context.object
@@ -160,7 +171,7 @@ mouth.name = "Mouth"
 mouth.data.materials.append(mat_dark)
 
 # Keep only bottom half of torus to make smile (cut away top half)
-bpy.ops.mesh.primitive_cube_add(size=0.5, location=(0, -0.205, 0.82))
+bpy.ops.mesh.primitive_cube_add(size=0.5, location=(0, -0.245, MOUTH_Z + 0.02))
 cut_smile = bpy.context.object
 bpy.context.view_layer.objects.active = mouth
 mod = mouth.modifiers.new(name="CUT", type='BOOLEAN')
@@ -226,7 +237,7 @@ bpy.ops.object.mode_set(mode='OBJECT')
 # ============================================================
 # 11. Parent meshes to armature with Automatic Weights
 # ============================================================
-mesh_objects = [head, body_lower, body_upper, arm_l, arm_r, leg_l, leg_r, eye_l, eye_r, mouth]
+mesh_objects = [head, body_lower, body_upper, arm_l, arm_r, leg_l, leg_r, eye_l, eye_r, hi_l, hi_r, mouth]
 bpy.ops.object.select_all(action='DESELECT')
 for m in mesh_objects:
     m.select_set(True)

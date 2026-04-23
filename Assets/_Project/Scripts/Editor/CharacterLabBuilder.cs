@@ -144,6 +144,8 @@ namespace ChaosDraftParty.EditorTools
 
                 var clearMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/_Project/Art/Materials/EGGYBOT_Clear.mat");
                 var eyeMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/_Project/Art/Materials/EGGYBOT_Eye.mat");
+                var shineMat = LoadOrCreateMat("Assets/_Project/Art/Materials/EGGYBOT_EyeShine.mat",
+                    new Color(1f, 1f, 1f, 1f), 0.9f);
                 var colorMat = LoadOrCreateMat(
                     $"Assets/_Project/Art/Materials/EGGYBOT_{names[i]}.mat",
                     colors[i], 0.55f);
@@ -153,6 +155,7 @@ namespace ChaosDraftParty.EditorTools
                     var n = smr.gameObject.name;
                     if (n == "BodyUpperClear") smr.sharedMaterial = clearMat;
                     else if (n == "Eye_L" || n == "Eye_R") smr.sharedMaterial = eyeMat;
+                    else if (n == "EyeShine_L" || n == "EyeShine_R") smr.sharedMaterial = shineMat;
                     else smr.sharedMaterial = colorMat;
                 }
                 foreach (var mr in inst.GetComponentsInChildren<MeshRenderer>())
