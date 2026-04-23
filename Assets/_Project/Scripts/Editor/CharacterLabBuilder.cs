@@ -4,6 +4,8 @@ using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 
 namespace ChaosDraftParty.EditorTools
@@ -107,6 +109,42 @@ namespace ChaosDraftParty.EditorTools
             cam.nearClipPlane = 0.1f;
             cam.farClipPlane = 60f;
             camGo.AddComponent<AudioListener>();
+            // Enable post-processing on the camera (URP)
+            var camData = camGo.AddComponent<UniversalAdditionalCameraData>();
+            camData.renderPostProcessing = true;
+
+            // --- Post-processing Volume (global) ---
+            var volGo = new GameObject("PostProcessingVolume");
+            var vol = volGo.AddComponent<Volume>();
+            vol.isGlobal = true;
+            vol.priority = 1;
+            var profile = ScriptableObject.CreateInstance<VolumeProfile>();
+            profile.name = "CharLab_PostFx";
+            vol.sharedProfile = profile;
+
+            var bloom = profile.Add<UnityEngine.Rendering.Universal.Bloom>();
+            bloom.threshold.overrideState = true; bloom.threshold.value = 1.0f;
+            bloom.intensity.overrideState = true; bloom.intensity.value = 0.35f;
+            bloom.scatter.overrideState = true; bloom.scatter.value = 0.75f;
+            bloom.tint.overrideState = true; bloom.tint.value = new Color(1f, 0.95f, 0.92f, 1f);
+
+            var color = profile.Add<UnityEngine.Rendering.Universal.ColorAdjustments>();
+            color.postExposure.overrideState = true; color.postExposure.value = 0.4f;
+            color.contrast.overrideState = true; color.contrast.value = 12f;
+            color.saturation.overrideState = true; color.saturation.value = 8f;
+            color.colorFilter.overrideState = true;
+            color.colorFilter.value = new Color(1.02f, 0.98f, 0.96f, 1f);
+
+            var tone = profile.Add<UnityEngine.Rendering.Universal.Tonemapping>();
+            tone.mode.overrideState = true; tone.mode.value = UnityEngine.Rendering.Universal.TonemappingMode.ACES;
+
+            var vignette = profile.Add<UnityEngine.Rendering.Universal.Vignette>();
+            vignette.intensity.overrideState = true; vignette.intensity.value = 0.28f;
+            vignette.smoothness.overrideState = true; vignette.smoothness.value = 0.45f;
+            vignette.color.overrideState = true; vignette.color.value = new Color(0.05f, 0.05f, 0.08f, 1f);
+
+            // Save profile as sub-asset of scene (persistent)
+            AssetDatabase.CreateAsset(profile, "Assets/_Project/Art/CharLab_PostFx.asset");
 
             // --- Turntable Pivot (camera orbits around this) ---
             var pivot = new GameObject("TurntablePivot");
@@ -146,9 +184,9 @@ namespace ChaosDraftParty.EditorTools
                 var eyeMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/_Project/Art/Materials/EGGYBOT_Eye.mat");
                 var shineMat = LoadOrCreateMat("Assets/_Project/Art/Materials/EGGYBOT_EyeShine.mat",
                     new Color(1f, 1f, 1f, 1f), 0.9f);
-                var colorMat = LoadOrCreateMat(
-                    $"Assets/_Project/Art/Materials/EGGYBOT_{names[i]}.mat",
-                    colors[i], 0.55f);
+                var colorMat = LoadOrCreateSoftPlasticMat(
+                    $"Assets/_Project/Art/Materials/EGGYBOT_{names[i]}_Soft.mat",
+                    colors[i]);
 
                 foreach (var smr in inst.GetComponentsInChildren<SkinnedMeshRenderer>())
                 {
@@ -209,6 +247,43 @@ namespace ChaosDraftParty.EditorTools
             mat.SetColor("_BaseColor", color);
             mat.SetFloat("_Smoothness", 0.72f);
             mat.SetFloat("_Metallic", 0.88f);
+            EditorUtility.SetDirty(mat);
+            AssetDatabase.SaveAssets();
+            return mat;
+        }
+
+        static Material LoadOrCreateSoftPlasticMat(string path, Color baseCol)
+        {
+            var shader = Shader.Find("ChaosDraftParty/EGGYBOTSoftPlastic");
+            if (shader == null)
+            {
+                // Shader still compiling or missing — fall back to URP Lit for this run
+                return LoadOrCreateMat(path, baseCol, 0.55f);
+            }
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null)
+            {
+                mat = new Material(shader);
+                AssetDatabase.CreateAsset(mat, path);
+            }
+            mat.shader = shader;
+            mat.SetColor("_BaseColor", baseCol);
+            // Ambient tint: slightly desaturated base for indirect fill
+            var ambient = Color.Lerp(baseCol, new Color(0.7f, 0.7f, 0.72f, 1f), 0.35f);
+            mat.SetColor("_AmbientTint", ambient);
+            // SSS: saturated version of base for back-light glow
+            var sss = Color.Lerp(baseCol, Color.white, -0.15f);
+            sss.a = 1f;
+            mat.SetColor("_SSSColor", sss);
+            mat.SetFloat("_SSSDistortion", 0.28f);
+            mat.SetFloat("_SSSPower", 2.4f);
+            mat.SetFloat("_SSSScale", 0.85f);
+            mat.SetFloat("_WrapFactor", 0.55f);
+            mat.SetColor("_RimColor", Color.Lerp(baseCol, Color.white, 0.55f));
+            mat.SetFloat("_RimPower", 4.2f);
+            mat.SetFloat("_RimIntensity", 0.55f);
+            mat.SetFloat("_Smoothness", 0.35f);
+            mat.SetFloat("_SpecularIntensity", 0.7f);
             EditorUtility.SetDirty(mat);
             AssetDatabase.SaveAssets();
             return mat;
