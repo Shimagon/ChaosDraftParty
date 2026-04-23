@@ -345,15 +345,15 @@ namespace ChaosDraftParty.EditorTools
             var sss = Color.Lerp(baseCol, Color.white, -0.15f);
             sss.a = 1f;
             mat.SetColor("_SSSColor", sss);
-            mat.SetFloat("_SSSDistortion", 0.28f);
-            mat.SetFloat("_SSSPower", 2.4f);
-            mat.SetFloat("_SSSScale", 0.85f);
-            mat.SetFloat("_WrapFactor", 0.55f);
-            mat.SetColor("_RimColor", Color.Lerp(baseCol, Color.white, 0.55f));
-            mat.SetFloat("_RimPower", 4.2f);
-            mat.SetFloat("_RimIntensity", 0.55f);
-            mat.SetFloat("_Smoothness", 0.35f);
-            mat.SetFloat("_SpecularIntensity", 0.7f);
+            mat.SetFloat("_SSSDistortion", 0.30f);
+            mat.SetFloat("_SSSPower", 2.2f);
+            mat.SetFloat("_SSSScale", 1.05f);
+            mat.SetFloat("_WrapFactor", 0.60f);
+            mat.SetColor("_RimColor", Color.Lerp(baseCol, Color.white, 0.45f));
+            mat.SetFloat("_RimPower", 5.0f);
+            mat.SetFloat("_RimIntensity", 0.30f);
+            mat.SetFloat("_Smoothness", 0.12f);   // matte — 反射 / ツルツル抑制
+            mat.SetFloat("_SpecularIntensity", 0.18f); // soft highlight only
             EditorUtility.SetDirty(mat);
             AssetDatabase.SaveAssets();
             return mat;

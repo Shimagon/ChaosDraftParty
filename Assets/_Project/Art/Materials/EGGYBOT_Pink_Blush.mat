@@ -25,18 +25,18 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _RimIntensity: 0.55
-    - _RimPower: 4.2
-    - _SSSDistortion: 0.28
-    - _SSSPower: 2.4
-    - _SSSScale: 0.85
-    - _Smoothness: 0.35
-    - _SpecularIntensity: 0.7
-    - _WrapFactor: 0.55
+    - _RimIntensity: 0.3
+    - _RimPower: 5
+    - _SSSDistortion: 0.3
+    - _SSSPower: 2.2
+    - _SSSScale: 1.05
+    - _Smoothness: 0.12
+    - _SpecularIntensity: 0.18
+    - _WrapFactor: 0.6
     m_Colors:
     - _AmbientTint: {r: 0.8534, g: 0.5336, b: 0.6056, a: 1}
     - _BaseColor: {r: 0.936, g: 0.444, b: 0.544, a: 1}
-    - _RimColor: {r: 0.9712, g: 0.7498, b: 0.79480004, a: 1}
+    - _RimColor: {r: 0.9648, g: 0.6942, b: 0.7492, a: 1}
     - _SSSColor: {r: 0.936, g: 0.444, b: 0.544, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

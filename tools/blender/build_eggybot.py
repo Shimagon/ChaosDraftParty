@@ -91,59 +91,37 @@ def boolean_difference(target, cutter):
 
 
 # ============================================================
-# 3. Pink Parts — modeled as separate overlapping spheres, then joined + remeshed
-#    intentional overlap ensures seamless remesh welding
+# 3. Pink Parts — 分離 mesh で保持（bone rig 対応、手足アニメ可能）
+#    接合線は SSAO + 同一 material で目立たなくする戦略
 # ============================================================
 PARTING_Z = 0.40
 
-# Body Lower (pot)
-body_lower = add_sphere("_BodyLower", (0, 0, 0.30), 0.34, 56, 28, mat_pink)
+# Body Lower (pot) — named to match CharacterLabBuilder expectations
+body_lower = add_sphere("BodyLower", (0, 0, 0.30), 0.34, 56, 28, mat_pink)
 bpy.ops.mesh.primitive_cube_add(size=2, location=(0, 0, PARTING_Z + 1.0))
 boolean_difference(body_lower, bpy.context.object)
 
-# Head — overlaps body pot rim so remesh welds them
-head_part = add_sphere("_Head", (0, 0, 0.72), 0.30, 56, 28, mat_pink)
-squash(head_part, 1.10, 1.10, 0.82)
+# Head — overlaps body rim slightly (z 0.78) で sit-on-pot 感、埋まらない
+head = add_sphere("Head", (0, 0, 0.82), 0.28, 56, 28, mat_pink)
+squash(head, 1.12, 1.12, 0.84)
+# 底面を gently flatten（受け皿接地感）
+for v in head.data.vertices:
+    wz = v.co.z + head.location.z
+    if wz < 0.75:
+        ratio = min(1.0, max(0.0, (0.75 - wz) / 0.12))
+        v.co.z += ratio * 0.04
 
-# Arms — intentionally overlap body
-arm_l = add_sphere("_Arm_L", (-0.29, 0, 0.26), 0.115, 32, 16, mat_pink)
+# Arms — separate mesh、body にちょい食い込み
+arm_l = add_sphere("Arm_L", (-0.31, 0, 0.28), 0.115, 32, 16, mat_pink)
 squash(arm_l, 1.18, 0.92, 0.98)
-arm_r = add_sphere("_Arm_R", ( 0.29, 0, 0.26), 0.115, 32, 16, mat_pink)
+arm_r = add_sphere("Arm_R", ( 0.31, 0, 0.28), 0.115, 32, 16, mat_pink)
 squash(arm_r, 1.18, 0.92, 0.98)
 
-# Legs — overlap bottom of body pot
-leg_l = add_sphere("_Leg_L", (-0.13, 0.025, 0.05), 0.135, 32, 16, mat_pink)
+# Legs — separate mesh
+leg_l = add_sphere("Leg_L", (-0.13, 0.025, 0.05), 0.135, 32, 16, mat_pink)
 squash(leg_l, 1.15, 1.15, 0.72)
-leg_r = add_sphere("_Leg_R", ( 0.13, 0.025, 0.05), 0.135, 32, 16, mat_pink)
+leg_r = add_sphere("Leg_R", ( 0.13, 0.025, 0.05), 0.135, 32, 16, mat_pink)
 squash(leg_r, 1.15, 1.15, 0.72)
-
-# ============================================================
-# 4. JOIN all pink parts → VOXEL REMESH for seamless welding
-# ============================================================
-bpy.ops.object.select_all(action='DESELECT')
-pink_parts = [body_lower, head_part, arm_l, arm_r, leg_l, leg_r]
-for p in pink_parts:
-    p.select_set(True)
-bpy.context.view_layer.objects.active = body_lower
-bpy.ops.object.join()  # body_lower becomes the combined mesh
-
-pink_body = bpy.context.object
-pink_body.name = "PinkBody"
-
-# Apply Remesh modifier (Voxel mode, small voxel_size = higher fidelity)
-remesh = pink_body.modifiers.new(name="REMESH", type='REMESH')
-remesh.mode = 'VOXEL'
-remesh.voxel_size = 0.02  # 0.02 m = 2cm voxel → detail while welding
-remesh.use_smooth_shade = True
-bpy.ops.object.modifier_apply(modifier="REMESH")
-
-# Shade smooth
-bpy.context.view_layer.objects.active = pink_body
-bpy.ops.object.shade_smooth()
-
-# Reassign pink material (may be lost in join)
-pink_body.data.materials.clear()
-pink_body.data.materials.append(mat_pink)
 
 # ============================================================
 # 5. Body Upper Clear (Glass dome) — separate mesh
@@ -161,7 +139,7 @@ bpy.ops.object.modifier_apply(modifier="SHELL")
 # 6. Eyes + highlights
 # ============================================================
 EYE_Y = -0.27
-EYE_Z = 0.76
+EYE_Z = 0.86
 EYE_DX = 0.13
 eye_l = add_sphere("Eye_L", (-EYE_DX, EYE_Y, EYE_Z), 0.050, 24, 14, mat_dark)
 eye_r = add_sphere("Eye_R", ( EYE_DX, EYE_Y, EYE_Z), 0.050, 24, 14, mat_dark)
@@ -169,15 +147,15 @@ hi_l = add_sphere("EyeShine_L", (-EYE_DX - 0.020, EYE_Y - 0.035, EYE_Z + 0.024),
 hi_r = add_sphere("EyeShine_R", ( EYE_DX - 0.020, EYE_Y - 0.035, EYE_Z + 0.024), 0.016, 16, 10, mat_white)
 
 # Cheek blush — oval pink spots slightly embedded in cheek area (head sides)
-blush_l = add_sphere("Blush_L", (-0.20, -0.22, 0.70), 0.055, 20, 12, mat_blush)
+blush_l = add_sphere("Blush_L", (-0.21, -0.22, 0.80), 0.055, 20, 12, mat_blush)
 squash(blush_l, 1.10, 0.50, 1.10)  # oval
-blush_r = add_sphere("Blush_R", ( 0.20, -0.22, 0.70), 0.055, 20, 12, mat_blush)
+blush_r = add_sphere("Blush_R", ( 0.21, -0.22, 0.80), 0.055, 20, 12, mat_blush)
 squash(blush_r, 1.10, 0.50, 1.10)
 
 # ============================================================
 # 7. Mouth smile
 # ============================================================
-MOUTH_Z = 0.67
+MOUTH_Z = 0.77
 bpy.ops.mesh.primitive_torus_add(
     location=(0, -0.28, MOUTH_Z),
     major_radius=0.060,
@@ -245,7 +223,8 @@ bpy.ops.object.mode_set(mode='OBJECT')
 # ============================================================
 # 9. Parent meshes to armature
 # ============================================================
-mesh_objects = [pink_body, body_upper, eye_l, eye_r, hi_l, hi_r, mouth, blush_l, blush_r]
+mesh_objects = [body_lower, head, arm_l, arm_r, leg_l, leg_r,
+                body_upper, eye_l, eye_r, hi_l, hi_r, mouth, blush_l, blush_r]
 bpy.ops.object.select_all(action='DESELECT')
 for m in mesh_objects:
     m.select_set(True)
@@ -276,6 +255,6 @@ bpy.ops.export_scene.fbx(
     embed_textures=False,
 )
 
-print(f"=== EGGYBOT v5 build complete ===")
-print(f"PinkBody voxel remeshed, seamless")
+print(f"=== EGGYBOT v8 build complete ===")
+print(f"Parts separated for rigging: head / body / arms / legs")
 print(f"Bones: {len(arm.bones)}, Meshes: {len(mesh_objects)}")
