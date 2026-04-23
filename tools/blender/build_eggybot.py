@@ -96,16 +96,15 @@ def boolean_difference(target, cutter):
 # ============================================================
 PARTING_Z = 0.30
 
-# Body Lower (pot) — open bowl（上半分 cut、中空、両面描画で内側も見える）
-# 頭が将来収納される空間。open top で hollow が dome 越しに見える。
+# Body Lower (pot) — 中空 shell (外壁 + 内壁 両方の plastic surface)
+# Solidify thickness 0.025 (ガチャカプセル実物のプラ厚を模擬)
 body_lower = add_sphere("BodyLower", (0, 0, 0.30), 0.34, 64, 32, mat_pink)
 bpy.ops.mesh.primitive_cube_add(size=2, location=(0, 0, PARTING_Z + 1.0))
 boolean_difference(body_lower, bpy.context.object)
-# Solidify は削除 — single-sided bowl で両面 render すると中が open に見える
-# 代わりに薄い lip (thickness 0.01) を付けて open rim を強調
+# Solidify: 外側に shell、壁厚 0.025 で visible な rim
 bpy.context.view_layer.objects.active = body_lower
 sol_pot = body_lower.modifiers.new(name="SHELL", type='SOLIDIFY')
-sol_pot.thickness = 0.012
+sol_pot.thickness = 0.025
 sol_pot.offset = 1.0
 bpy.ops.object.modifier_apply(modifier="SHELL")
 

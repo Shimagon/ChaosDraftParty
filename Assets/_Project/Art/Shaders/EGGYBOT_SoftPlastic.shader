@@ -24,6 +24,8 @@ Shader "ChaosDraftParty/EGGYBOTSoftPlastic"
         _RimIntensity           ("Rim Intensity", Range(0, 2)) = 0.6
         _Smoothness             ("Specular Smoothness", Range(0, 1)) = 0.35
         _SpecularIntensity      ("Specular Intensity", Range(0, 2)) = 0.6
+        [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull Mode", Float) = 2
+        _InteriorShadow         ("Interior Shadow (backface darken)", Range(0, 1)) = 0.40
     }
 
     SubShader
@@ -41,7 +43,7 @@ Shader "ChaosDraftParty/EGGYBOTSoftPlastic"
             Tags { "LightMode" = "UniversalForward" }
 
             ZWrite On
-            Cull Back
+            Cull [_Cull]
 
             HLSLPROGRAM
             #pragma vertex vert
@@ -68,6 +70,8 @@ Shader "ChaosDraftParty/EGGYBOTSoftPlastic"
                 half  _RimIntensity;
                 half  _Smoothness;
                 half  _SpecularIntensity;
+                half  _Cull;
+                half  _InteriorShadow;
             CBUFFER_END
 
             struct Attributes
@@ -96,9 +100,13 @@ Shader "ChaosDraftParty/EGGYBOTSoftPlastic"
                 return OUT;
             }
 
-            half4 frag(Varyings IN) : SV_Target
+            half4 frag(Varyings IN, FRONT_FACE_TYPE isFront : FRONT_FACE_SEMANTIC) : SV_Target
             {
                 float3 N = normalize(IN.normalWS);
+                // 背面 (pot 内側) は法線を反転 → 壁の内側として正しく shade
+                bool front = IS_FRONT_VFACE(isFront, true, false);
+                if (!front) N = -N;
+
                 float3 V = normalize(GetCameraPositionWS() - IN.positionWS);
 
                 Light mainLight = GetMainLight(IN.shadowCoord);
@@ -113,26 +121,28 @@ Shader "ChaosDraftParty/EGGYBOTSoftPlastic"
                 // === Ambient indirect ===
                 half3 ambient = _AmbientTint.rgb * _BaseColor.rgb * 0.45;
 
-                // === Fake SSS: back-light translucency
-                //     Light passes through thin parts (ears, fingers, edges)
-                //     sample direction = L + N * distortion
+                // === Fake SSS: back-light translucency (正面のみ) ===
                 float3 sssDir = L + N * _SSSDistortion;
                 half  sssDot  = pow(saturate(dot(-V, sssDir)), _SSSPower) * _SSSScale;
-                half3 sss     = _SSSColor.rgb * sssDot * mainLight.color;
+                half3 sss     = _SSSColor.rgb * sssDot * mainLight.color * (front ? 1.0 : 0.0);
 
-                // === Rim fresnel ===
+                // === Rim fresnel (正面のみ) ===
                 half NdotV = saturate(dot(N, V));
-                half rim   = pow(1.0 - NdotV, _RimPower) * _RimIntensity;
+                half rim   = pow(1.0 - NdotV, _RimPower) * _RimIntensity * (front ? 1.0 : 0.0);
                 half3 rimC = _RimColor.rgb * rim;
 
-                // === Blinn-Phong specular ===
+                // === Blinn-Phong specular (正面のみ、内側は光らない) ===
                 float3 H    = normalize(L + V);
                 half NdotH  = saturate(dot(N, H));
                 half specEx = lerp(8.0, 256.0, _Smoothness);
-                half spec   = pow(NdotH, specEx) * _SpecularIntensity * shadow;
+                half spec   = pow(NdotH, specEx) * _SpecularIntensity * shadow * (front ? 1.0 : 0.0);
                 half3 specC = mainLight.color * spec;
 
                 half3 final = diffuse + ambient + sss + rimC + specC;
+
+                // 内側（backface）は「壁で光が遮られた影の空間」として darken
+                if (!front) final *= (1.0 - _InteriorShadow);
+
                 return half4(final, 1.0);
             }
             ENDHLSL

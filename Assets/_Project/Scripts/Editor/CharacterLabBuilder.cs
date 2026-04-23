@@ -251,10 +251,11 @@ namespace ChaosDraftParty.EditorTools
                 var headMat = LoadOrCreateSoftPlasticMat(
                     $"Assets/_Project/Art/Materials/EGGYBOT_{names[i]}_HeadMatte.mat",
                     colors[i], smoothness: 0.03f, spec: 0.0f, rim: 0.15f);
-                // Body + limbs: テカテカ gloss
+                // Body + limbs: テカテカ gloss、pot は両面描画で内側も描画
                 var bodyMat = LoadOrCreateSoftPlasticMat(
                     $"Assets/_Project/Art/Materials/EGGYBOT_{names[i]}_BodyGloss.mat",
-                    colors[i], smoothness: 0.82f, spec: 1.10f, rim: 0.55f);
+                    colors[i], smoothness: 0.82f, spec: 1.10f, rim: 0.55f,
+                    doubleSided: true, interiorShadow: 0.55f);
 
                 foreach (var smr in inst.GetComponentsInChildren<SkinnedMeshRenderer>())
                 {
@@ -262,6 +263,7 @@ namespace ChaosDraftParty.EditorTools
                     if (n == "BodyUpperClear") smr.sharedMaterial = clearMat;
                     else if (n == "Eye_L" || n == "Eye_R") smr.sharedMaterial = eyeMat;
                     else if (n == "EyeShine_L" || n == "EyeShine_R") smr.sharedMaterial = shineMat;
+                    else if (n == "Mouth") smr.sharedMaterial = eyeMat;
                     else if (n == "Head") smr.sharedMaterial = headMat;
                     else smr.sharedMaterial = bodyMat;
                 }
@@ -322,7 +324,8 @@ namespace ChaosDraftParty.EditorTools
         }
 
         static Material LoadOrCreateSoftPlasticMat(string path, Color baseCol,
-            float smoothness = 0.12f, float spec = 0.18f, float rim = 0.30f)
+            float smoothness = 0.12f, float spec = 0.18f, float rim = 0.30f,
+            bool doubleSided = false, float interiorShadow = 0.45f)
         {
             var shader = Shader.Find("ChaosDraftParty/EGGYBOTSoftPlastic");
             if (shader == null)
@@ -351,6 +354,8 @@ namespace ChaosDraftParty.EditorTools
             mat.SetFloat("_RimIntensity", rim);
             mat.SetFloat("_Smoothness", smoothness);
             mat.SetFloat("_SpecularIntensity", spec);
+            mat.SetFloat("_Cull", doubleSided ? 0f : 2f);  // 0=Off, 2=Back
+            mat.SetFloat("_InteriorShadow", interiorShadow);
             EditorUtility.SetDirty(mat);
             AssetDatabase.SaveAssets();
             return mat;

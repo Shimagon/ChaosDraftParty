@@ -25,6 +25,8 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
+    - _Cull: 2
+    - _InteriorShadow: 0.45
     - _RimIntensity: 0.15
     - _RimPower: 5
     - _SSSDistortion: 0.3
