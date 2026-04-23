@@ -2,6 +2,7 @@
     "name": "ChaosDraftParty.EditorTools",
     "rootNamespace": "ChaosDraftParty.EditorTools",
     "references": [
+        "ChaosDraftParty.UI",
         "Unity.TextMeshPro"
     ],
     "includePlatforms": [
