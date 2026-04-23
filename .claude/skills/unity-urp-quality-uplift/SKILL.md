@@ -112,6 +112,21 @@ Body 色から saturated 派生色を作って `Color.Lerp(base, red, 0.55)` で
 
 ---
 
+## 視覚確認の鉄則
+
+**ミス**：一つの angle だけで screenshot 撮って「見えない = 壊れてる」と判断すると実装が正しくても「ダメ」に見える。
+
+**鉄則**：
+1. **多角度スクショ必須** — front / side / top-down / **斜め 45°下俯瞰** の 4 方向最低撮る
+2. **数値照合** — mesh の半径、位置、壁厚を具体値で列挙してユーザーと共有（曖昧会話回避）
+3. **斜め 45° 下俯瞰が一番情報量多い** — bowl 形状の中身、rim 厚、底の陰影、すべて同時に見える
+4. 「ここがおかしい」と言われたら **見えない角度** から撮り直して実証 → 数値も添えて説明。
+5. ユーザー発言 (2026-04-23 EGGYBOT 15h session): 「多角的にスクショ撮っていい」「数値とかと照らし合わせたり」「斜めから撮ってないからわからなかった」
+
+**Unity 用 helper**（execute_menu_item or `mcp__UnityMCP__manage_camera` の batch="surround"）で 6 方向一括撮影可能。
+
+---
+
 ## 実装ゴッチャ（ハマり所）
 
 1. **EditorTools asmdef** に `Unity.RenderPipelines.Universal.Runtime` + `Core.Runtime` 参照必須（Volume, UniversalAdditionalCameraData 使う場合）
