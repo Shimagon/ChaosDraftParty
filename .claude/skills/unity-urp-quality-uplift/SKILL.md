@@ -180,3 +180,57 @@ Body 色から saturated 派生色を作って `Color.Lerp(base, red, 0.55)` で
 - 2026-04-23 EGGYBOT セッション: voxel remesh 統合版 (commit `08d5e68`) → 「もっちり感失う + 手足動かせない」判明
 - 以後は **分離 parts + SSAO で接合隠し** 方針
 - `EGGYBOT_SoftPlastic.shader`, `EGGYBOT_Glass.shader`, `CharLab_Skybox.shader` が再利用資産
+- 2026-04-24 EGGYBOT v9: **Boolean UNION (EXACT solver)** で手足を body に merge → seam 完全消失 + ARMATURE_AUTO で rigging 可能を両立（commit `3af6666`）
+
+---
+
+## Boolean UNION で手足 organic blend（v9 breakthrough）
+
+**問題**: 手足を別 mesh のまま body に近接配置すると、視覚的に「ボールとボール貼り合わせ」感が抜けない。user 言：「ただボールとボールを靴蹴るだけだと安っぽい」。
+
+**解**: Boolean UNION (solver='EXACT') で arm/leg を body_lower に merge。
+
+```python
+def boolean_union(target, other, remove_other=True):
+    bpy.context.view_layer.objects.active = target
+    mod = target.modifiers.new(name="UNION", type='BOOLEAN')
+    mod.object = other
+    mod.operation = 'UNION'
+    mod.solver = 'EXACT'  # FAST は topology 崩れる
+    bpy.ops.object.modifier_apply(modifier="UNION")
+    if remove_other:
+        bpy.data.objects.remove(other, do_unlink=True)
+```
+
+**Rigging 保持**: UNION 後の単一 mesh を ARMATURE_AUTO で parent → bone 近接ベースで weight が自動割り当て。手足 bone は手足領域の vertex を掴んで animate 可能。
+
+**注意点**:
+- **Edge Split は UNION 前に apply**：rim の crisp さを保つため。UNION 後に全体 Edge Split すると arm/body 接合 seam まで split される。split vertex duplication が UNION 中は保持される。
+- **hollow 侵入ガード**: arm ellipsoid の pot 中心からの最小距離が pot inner radius より大きいことを事前計算で検証。ellipsoid の方向 radius `r(D) = 1/sqrt((dx/a)² + (dy/b)² + (dz/c)²)` で closest point 計算。
+- **voxel remesh と違い rigging 可能**: 手足 animate できる、キャラクタに使える。
+
+## 対称 mesh で rim flush（v9 breakthrough）
+
+**問題**: pot と dome で Solidify offset / thickness が違うと、rim の outer radius がズレて「微妙な段差」ができる。
+
+**解**: pot と dome を完全対称パラメータで作る。
+- 両方 base sphere r=0.325
+- 両方 Solidify offset=0 thickness=0.05 → outer r=0.35 inner r=0.30 共通
+- 両方 bmesh で境界 face を削除（pot は上半球、dome は下半球）
+
+**UV sphere の bmesh 削除条件の罠**:
+- ❌ `mean_z > 0` で削除 → 赤道 face が mean z=0 扱いで「境界側」判定 → 削除されて boundary が 0.032 ずれる
+- ✅ `min_z > 0` で削除（pot）/ `max_z < 0` で削除（dome）→ 赤道 ring は確実に残る
+
+**Rim 二重化の罠**: 両方に Solidify rim face（use_rim=True）があると、pot rim face と dome rim face が z=PARTING_Z で coplanar 重複 → Cycles で z-fighting ダークライン。解：dome 側だけ `use_rim=False`（pot の rim face のみ残す、dome は clear なので open edge でも見えない）。
+
+## 確認 loop の高速化
+
+**問題**: user「いちいち確認する時 Blender 開き直さなきゃいけないのだるい」。
+
+**解**: headless build + Cycles render 6 方向 → Finder で preview フォルダ自動オープン。Blender GUI 不要。
+
+```bash
+tools/blender/eggybot_preview.sh
+# 内部: blender --background --python build_eggybot.py --python render_eggybot_previews.py + open preview/
+```
