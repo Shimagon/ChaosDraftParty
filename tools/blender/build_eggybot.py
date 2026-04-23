@@ -12,6 +12,7 @@ Research:
   https://tryfix.it.com/how-to-join-all-meshes-together-a-guide-to-seamless-3d-models/
 """
 import bpy
+import bmesh
 import math
 import os
 
@@ -96,19 +97,36 @@ def boolean_difference(target, cutter):
 # ============================================================
 PARTING_Z = 0.30
 
-# Body Lower (pot) — 明確に見える hollow shell
-# 壁厚 4cm、rim で wall thickness が視認できる
+# Body Lower (pot) — 真のお椀：top は完全 open、中が深く掘れてる hollow
+# 1) sphere 作って
+# 2) bmesh で top (z >= PARTING_Z local) の face 削除 → open bowl
+# 3) Solidify で 2-layer wall (内壁 + 外壁 + rim 繋ぎ)
 body_lower = add_sphere("BodyLower", (0, 0, 0.30), 0.32, 64, 32, mat_pink)
-bpy.ops.mesh.primitive_cube_add(size=2, location=(0, 0, PARTING_Z + 1.0))
-boolean_difference(body_lower, bpy.context.object)
-# Solidify: outward、壁厚 0.040 で rim がはっきり見える
+
+# bmesh で top 開口（face 削除、flat cap を残さない）
 bpy.context.view_layer.objects.active = body_lower
+bpy.ops.object.mode_set(mode='EDIT')
+bm = bmesh.from_edit_mesh(body_lower.data)
+bm.faces.ensure_lookup_table()
+# pot local coord: world PARTING_Z=0.30 - obj.z=0.30 → local z=0
+LOCAL_PARTING_Z = PARTING_Z - 0.30
+faces_to_delete = [f for f in bm.faces
+                   if sum(v.co.z for v in f.verts) / len(f.verts) > LOCAL_PARTING_Z - 0.001]
+bmesh.ops.delete(bm, geom=faces_to_delete, context='FACES')
+bmesh.update_edit_mesh(body_lower.data)
+bpy.ops.object.mode_set(mode='OBJECT')
+
+# Solidify: outward shell (壁厚 0.04)、open boundary は rim で繋ぐ
 sol_pot = body_lower.modifiers.new(name="SHELL", type='SOLIDIFY')
 sol_pot.thickness = 0.040
 sol_pot.offset = 1.0
-# Solidify の edges rim を fill で closed に
 sol_pot.use_even_offset = True
+sol_pot.use_quality_normals = True
 bpy.ops.object.modifier_apply(modifier="SHELL")
+
+# shade smooth で normal 均質
+bpy.context.view_layer.objects.active = body_lower
+bpy.ops.object.shade_smooth()
 
 # Head — より球に近く、底面 flatten は最小に抑え lemon 型 / 変形回避
 head = add_sphere("Head", (0, 0, 0.82), 0.29, 64, 32, mat_pink)
