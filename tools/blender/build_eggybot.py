@@ -96,14 +96,16 @@ def boolean_difference(target, cutter):
 # ============================================================
 PARTING_Z = 0.30
 
-# Body Lower (pot) — pink opaque + 中空化（頭が入るスペース）
+# Body Lower (pot) — open bowl（上半分 cut、中空、両面描画で内側も見える）
+# 頭が将来収納される空間。open top で hollow が dome 越しに見える。
 body_lower = add_sphere("BodyLower", (0, 0, 0.30), 0.34, 64, 32, mat_pink)
 bpy.ops.mesh.primitive_cube_add(size=2, location=(0, 0, PARTING_Z + 1.0))
 boolean_difference(body_lower, bpy.context.object)
-# Hollow pot: wall thickness 0.025、頭が上から retract できる空間を確保
+# Solidify は削除 — single-sided bowl で両面 render すると中が open に見える
+# 代わりに薄い lip (thickness 0.01) を付けて open rim を強調
 bpy.context.view_layer.objects.active = body_lower
 sol_pot = body_lower.modifiers.new(name="SHELL", type='SOLIDIFY')
-sol_pot.thickness = -0.025
+sol_pot.thickness = 0.012
 sol_pot.offset = 1.0
 bpy.ops.object.modifier_apply(modifier="SHELL")
 
@@ -145,16 +147,15 @@ bpy.ops.object.modifier_apply(modifier="SHELL")
 # ============================================================
 # 6. Eyes + highlights
 # ============================================================
-# Eyes — bigger、埋め込んで浮き防止
-#   head radius 0.29 ellipsoid: 前面 y ≈ -0.29。eye y を -0.25 に深め設置
+# Eyes — 全部黒、白ハイライトは shader の specular 反射で自然発生
 EYE_Y = -0.24
 EYE_Z = 0.85
 EYE_DX = 0.11
 eye_l = add_sphere("Eye_L", (-EYE_DX, EYE_Y, EYE_Z), 0.062, 28, 16, mat_dark)
 eye_r = add_sphere("Eye_R", ( EYE_DX, EYE_Y, EYE_Z), 0.062, 28, 16, mat_dark)
-# Shine は eye 表面すぐ外側
-hi_l = add_sphere("EyeShine_L", (-EYE_DX - 0.022, EYE_Y - 0.040, EYE_Z + 0.028), 0.018, 16, 10, mat_white)
-hi_r = add_sphere("EyeShine_R", ( EYE_DX - 0.022, EYE_Y - 0.040, EYE_Z + 0.028), 0.018, 16, 10, mat_white)
+# EyeShine mesh は削除 — shiny black material の specular highlight で代替
+hi_l = None
+hi_r = None
 
 # ほっぺ削除（user 指示「なくてもいい」）。浮いて見える問題解消。
 
@@ -232,7 +233,7 @@ bpy.ops.object.mode_set(mode='OBJECT')
 # 9. Parent meshes to armature
 # ============================================================
 mesh_objects = [body_lower, head, arm_l, arm_r, leg_l, leg_r,
-                body_upper, eye_l, eye_r, hi_l, hi_r, mouth]
+                body_upper, eye_l, eye_r, mouth]
 bpy.ops.object.select_all(action='DESELECT')
 for m in mesh_objects:
     m.select_set(True)
