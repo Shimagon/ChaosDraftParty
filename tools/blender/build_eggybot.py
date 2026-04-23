@@ -1,12 +1,24 @@
 """
-EGGYBOT Blender build script — Headless, 球 primitive × N + boolean で幾何組む
+EGGYBOT v2 Blender build — カービー型もっちり + ガチャカプセル構造（上下分離 + ヒンジ金具 + 中空）
+
+Design per /キャラクター/詳細イメージ.JPG:
+  - Lower body pink opaque (pot/bowl shape)
+  - Upper clear cap (top half dome, hollow, removable — opens on hinge)
+  - Head = separate small body sitting on top (retracts INSIDE cap in crouch form)
+  - Metal hinge ring at parting line between cap and body
+  - Arms/legs: Kirby-esque stubby ellipsoids with squishy proportions
+  - Head: slightly oblate (squash Z) for もっちり feel
+
 Usage:
   /Applications/Blender.app/Contents/MacOS/Blender --background --python build_eggybot.py
 
-Reference: ../../../キャラクター/3D生成AI用キャラクタープロンプト.md
 Output:
   Assets/ThirdParty/Meshy/Characters/EGGYBOT/eggybot_base.fbx
   Assets/ThirdParty/Meshy/Characters/EGGYBOT/eggybot_source.blend
+
+Research sources:
+  - Kirby shape analysis: https://articles.retroware.com/2021/09/16/kirbys-simple-character-design-defines-his-games/
+  - Blender hollow shell methods: https://docs.blender.org/manual/en/latest/modeling/modifiers/generate/booleans.html
 """
 import bpy
 import math
@@ -27,7 +39,7 @@ bpy.ops.wm.read_factory_settings(use_empty=True)
 # ============================================================
 # 1. Materials
 # ============================================================
-def make_material(name, base_color, alpha=1.0, transparent=False):
+def make_material(name, base_color, alpha=1.0, transparent=False, metallic=0.0, roughness=0.45):
     mat = bpy.data.materials.new(name=name)
     mat.use_nodes = True
     nodes = mat.node_tree.nodes
@@ -35,36 +47,28 @@ def make_material(name, base_color, alpha=1.0, transparent=False):
     if bsdf:
         bsdf.inputs["Base Color"].default_value = (*base_color, alpha)
         if "Roughness" in bsdf.inputs:
-            bsdf.inputs["Roughness"].default_value = 0.18 if transparent else 0.45
+            bsdf.inputs["Roughness"].default_value = 0.18 if transparent else roughness
         if "Metallic" in bsdf.inputs:
-            bsdf.inputs["Metallic"].default_value = 0.0
-        if transparent:
-            if "Alpha" in bsdf.inputs:
-                bsdf.inputs["Alpha"].default_value = alpha
-            for tname in ("Transmission Weight", "Transmission"):
-                if tname in bsdf.inputs:
-                    bsdf.inputs[tname].default_value = 0.85
-                    break
-            if "IOR" in bsdf.inputs:
-                bsdf.inputs["IOR"].default_value = 1.45
-            if hasattr(mat, 'blend_method'):
-                try:
-                    mat.blend_method = 'BLEND'
-                except Exception:
-                    pass
+            bsdf.inputs["Metallic"].default_value = metallic
+        if transparent and "Alpha" in bsdf.inputs:
+            bsdf.inputs["Alpha"].default_value = alpha
     mat.diffuse_color = (*base_color, alpha)
     return mat
 
 PINK = (0.96, 0.55, 0.65)
 DARK = (0.05, 0.05, 0.05)
+WHITE = (1.0, 1.0, 1.0)
+METAL = (0.72, 0.74, 0.78)
 
 mat_pink = make_material("EGGYBOT_Pink", PINK, 1.0)
 mat_clear = make_material("EGGYBOT_Clear", (1.0, 1.0, 1.0), 0.25, transparent=True)
 mat_dark = make_material("EGGYBOT_Eye", DARK, 1.0)
+mat_white = make_material("EGGYBOT_EyeShine", WHITE, 1.0)
+mat_metal = make_material("EGGYBOT_Metal", METAL, 1.0, metallic=0.85, roughness=0.25)
 
 
 # ============================================================
-# 2. Helper: create UV sphere
+# 2. Helpers
 # ============================================================
 def add_sphere(name, location, radius, segments=32, rings=16, material=None):
     bpy.ops.mesh.primitive_uv_sphere_add(
@@ -78,88 +82,130 @@ def add_sphere(name, location, radius, segments=32, rings=16, material=None):
     return obj
 
 
-def boolean_difference(target, cutter):
+def apply_scale(obj):
+    bpy.ops.object.select_all(action='DESELECT')
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.transform_apply(scale=True)
+
+
+def squash(obj, sx, sy, sz):
+    obj.scale = (sx, sy, sz)
+    apply_scale(obj)
+
+
+def boolean_difference(target, cutter, apply_ok=True):
     bpy.context.view_layer.objects.active = target
     mod = target.modifiers.new(name="CUT", type='BOOLEAN')
     mod.object = cutter
     mod.operation = 'DIFFERENCE'
-    bpy.ops.object.modifier_apply(modifier="CUT")
-    bpy.data.objects.remove(cutter, do_unlink=True)
+    if apply_ok:
+        bpy.ops.object.modifier_apply(modifier="CUT")
+        bpy.data.objects.remove(cutter, do_unlink=True)
 
 
 # ============================================================
-# 3. Body lower (pink opaque) — cut top above parting line
+# 3. Body Lower — opaque pink pot (below parting line)
+#    カービー的もっちり: 軽く上下 squash + XY 広げる
 # ============================================================
-PARTING_Z = 0.38  # 胴体の赤道より少し上
+PARTING_Z = 0.38  # capsule 上下分割ライン
 
-body_lower = add_sphere("BodyLower", (0, 0, 0.30), 0.30, 48, 24, mat_pink)
+body_lower = add_sphere("BodyLower", (0, 0, 0.30), 0.32, 48, 24, mat_pink)
 
-# Cut top: cube positioned above PARTING_Z
+# Cut top above parting line
 bpy.ops.mesh.primitive_cube_add(size=2, location=(0, 0, PARTING_Z + 1.0))
-cutter_top = bpy.context.object
-boolean_difference(body_lower, cutter_top)
+boolean_difference(body_lower, bpy.context.object)
 
 # ============================================================
-# 4. Body upper clear — cut bottom below parting line
+# 4. Cap Lower (Clear hollow ring below cap hinge)
+#    薄いリング = 上下継ぎ目を覆う透明 band
 # ============================================================
-body_upper = add_sphere("BodyUpperClear", (0, 0, 0.30), 0.30, 48, 24, mat_clear)
-
-# Cut bottom: cube positioned below PARTING_Z
+cap_lower = add_sphere("BodyUpperClear", (0, 0, 0.30), 0.325, 48, 24, mat_clear)
+# Keep only thin slice just above parting line (between PARTING_Z and PARTING_Z + 0.03)
 bpy.ops.mesh.primitive_cube_add(size=2, location=(0, 0, PARTING_Z - 1.0))
-cutter_bot = bpy.context.object
-boolean_difference(body_upper, cutter_bot)
-
-# Slight scale up on clear cap to sit just outside the lower (gives visible groove)
-body_upper.scale = (1.02, 1.02, 1.02)
-bpy.ops.object.transform_apply(scale=True)
-
-# ============================================================
-# 5. Head (pink opaque), sitting on top of body
-# 頭は 2頭身 reference に合わせてやや大きめ（体の 80% サイズ）
-# ============================================================
-head = add_sphere("Head", (0, 0, 0.88), 0.26, 48, 24, mat_pink)
+boolean_difference(cap_lower, bpy.context.object)
+bpy.ops.mesh.primitive_cube_add(size=2, location=(0, 0, PARTING_Z + 0.05 + 1.0))
+boolean_difference(cap_lower, bpy.context.object)
+# Solidify to give wall thickness (hollow ring)
+bpy.context.view_layer.objects.active = cap_lower
+sol = cap_lower.modifiers.new(name="SHELL", type='SOLIDIFY')
+sol.thickness = -0.012  # negative = inner
+sol.offset = 1.0
+bpy.ops.object.modifier_apply(modifier="SHELL")
 
 # ============================================================
-# 6. Arms — short nub spheres on lower body sides
+# 5. Cap Upper — the removable dome (hinges open)
+#    中空ドーム: 頭が収納できるスペース
 # ============================================================
-arm_l = add_sphere("Arm_L", (-0.30, 0, 0.26), 0.075, 24, 12, mat_pink)
-arm_r = add_sphere("Arm_R", ( 0.30, 0, 0.26), 0.075, 24, 12, mat_pink)
+cap_upper = add_sphere("CapUpperClear", (0, 0, 0.30), 0.325, 48, 24, mat_clear)
+# Cut bottom below parting line + 0.05 (sits right on top of cap_lower ring)
+bpy.ops.mesh.primitive_cube_add(size=2, location=(0, 0, PARTING_Z + 0.05 - 1.0))
+boolean_difference(cap_upper, bpy.context.object)
+# Solidify to hollow interior (wall thickness)
+bpy.context.view_layer.objects.active = cap_upper
+sol = cap_upper.modifiers.new(name="SHELL", type='SOLIDIFY')
+sol.thickness = -0.015
+sol.offset = 1.0
+bpy.ops.object.modifier_apply(modifier="SHELL")
 
 # ============================================================
-# 7. Legs — short nub spheres at bottom, slight ellipse (flatter bottom)
+# 6. Metal Hinge Ring — at parting line
+#    ガチャカプセル金属留め金
 # ============================================================
-leg_l = add_sphere("Leg_L", (-0.12, 0.02, 0.04), 0.09, 24, 12, mat_pink)
-leg_l.scale = (1.0, 1.0, 0.8)
-leg_r = add_sphere("Leg_R", ( 0.12, 0.02, 0.04), 0.09, 24, 12, mat_pink)
-leg_r.scale = (1.0, 1.0, 0.8)
-bpy.ops.object.select_all(action='DESELECT')
-leg_l.select_set(True); bpy.context.view_layer.objects.active = leg_l
-bpy.ops.object.transform_apply(scale=True)
-bpy.ops.object.select_all(action='DESELECT')
-leg_r.select_set(True); bpy.context.view_layer.objects.active = leg_r
-bpy.ops.object.transform_apply(scale=True)
-
-# ============================================================
-# 8. Eyes — big round dark spheres (reference: 2頭身 big round eyes)
-#    + small white highlight dot in each eye
-# ============================================================
-EYE_Y = -0.24     # 頭表面から少し前に出す（radius 0.26 の頭に対し）
-EYE_Z = 0.91
-EYE_DX = 0.10
-eye_l = add_sphere("Eye_L", (-EYE_DX, EYE_Y, EYE_Z), 0.040, 20, 12, mat_dark)
-eye_r = add_sphere("Eye_R", ( EYE_DX, EYE_Y, EYE_Z), 0.040, 20, 12, mat_dark)
-
-# White highlights (small spec dot on upper-left of each eye)
-mat_white = make_material("EGGYBOT_EyeShine", (1.0, 1.0, 1.0), 1.0)
-hi_l = add_sphere("EyeShine_L", (-EYE_DX - 0.012, EYE_Y - 0.028, EYE_Z + 0.015), 0.010, 12, 8, mat_white)
-hi_r = add_sphere("EyeShine_R", ( EYE_DX - 0.012, EYE_Y - 0.028, EYE_Z + 0.015), 0.010, 12, 8, mat_white)
-
-# ============================================================
-# 9. Mouth — U-shaped smile torus on head front (size up for bigger head)
-# ============================================================
-MOUTH_Z = 0.84
 bpy.ops.mesh.primitive_torus_add(
-    location=(0, -0.245, MOUTH_Z),
+    location=(0, 0, PARTING_Z + 0.025),
+    major_radius=0.322,
+    minor_radius=0.014,
+    major_segments=48,
+    minor_segments=10,
+)
+hinge = bpy.context.object
+hinge.name = "HingeRing"
+hinge.data.materials.append(mat_metal)
+bpy.ops.object.shade_smooth()
+
+# Small hinge pin (rear, at -Y)
+bpy.ops.mesh.primitive_cylinder_add(
+    radius=0.022, depth=0.07,
+    location=(0, 0.32, PARTING_Z + 0.025),
+    rotation=(math.pi/2, 0, 0),
+)
+hinge_pin = bpy.context.object
+hinge_pin.name = "HingePin"
+hinge_pin.data.materials.append(mat_metal)
+bpy.ops.object.shade_smooth()
+
+# Small clasp (front, at +Y for "lock")
+bpy.ops.mesh.primitive_cube_add(size=0.055, location=(0, -0.32, PARTING_Z + 0.025))
+clasp = bpy.context.object
+clasp.name = "HingeClasp"
+clasp.data.materials.append(mat_metal)
+squash(clasp, 1.0, 0.6, 0.75)
+bpy.ops.object.shade_smooth()
+
+# ============================================================
+# 7. Head — もっちりカービー頭（軽く squash）
+# ============================================================
+head = add_sphere("Head", (0, 0, 0.90), 0.26, 48, 24, mat_pink)
+squash(head, 1.08, 1.08, 0.92)  # oblate、marshmallow-like
+
+# ============================================================
+# 8. Eyes — 大きい丸目 + 白ハイライト
+# ============================================================
+EYE_Y = -0.24
+EYE_Z = 0.92
+EYE_DX = 0.11
+eye_l = add_sphere("Eye_L", (-EYE_DX, EYE_Y, EYE_Z), 0.042, 20, 12, mat_dark)
+eye_r = add_sphere("Eye_R", ( EYE_DX, EYE_Y, EYE_Z), 0.042, 20, 12, mat_dark)
+hi_l = add_sphere("EyeShine_L", (-EYE_DX - 0.014, EYE_Y - 0.028, EYE_Z + 0.018), 0.012, 12, 8, mat_white)
+hi_r = add_sphere("EyeShine_R", ( EYE_DX - 0.014, EYE_Y - 0.028, EYE_Z + 0.018), 0.012, 12, 8, mat_white)
+
+# ============================================================
+# 9. Mouth — 笑み smile torus
+# ============================================================
+MOUTH_Z = 0.83
+bpy.ops.mesh.primitive_torus_add(
+    location=(0, -0.248, MOUTH_Z),
     major_radius=0.055,
     minor_radius=0.006,
     rotation=(math.pi/2, 0, 0),
@@ -169,19 +215,27 @@ bpy.ops.mesh.primitive_torus_add(
 mouth = bpy.context.object
 mouth.name = "Mouth"
 mouth.data.materials.append(mat_dark)
-
-# Keep only bottom half of torus to make smile (cut away top half)
-bpy.ops.mesh.primitive_cube_add(size=0.5, location=(0, -0.245, MOUTH_Z + 0.02))
-cut_smile = bpy.context.object
-bpy.context.view_layer.objects.active = mouth
-mod = mouth.modifiers.new(name="CUT", type='BOOLEAN')
-mod.object = cut_smile
-mod.operation = 'DIFFERENCE'
-bpy.ops.object.modifier_apply(modifier="CUT")
-bpy.data.objects.remove(cut_smile, do_unlink=True)
+bpy.ops.mesh.primitive_cube_add(size=0.5, location=(0, -0.248, MOUTH_Z + 0.02))
+boolean_difference(mouth, bpy.context.object)
 
 # ============================================================
-# 10. Armature (Humanoid-compatible 15 bones for Mixamo retarget)
+# 10. Arms — Kirby-esque stubby nubs (slightly squished)
+# ============================================================
+arm_l = add_sphere("Arm_L", (-0.34, 0, 0.30), 0.092, 24, 12, mat_pink)
+squash(arm_l, 1.15, 0.92, 0.96)
+arm_r = add_sphere("Arm_R", ( 0.34, 0, 0.30), 0.092, 24, 12, mat_pink)
+squash(arm_r, 1.15, 0.92, 0.96)
+
+# ============================================================
+# 11. Legs — chunkier Kirby feet (slightly squat, bigger)
+# ============================================================
+leg_l = add_sphere("Leg_L", (-0.14, 0.025, 0.05), 0.115, 24, 12, mat_pink)
+squash(leg_l, 1.12, 1.10, 0.78)
+leg_r = add_sphere("Leg_R", ( 0.14, 0.025, 0.05), 0.115, 24, 12, mat_pink)
+squash(leg_r, 1.12, 1.10, 0.78)
+
+# ============================================================
+# 12. Armature — Unity Humanoid-compatible bones
 # ============================================================
 bpy.ops.object.armature_add(location=(0, 0, 0))
 armature_obj = bpy.context.object
@@ -190,54 +244,56 @@ arm = armature_obj.data
 arm.name = "EggybotRig"
 
 bpy.ops.object.mode_set(mode='EDIT')
-# Remove default bone
 for b in list(arm.edit_bones):
     arm.edit_bones.remove(b)
 
-def bone(name, head, tail, parent=None):
+def bone(name, head_, tail_, parent=None):
     eb = arm.edit_bones.new(name)
-    eb.head = head
-    eb.tail = tail
+    eb.head = head_
+    eb.tail = tail_
     if parent is not None:
         eb.parent = parent
         eb.use_connect = False
     return eb
 
-# Root → Hips (inside lower body center)
 hips = bone("Hips", (0, 0, 0.25), (0, 0, 0.35))
-# Spine chain (short, all inside body)
 spine = bone("Spine", (0, 0, 0.35), (0, 0, 0.45), hips)
 chest = bone("Chest", (0, 0, 0.45), (0, 0, 0.60), spine)
-# Neck + Head
-neck = bone("Neck", (0, 0, 0.60), (0, 0, 0.68), chest)
-head_b = bone("Head", (0, 0, 0.68), (0, 0, 0.95), neck)
+neck = bone("Neck", (0, 0, 0.60), (0, 0, 0.70), chest)
+head_b = bone("Head", (0, 0, 0.70), (0, 0, 1.10), neck)
 
-# Shoulders + Arms (Unity Humanoid naming)
-sh_l = bone("LeftShoulder", (0.05, 0, 0.35), (0.15, 0, 0.32), chest)
-up_l = bone("LeftUpperArm", (0.15, 0, 0.32), (0.24, 0, 0.28), sh_l)
-lo_l = bone("LeftLowerArm", (0.24, 0, 0.28), (0.30, 0, 0.26), up_l)
-hand_l = bone("LeftHand", (0.30, 0, 0.26), (0.34, 0, 0.26), lo_l)
+# CapHinge bone — allows cap_upper to rotate open
+cap_hinge_bone = bone("CapHinge", (0, 0.30, PARTING_Z + 0.025), (0, 0.30, PARTING_Z + 0.10), chest)
 
-sh_r = bone("RightShoulder", (-0.05, 0, 0.35), (-0.15, 0, 0.32), chest)
-up_r = bone("RightUpperArm", (-0.15, 0, 0.32), (-0.24, 0, 0.28), sh_r)
-lo_r = bone("RightLowerArm", (-0.24, 0, 0.28), (-0.30, 0, 0.26), up_r)
-hand_r = bone("RightHand", (-0.30, 0, 0.26), (-0.34, 0, 0.26), lo_r)
+sh_l = bone("LeftShoulder", (0.05, 0, 0.35), (0.18, 0, 0.32), chest)
+up_l = bone("LeftUpperArm", (0.18, 0, 0.32), (0.28, 0, 0.30), sh_l)
+lo_l = bone("LeftLowerArm", (0.28, 0, 0.30), (0.34, 0, 0.30), up_l)
+hand_l = bone("LeftHand", (0.34, 0, 0.30), (0.38, 0, 0.30), lo_l)
 
-# Legs (Unity Humanoid naming, hidden knee inside leg nub)
-upl_l = bone("LeftUpperLeg", (0.12, 0, 0.22), (0.12, 0, 0.10), hips)
-lol_l = bone("LeftLowerLeg", (0.12, 0, 0.10), (0.12, 0, 0.04), upl_l)
-foot_l = bone("LeftFoot", (0.12, 0, 0.04), (0.12, -0.02, 0.0), lol_l)
+sh_r = bone("RightShoulder", (-0.05, 0, 0.35), (-0.18, 0, 0.32), chest)
+up_r = bone("RightUpperArm", (-0.18, 0, 0.32), (-0.28, 0, 0.30), sh_r)
+lo_r = bone("RightLowerArm", (-0.28, 0, 0.30), (-0.34, 0, 0.30), up_r)
+hand_r = bone("RightHand", (-0.34, 0, 0.30), (-0.38, 0, 0.30), lo_r)
 
-upl_r = bone("RightUpperLeg", (-0.12, 0, 0.22), (-0.12, 0, 0.10), hips)
-lol_r = bone("RightLowerLeg", (-0.12, 0, 0.10), (-0.12, 0, 0.04), upl_r)
-foot_r = bone("RightFoot", (-0.12, 0, 0.04), (-0.12, -0.02, 0.0), lol_r)
+upl_l = bone("LeftUpperLeg", (0.14, 0, 0.22), (0.14, 0, 0.10), hips)
+lol_l = bone("LeftLowerLeg", (0.14, 0, 0.10), (0.14, 0, 0.05), upl_l)
+foot_l = bone("LeftFoot", (0.14, 0, 0.05), (0.14, -0.02, 0.0), lol_l)
+
+upl_r = bone("RightUpperLeg", (-0.14, 0, 0.22), (-0.14, 0, 0.10), hips)
+lol_r = bone("RightLowerLeg", (-0.14, 0, 0.10), (-0.14, 0, 0.05), upl_r)
+foot_r = bone("RightFoot", (-0.14, 0, 0.05), (-0.14, -0.02, 0.0), lol_r)
 
 bpy.ops.object.mode_set(mode='OBJECT')
 
 # ============================================================
-# 11. Parent meshes to armature with Automatic Weights
+# 13. Parent meshes to armature
 # ============================================================
-mesh_objects = [head, body_lower, body_upper, arm_l, arm_r, leg_l, leg_r, eye_l, eye_r, hi_l, hi_r, mouth]
+mesh_objects = [
+    head, body_lower, cap_lower, cap_upper,
+    arm_l, arm_r, leg_l, leg_r,
+    eye_l, eye_r, hi_l, hi_r, mouth,
+    hinge, hinge_pin, clasp,
+]
 bpy.ops.object.select_all(action='DESELECT')
 for m in mesh_objects:
     m.select_set(True)
@@ -246,13 +302,10 @@ bpy.context.view_layer.objects.active = armature_obj
 bpy.ops.object.parent_set(type='ARMATURE_AUTO')
 
 # ============================================================
-# 12. Save .blend
+# 14. Save .blend + export FBX
 # ============================================================
 bpy.ops.wm.save_as_mainfile(filepath=BLEND_PATH)
 
-# ============================================================
-# 13. Export FBX (Unity-friendly axes)
-# ============================================================
 bpy.ops.object.select_all(action='SELECT')
 bpy.ops.export_scene.fbx(
     filepath=FBX_PATH,
@@ -272,7 +325,7 @@ bpy.ops.export_scene.fbx(
     embed_textures=False,
 )
 
-print(f"=== EGGYBOT build complete ===")
+print(f"=== EGGYBOT v2 build complete ===")
 print(f"Blend: {BLEND_PATH}")
 print(f"FBX:   {FBX_PATH}")
 print(f"Bones: {len(arm.bones)}")

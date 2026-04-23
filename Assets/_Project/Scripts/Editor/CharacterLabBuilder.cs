@@ -146,6 +146,8 @@ namespace ChaosDraftParty.EditorTools
                 var eyeMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/_Project/Art/Materials/EGGYBOT_Eye.mat");
                 var shineMat = LoadOrCreateMat("Assets/_Project/Art/Materials/EGGYBOT_EyeShine.mat",
                     new Color(1f, 1f, 1f, 1f), 0.9f);
+                var metalMat = LoadOrCreateMetalMat("Assets/_Project/Art/Materials/EGGYBOT_Metal.mat",
+                    new Color(0.78f, 0.80f, 0.85f, 1f));
                 var colorMat = LoadOrCreateMat(
                     $"Assets/_Project/Art/Materials/EGGYBOT_{names[i]}.mat",
                     colors[i], 0.55f);
@@ -153,14 +155,17 @@ namespace ChaosDraftParty.EditorTools
                 foreach (var smr in inst.GetComponentsInChildren<SkinnedMeshRenderer>())
                 {
                     var n = smr.gameObject.name;
-                    if (n == "BodyUpperClear") smr.sharedMaterial = clearMat;
+                    if (n == "BodyUpperClear" || n == "CapUpperClear") smr.sharedMaterial = clearMat;
                     else if (n == "Eye_L" || n == "Eye_R") smr.sharedMaterial = eyeMat;
                     else if (n == "EyeShine_L" || n == "EyeShine_R") smr.sharedMaterial = shineMat;
+                    else if (n == "HingeRing" || n == "HingePin" || n == "HingeClasp") smr.sharedMaterial = metalMat;
                     else smr.sharedMaterial = colorMat;
                 }
                 foreach (var mr in inst.GetComponentsInChildren<MeshRenderer>())
                 {
-                    if (mr.gameObject.name == "Mouth") mr.sharedMaterial = eyeMat;
+                    var n = mr.gameObject.name;
+                    if (n == "Mouth") mr.sharedMaterial = eyeMat;
+                    else if (n == "HingeRing" || n == "HingePin" || n == "HingeClasp") mr.sharedMaterial = metalMat;
                 }
 
                 var bobber = inst.AddComponent<ChaosDraftParty.UI.PropAnimator>();
@@ -192,6 +197,23 @@ namespace ChaosDraftParty.EditorTools
             mat.SetColor("_BaseColor", color);
             mat.SetFloat("_Smoothness", smoothness);
             mat.SetFloat("_Metallic", 0f);
+            EditorUtility.SetDirty(mat);
+            AssetDatabase.SaveAssets();
+            return mat;
+        }
+
+        static Material LoadOrCreateMetalMat(string path, Color color)
+        {
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null)
+            {
+                var shader = Shader.Find("Universal Render Pipeline/Lit");
+                mat = new Material(shader);
+                AssetDatabase.CreateAsset(mat, path);
+            }
+            mat.SetColor("_BaseColor", color);
+            mat.SetFloat("_Smoothness", 0.72f);
+            mat.SetFloat("_Metallic", 0.88f);
             EditorUtility.SetDirty(mat);
             AssetDatabase.SaveAssets();
             return mat;
