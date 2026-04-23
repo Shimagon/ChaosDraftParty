@@ -54,7 +54,7 @@ namespace ChaosDraftParty.EditorTools
             floor.transform.position = Vector3.zero;
             floor.transform.localScale = new Vector3(2, 1, 2);
             var floorMat = LoadOrCreateMat("Assets/_Project/Art/Materials/CharLab_Floor.mat",
-                new Color(0.88f, 0.87f, 0.85f, 1f), 0.4f);
+                new Color(0.42f, 0.40f, 0.38f, 1f), 0.25f);
             floor.GetComponent<MeshRenderer>().sharedMaterial = floorMat;
 
             // --- Backdrop cyclorama ---
@@ -63,39 +63,39 @@ namespace ChaosDraftParty.EditorTools
             backdrop.transform.position = new Vector3(0, 4, 8);
             backdrop.transform.localScale = new Vector3(30, 10, 0.1f);
             var backdropMat = LoadOrCreateMat("Assets/_Project/Art/Materials/CharLab_Backdrop.mat",
-                new Color(0.52f, 0.57f, 0.68f, 1f), 0.1f);
+                new Color(0.28f, 0.31f, 0.38f, 1f), 0.1f);
             backdrop.GetComponent<MeshRenderer>().sharedMaterial = backdropMat;
 
             // --- 3-point lighting ---
             var keyGo = new GameObject("KeyLight");
             var key = keyGo.AddComponent<Light>();
             key.type = LightType.Directional;
-            key.color = new Color(1.0f, 0.95f, 0.85f, 1f);
-            key.intensity = 1.6f;
+            key.color = new Color(1.0f, 0.96f, 0.88f, 1f);
+            key.intensity = 1.05f;
             key.shadows = LightShadows.Soft;
             keyGo.transform.rotation = Quaternion.Euler(40, 35, 0);
 
             var fillGo = new GameObject("FillLight");
             var fill = fillGo.AddComponent<Light>();
             fill.type = LightType.Directional;
-            fill.color = new Color(0.72f, 0.78f, 0.95f, 1f);
-            fill.intensity = 0.7f;
+            fill.color = new Color(0.72f, 0.80f, 0.95f, 1f);
+            fill.intensity = 0.45f;
             fill.shadows = LightShadows.None;
             fillGo.transform.rotation = Quaternion.Euler(30, -135, 0);
 
             var rimGo = new GameObject("RimLight");
             var rim = rimGo.AddComponent<Light>();
             rim.type = LightType.Directional;
-            rim.color = new Color(1.0f, 0.7f, 0.9f, 1f);
-            rim.intensity = 1.4f;
+            rim.color = new Color(1.0f, 0.72f, 0.88f, 1f);
+            rim.intensity = 0.95f;
             rim.shadows = LightShadows.None;
             rimGo.transform.rotation = Quaternion.Euler(-10, 185, 0);
 
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = new Color(0.70f, 0.78f, 0.92f, 1f);
-            RenderSettings.ambientEquatorColor = new Color(0.65f, 0.65f, 0.70f, 1f);
-            RenderSettings.ambientGroundColor = new Color(0.40f, 0.40f, 0.45f, 1f);
-            RenderSettings.ambientIntensity = 1.0f;
+            RenderSettings.ambientSkyColor = new Color(0.58f, 0.66f, 0.80f, 1f);
+            RenderSettings.ambientEquatorColor = new Color(0.48f, 0.50f, 0.56f, 1f);
+            RenderSettings.ambientGroundColor = new Color(0.30f, 0.30f, 0.34f, 1f);
+            RenderSettings.ambientIntensity = 0.75f;
 
             // --- Camera ---
             var camGo = new GameObject("Main Camera");
@@ -121,8 +121,7 @@ namespace ChaosDraftParty.EditorTools
             var eggybotPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(EGGYBOT_FBX);
             if (eggybotPrefab == null)
             {
-                EditorUtility.DisplayDialog("Missing FBX",
-                    $"EGGYBOT FBX not found at {EGGYBOT_FBX}. Run Blender build script first.", "OK");
+                Debug.LogError($"[CharacterLab] EGGYBOT FBX not found at {EGGYBOT_FBX}. Run Blender build script first.");
                 return;
             }
 
@@ -176,9 +175,6 @@ namespace ChaosDraftParty.EditorTools
             EditorSceneManager.SaveScene(scene, ScenePath);
 
             Debug.Log($"[CharacterLab] Scene built and saved to {ScenePath}");
-            EditorUtility.DisplayDialog("Character Lab Ready",
-                $"Scene saved: {ScenePath}\n4 EGGYBOT variants lined up, 3-point studio lighting, turntable camera (Play to see orbit).",
-                "OK");
         }
 
         static Material LoadOrCreateMat(string path, Color color, float smoothness)
