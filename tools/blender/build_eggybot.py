@@ -43,10 +43,12 @@ def make_material(name, base_color, alpha=1.0, transparent=False, metallic=0.0, 
     return mat
 
 PINK = (0.96, 0.55, 0.65)
+BLUSH = (0.96, 0.42, 0.52)
 DARK = (0.05, 0.05, 0.05)
 WHITE = (1.0, 1.0, 1.0)
 
 mat_pink = make_material("EGGYBOT_Pink", PINK, 1.0)
+mat_blush = make_material("EGGYBOT_Blush", BLUSH, 1.0)
 mat_clear = make_material("EGGYBOT_Clear", (1.0, 1.0, 1.0), 0.15, transparent=True)
 mat_dark = make_material("EGGYBOT_Eye", DARK, 1.0)
 mat_white = make_material("EGGYBOT_EyeShine", WHITE, 1.0)
@@ -166,6 +168,12 @@ eye_r = add_sphere("Eye_R", ( EYE_DX, EYE_Y, EYE_Z), 0.050, 24, 14, mat_dark)
 hi_l = add_sphere("EyeShine_L", (-EYE_DX - 0.020, EYE_Y - 0.035, EYE_Z + 0.024), 0.016, 16, 10, mat_white)
 hi_r = add_sphere("EyeShine_R", ( EYE_DX - 0.020, EYE_Y - 0.035, EYE_Z + 0.024), 0.016, 16, 10, mat_white)
 
+# Cheek blush — oval pink spots slightly embedded in cheek area (head sides)
+blush_l = add_sphere("Blush_L", (-0.20, -0.22, 0.70), 0.055, 20, 12, mat_blush)
+squash(blush_l, 1.10, 0.50, 1.10)  # oval
+blush_r = add_sphere("Blush_R", ( 0.20, -0.22, 0.70), 0.055, 20, 12, mat_blush)
+squash(blush_r, 1.10, 0.50, 1.10)
+
 # ============================================================
 # 7. Mouth smile
 # ============================================================
@@ -237,7 +245,7 @@ bpy.ops.object.mode_set(mode='OBJECT')
 # ============================================================
 # 9. Parent meshes to armature
 # ============================================================
-mesh_objects = [pink_body, body_upper, eye_l, eye_r, hi_l, hi_r, mouth]
+mesh_objects = [pink_body, body_upper, eye_l, eye_r, hi_l, hi_r, mouth, blush_l, blush_r]
 bpy.ops.object.select_all(action='DESELECT')
 for m in mesh_objects:
     m.select_set(True)
