@@ -20,6 +20,8 @@ Shader "ChaosDraftParty/EGGYBOTGlass"
         _RimIntensity           ("Rim Intensity",  Range(0, 4))  = 1.2
         _DiffuseTint            ("Diffuse Tint",   Range(0, 1))  = 0.35
         _Smoothness             ("Specular Smoothness", Range(0,1)) = 0.88
+        _RefractionStrength     ("Refraction Strength", Range(0, 0.1)) = 0.025
+        _RefractionMix          ("Refraction Mix",      Range(0, 1))   = 0.65
     }
 
     SubShader
@@ -59,7 +61,12 @@ Shader "ChaosDraftParty/EGGYBOTGlass"
                 half   _RimIntensity;
                 half   _DiffuseTint;
                 half   _Smoothness;
+                half   _RefractionStrength;
+                half   _RefractionMix;
             CBUFFER_END
+
+            TEXTURE2D_X(_CameraOpaqueTexture);
+            SAMPLER(sampler_CameraOpaqueTexture);
 
             struct Attributes
             {
@@ -72,6 +79,7 @@ Shader "ChaosDraftParty/EGGYBOTGlass"
                 float4 positionCS : SV_POSITION;
                 float3 positionWS : TEXCOORD0;
                 float3 normalWS   : TEXCOORD1;
+                float4 screenPos  : TEXCOORD2;
             };
 
             Varyings vert(Attributes IN)
@@ -82,6 +90,7 @@ Shader "ChaosDraftParty/EGGYBOTGlass"
                 OUT.positionCS = posIn.positionCS;
                 OUT.positionWS = posIn.positionWS;
                 OUT.normalWS   = nrmIn.normalWS;
+                OUT.screenPos  = ComputeScreenPos(posIn.positionCS);
                 return OUT;
             }
 
@@ -114,7 +123,15 @@ Shader "ChaosDraftParty/EGGYBOTGlass"
                 half rim = pow(1.0 - NdotV, _RimPower) * _RimIntensity;
                 half3 rimColor = _RimColor.rgb * rim;
 
+                // Refraction — sample scene color behind the glass with normal-based distortion
+                float2 screenUV = IN.screenPos.xy / IN.screenPos.w;
+                float2 distortion = N.xy * _RefractionStrength;
+                half3 sceneColor = SAMPLE_TEXTURE2D_X(_CameraOpaqueTexture,
+                    sampler_CameraOpaqueTexture, screenUV + distortion).rgb;
+
                 half3 rgb = diffuse + specular + rimColor;
+                // Blend scene refraction into the base tint (only in the "see-through" center)
+                rgb = lerp(rgb, sceneColor * _TintColor.rgb + rgb, _RefractionMix * (1.0 - fresnel));
 
                 // Premultiplied alpha output (matches Blend One OneMinusSrcAlpha)
                 return half4(rgb * alpha, alpha);
