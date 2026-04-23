@@ -1,15 +1,17 @@
 """
-EGGYBOT v5 Blender build — pink parts voxel remesh 統合、接合部 seamless
+EGGYBOT v9 Blender build — Boolean UNION で arms/legs を body に organic 統合
 
 Design:
-  - PinkBody = BodyLower + Head + Arms + Legs を join → voxel remesh で 1 seamless mesh 化
-  - BodyUpperClear は別 mesh (glass)
-  - Eye / Mouth / EyeShine は別 mesh (material 異なる)
-  - 結果: Lego cube 合体感が完全に消える、organic 1体
+  - BodyLower (pot, open bowl) に Arms + Legs を Boolean UNION で merge
+    → 1 seamless mesh、接合部は smooth blend (Kirby 風)
+    → rigging は ARMATURE_AUTO で merged body に weight paint
+  - Rim は Edge Split を UNION 前に適用 → crisp 角張り保持
+  - BodyUpper (clear dome) は outer rim radius 0.35 に合わせて pot と flush
+  - Head / Eyes / Mouth / BodyUpper は別 mesh
 
 Research:
-  https://docs.blender.org/manual/en/latest/modeling/modifiers/generate/remesh.html
-  https://tryfix.it.com/how-to-join-all-meshes-together-a-guide-to-seamless-3d-models/
+  https://docs.blender.org/manual/en/latest/modeling/modifiers/generate/booleans.html
+  https://blender.stackexchange.com/questions/215998/boolean-union-of-multiple-objects
 """
 import bpy
 import bmesh
@@ -91,84 +93,132 @@ def boolean_difference(target, cutter):
     bpy.data.objects.remove(cutter, do_unlink=True)
 
 
+def boolean_union(target, other, remove_other=True):
+    """EXACT solver で target に other を organic merge。接合 seam 消失。"""
+    bpy.context.view_layer.objects.active = target
+    mod = target.modifiers.new(name="UNION", type='BOOLEAN')
+    mod.object = other
+    mod.operation = 'UNION'
+    mod.solver = 'EXACT'
+    mod.use_self = False
+    bpy.ops.object.modifier_apply(modifier="UNION")
+    if remove_other:
+        bpy.data.objects.remove(other, do_unlink=True)
+
+
 # ============================================================
 # 3. Pink Parts — 分離 mesh で保持（bone rig 対応、手足アニメ可能）
 #    接合線は SSAO + 同一 material で目立たなくする戦略
 # ============================================================
 PARTING_Z = 0.30
+BASE_SPHERE_R = 0.325   # body_lower / body_upper 共通の base sphere 半径
+WALL_THICKNESS = 0.050  # 両 shell 共通の壁厚
+# → Solidify offset=0 で inner r=0.30, outer r=0.35。pot と dome の rim が flush。
 
-# Body Lower (pot) — 真のお椀：top は完全 open、中が深く掘れてる hollow
-# 1) sphere 作って
-# 2) bmesh で top (z >= PARTING_Z local) の face 削除 → open bowl
-# 3) Solidify で 2-layer wall (内壁 + 外壁 + rim 繋ぎ)
-body_lower = add_sphere("BodyLower", (0, 0, 0.30), 0.32, 64, 32, mat_pink)
+# Body Lower (pot) — open bowl。rim を z=PARTING_Z で切る
+body_lower = add_sphere("BodyLower", (0, 0, PARTING_Z), BASE_SPHERE_R, 64, 32, mat_pink)
 
-# bmesh で top 開口（face 削除、flat cap を残さない）
+# bmesh で top 開口（world z > PARTING_Z の face 削除、flat cap 残さない）
 bpy.context.view_layer.objects.active = body_lower
 bpy.ops.object.mode_set(mode='EDIT')
 bm = bmesh.from_edit_mesh(body_lower.data)
 bm.faces.ensure_lookup_table()
-# pot local coord: world PARTING_Z=0.30 - obj.z=0.30 → local z=0
-LOCAL_PARTING_Z = PARTING_Z - 0.30
+# 「全頂点が赤道より上」の face のみ削除 → 赤道 ring は boundary として保持
+# これで rim が正確に z=PARTING_Z を通る（mean_z 方式だと 0.032 ずれる）
 faces_to_delete = [f for f in bm.faces
-                   if sum(v.co.z for v in f.verts) / len(f.verts) > LOCAL_PARTING_Z - 0.001]
+                   if min(v.co.z for v in f.verts) > 0.0001]
 bmesh.ops.delete(bm, geom=faces_to_delete, context='FACES')
 bmesh.update_edit_mesh(body_lower.data)
 bpy.ops.object.mode_set(mode='OBJECT')
 
-# Solidify: outward shell (壁厚 0.04)、open boundary は rim で繋ぐ
+# Solidify offset=0：壁は inner/outer 両方向に均等 → rim 位置を z=PARTING_Z に保持
 sol_pot = body_lower.modifiers.new(name="SHELL", type='SOLIDIFY')
-sol_pot.thickness = 0.040
-sol_pot.offset = 1.0
+sol_pot.thickness = WALL_THICKNESS
+sol_pot.offset = 0.0  # 内外均等 → rim が z=0.30 を維持
 sol_pot.use_even_offset = True
 sol_pot.use_quality_normals = True
+sol_pot.use_rim = True  # open boundary に rim face 生成
 bpy.ops.object.modifier_apply(modifier="SHELL")
 
-# shade smooth で base surface 滑らか
 bpy.context.view_layer.objects.active = body_lower
 bpy.ops.object.shade_smooth()
 
-# Edge Split modifier — rim の角を crisp (プラスチックの切れ目らしく)
+# Edge Split — rim の crisp 角張り（UNION 前に baking）
 es_pot = body_lower.modifiers.new(name="EDGE_SPLIT", type='EDGE_SPLIT')
-es_pot.split_angle = math.radians(35)  # 35° 以上の折れはシャープに
+es_pot.split_angle = math.radians(40)
 es_pot.use_edge_angle = True
 es_pot.use_edge_sharp = False
 bpy.ops.object.modifier_apply(modifier="EDGE_SPLIT")
 
-# Head — より球に近く、底面 flatten は最小に抑え lemon 型 / 変形回避
+# Head — ほぼ球、底を軽く flatten
 head = add_sphere("Head", (0, 0, 0.82), 0.29, 64, 32, mat_pink)
-squash(head, 1.00, 1.00, 0.98)  # ほぼ球（軽く Z squash）
-# 底面を ごく軽く flatten（重力で sit-on-pot 感だけ）
+squash(head, 1.00, 1.00, 0.98)
 for v in head.data.vertices:
     wz = v.co.z + head.location.z
     if wz < 0.74:
         ratio = min(1.0, max(0.0, (0.74 - wz) / 0.08))
         v.co.z += ratio * 0.015
 
-# Arms — pot の外側 equator に attach、pot hollow を侵さない
-#   pot inner radius 0.32、arm の nearest vertex > 0.32 になるよう center を外に
-arm_l = add_sphere("Arm_L", (-0.42, 0, 0.12), 0.105, 32, 16, mat_pink)
-squash(arm_l, 1.25, 0.85, 0.90)
-arm_r = add_sphere("Arm_R", ( 0.42, 0, 0.12), 0.105, 32, 16, mat_pink)
-squash(arm_r, 1.25, 0.85, 0.90)
+# ============================================================
+# 4. Arms / Legs を elongated ellipsoid で生成 → body_lower に UNION
+#    hollow 侵入ガード：pot inner r=0.30 (from (0,0,PARTING_Z))
+#    最深点が r>0.30 になるよう配置検証済み
+# ============================================================
+arm_l_raw = add_sphere("Arm_L_raw", (-0.52, 0, 0.20), 0.14, 32, 16, mat_pink)
+squash(arm_l_raw, 1.40, 0.85, 0.95)
+arm_r_raw = add_sphere("Arm_R_raw", ( 0.52, 0, 0.20), 0.14, 32, 16, mat_pink)
+squash(arm_r_raw, 1.40, 0.85, 0.95)
 
-# Legs — pot の下側 outer に attach、hollow を侵さない
-leg_l = add_sphere("Leg_L", (-0.22, 0.02, -0.06), 0.120, 32, 16, mat_pink)
-squash(leg_l, 1.20, 1.10, 0.78)
-leg_r = add_sphere("Leg_R", ( 0.22, 0.02, -0.06), 0.120, 32, 16, mat_pink)
-squash(leg_r, 1.20, 1.10, 0.78)
+leg_l_raw = add_sphere("Leg_L_raw", (-0.15, 0.00, -0.18), 0.13, 32, 16, mat_pink)
+squash(leg_l_raw, 1.00, 1.15, 1.40)
+leg_r_raw = add_sphere("Leg_R_raw", ( 0.15, 0.00, -0.18), 0.13, 32, 16, mat_pink)
+squash(leg_r_raw, 1.00, 1.15, 1.40)
+
+# Boolean UNION (EXACT solver) — arms/legs を body に seamless 統合
+boolean_union(body_lower, arm_l_raw)
+boolean_union(body_lower, arm_r_raw)
+boolean_union(body_lower, leg_l_raw)
+boolean_union(body_lower, leg_r_raw)
+
+# UNION 後の全体 shade smooth（rim の split edge vertex は duplicated 済で crisp 保持）
+bpy.context.view_layer.objects.active = body_lower
+bpy.ops.object.shade_smooth()
 
 # ============================================================
-# 5. Body Upper Clear (Glass dome) — separate mesh
+# 5. Body Upper Clear (Glass dome) — pot と対称に構築して outer flush
+#    base sphere 同じ、bmesh で下半球 face 削除、同じ Solidify
 # ============================================================
-body_upper = add_sphere("BodyUpperClear", (0, 0, 0.30), 0.345, 64, 32, mat_clear)
-bpy.ops.mesh.primitive_cube_add(size=2, location=(0, 0, PARTING_Z - 1.0))
-boolean_difference(body_upper, bpy.context.object)
+body_upper = add_sphere("BodyUpperClear", (0, 0, PARTING_Z), BASE_SPHERE_R, 64, 32, mat_clear)
+
+# bmesh で底半球 削除（pot と対称：local z < 0 の face を削除）
 bpy.context.view_layer.objects.active = body_upper
-sol = body_upper.modifiers.new(name="SHELL", type='SOLIDIFY')
-sol.thickness = -0.012
-sol.offset = 1.0
+bpy.ops.object.mode_set(mode='EDIT')
+bm_u = bmesh.from_edit_mesh(body_upper.data)
+bm_u.faces.ensure_lookup_table()
+# 「全頂点が赤道より下」の face のみ削除 → 赤道 ring は boundary として保持
+# pot と同じ処理で boundary が正確に z=PARTING_Z に揃う
+bottom_faces = [f for f in bm_u.faces
+                if max(v.co.z for v in f.verts) < -0.0001]
+bmesh.ops.delete(bm_u, geom=bottom_faces, context='FACES')
+bmesh.update_edit_mesh(body_upper.data)
+bpy.ops.object.mode_set(mode='OBJECT')
+
+# Solidify: pot と同じ outer/inner だが rim face は OFF
+# → pot の rim ring と z-fighting しない（pot 側が rim を所有する）
+sol_dome = body_upper.modifiers.new(name="SHELL", type='SOLIDIFY')
+sol_dome.thickness = WALL_THICKNESS
+sol_dome.offset = 0.0
+sol_dome.use_even_offset = True
+sol_dome.use_quality_normals = True
+sol_dome.use_rim = False
 bpy.ops.object.modifier_apply(modifier="SHELL")
+
+bpy.context.view_layer.objects.active = body_upper
+bpy.ops.object.shade_smooth()
+es_dome = body_upper.modifiers.new(name="EDGE_SPLIT", type='EDGE_SPLIT')
+es_dome.split_angle = math.radians(40)
+es_dome.use_edge_angle = True
+bpy.ops.object.modifier_apply(modifier="EDGE_SPLIT")
 
 # ============================================================
 # 6. Eyes + highlights
@@ -257,9 +307,10 @@ bpy.ops.object.mode_set(mode='OBJECT')
 
 # ============================================================
 # 9. Parent meshes to armature
+#    body_lower は pot+arms+legs の merged mesh（UNION 済）
+#    ARMATURE_AUTO で bone 近接ベースの weight が手足領域に自動付与
 # ============================================================
-mesh_objects = [body_lower, head, arm_l, arm_r, leg_l, leg_r,
-                body_upper, eye_l, eye_r, mouth]
+mesh_objects = [body_lower, head, body_upper, eye_l, eye_r, mouth]
 bpy.ops.object.select_all(action='DESELECT')
 for m in mesh_objects:
     m.select_set(True)
@@ -290,6 +341,7 @@ bpy.ops.export_scene.fbx(
     embed_textures=False,
 )
 
-print(f"=== EGGYBOT v8 build complete ===")
-print(f"Parts separated for rigging: head / body / arms / legs")
+print(f"=== EGGYBOT v9 build complete ===")
+print(f"body_lower = pot + arms + legs UNIONed seamless mesh")
+print(f"Rim outer r=0.35 (pot) = r=0.35 (dome) → flush parting line")
 print(f"Bones: {len(arm.bones)}, Meshes: {len(mesh_objects)}")
