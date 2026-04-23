@@ -94,28 +94,28 @@ def boolean_difference(target, cutter):
 # 3. Pink Parts — 分離 mesh で保持（bone rig 対応、手足アニメ可能）
 #    接合線は SSAO + 同一 material で目立たなくする戦略
 # ============================================================
-PARTING_Z = 0.40
+PARTING_Z = 0.30  # 下げて pot と dome をほぼ半々に (before 0.40)
 
 # Body Lower (pot) — named to match CharacterLabBuilder expectations
 body_lower = add_sphere("BodyLower", (0, 0, 0.30), 0.34, 56, 28, mat_pink)
 bpy.ops.mesh.primitive_cube_add(size=2, location=(0, 0, PARTING_Z + 1.0))
 boolean_difference(body_lower, bpy.context.object)
 
-# Head — 丸に近い squash、「ゴム玉が重さで軽く潰される」感
-head = add_sphere("Head", (0, 0, 0.82), 0.29, 56, 28, mat_pink)
-squash(head, 1.04, 1.04, 0.94)
-# 底面を強めに flatten（重さで座ってる感、gravity sag）
+# Head — より球に近く、底面 flatten は最小に抑え lemon 型 / 変形回避
+head = add_sphere("Head", (0, 0, 0.82), 0.29, 64, 32, mat_pink)
+squash(head, 1.00, 1.00, 0.98)  # ほぼ球（軽く Z squash）
+# 底面を ごく軽く flatten（重力で sit-on-pot 感だけ）
 for v in head.data.vertices:
     wz = v.co.z + head.location.z
-    if wz < 0.76:
-        ratio = min(1.0, max(0.0, (0.76 - wz) / 0.10))
-        v.co.z += ratio * 0.06
+    if wz < 0.74:
+        ratio = min(1.0, max(0.0, (0.74 - wz) / 0.08))
+        v.co.z += ratio * 0.015
 
-# Arms — separate mesh、body にちょい食い込み
-arm_l = add_sphere("Arm_L", (-0.31, 0, 0.28), 0.115, 32, 16, mat_pink)
-squash(arm_l, 1.18, 0.92, 0.98)
-arm_r = add_sphere("Arm_R", ( 0.31, 0, 0.28), 0.115, 32, 16, mat_pink)
-squash(arm_r, 1.18, 0.92, 0.98)
+# Arms — separate mesh、少し大きく、body にちょい食い込み
+arm_l = add_sphere("Arm_L", (-0.33, 0, 0.24), 0.140, 32, 16, mat_pink)
+squash(arm_l, 1.15, 0.92, 0.96)
+arm_r = add_sphere("Arm_R", ( 0.33, 0, 0.24), 0.140, 32, 16, mat_pink)
+squash(arm_r, 1.15, 0.92, 0.96)
 
 # Legs — separate mesh
 leg_l = add_sphere("Leg_L", (-0.13, 0.025, 0.05), 0.135, 32, 16, mat_pink)
@@ -139,17 +139,17 @@ bpy.ops.object.modifier_apply(modifier="SHELL")
 # 6. Eyes + highlights
 # ============================================================
 EYE_Y = -0.27
-EYE_Z = 0.86
-EYE_DX = 0.13
-eye_l = add_sphere("Eye_L", (-EYE_DX, EYE_Y, EYE_Z), 0.050, 24, 14, mat_dark)
-eye_r = add_sphere("Eye_R", ( EYE_DX, EYE_Y, EYE_Z), 0.050, 24, 14, mat_dark)
-hi_l = add_sphere("EyeShine_L", (-EYE_DX - 0.020, EYE_Y - 0.035, EYE_Z + 0.024), 0.016, 16, 10, mat_white)
-hi_r = add_sphere("EyeShine_R", ( EYE_DX - 0.020, EYE_Y - 0.035, EYE_Z + 0.024), 0.016, 16, 10, mat_white)
+EYE_Z = 0.85
+EYE_DX = 0.11
+eye_l = add_sphere("Eye_L", (-EYE_DX, EYE_Y, EYE_Z), 0.048, 24, 14, mat_dark)
+eye_r = add_sphere("Eye_R", ( EYE_DX, EYE_Y, EYE_Z), 0.048, 24, 14, mat_dark)
+hi_l = add_sphere("EyeShine_L", (-EYE_DX - 0.018, EYE_Y - 0.032, EYE_Z + 0.022), 0.015, 16, 10, mat_white)
+hi_r = add_sphere("EyeShine_R", ( EYE_DX - 0.018, EYE_Y - 0.032, EYE_Z + 0.022), 0.015, 16, 10, mat_white)
 
 # Cheek blush — oval pink spots slightly embedded in cheek area (head sides)
-blush_l = add_sphere("Blush_L", (-0.21, -0.22, 0.80), 0.055, 20, 12, mat_blush)
+blush_l = add_sphere("Blush_L", (-0.22, -0.20, 0.78), 0.055, 20, 12, mat_blush)
 squash(blush_l, 1.10, 0.50, 1.10)  # oval
-blush_r = add_sphere("Blush_R", ( 0.21, -0.22, 0.80), 0.055, 20, 12, mat_blush)
+blush_r = add_sphere("Blush_R", ( 0.22, -0.20, 0.78), 0.055, 20, 12, mat_blush)
 squash(blush_r, 1.10, 0.50, 1.10)
 
 # ============================================================

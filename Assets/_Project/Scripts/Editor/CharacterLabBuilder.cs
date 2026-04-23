@@ -251,10 +251,10 @@ namespace ChaosDraftParty.EditorTools
                 var headMat = LoadOrCreateSoftPlasticMat(
                     $"Assets/_Project/Art/Materials/EGGYBOT_{names[i]}_HeadMatte.mat",
                     colors[i], smoothness: 0.03f, spec: 0.0f, rim: 0.15f);
-                // Body + limbs: ツルツル gloss
+                // Body + limbs: テカテカ gloss
                 var bodyMat = LoadOrCreateSoftPlasticMat(
                     $"Assets/_Project/Art/Materials/EGGYBOT_{names[i]}_BodyGloss.mat",
-                    colors[i], smoothness: 0.55f, spec: 0.75f, rim: 0.40f);
+                    colors[i], smoothness: 0.82f, spec: 1.10f, rim: 0.55f);
                 // Blush: same matte-ish as head for consistency
                 var blushCol = Color.Lerp(colors[i], new Color(0.9f, 0.30f, 0.40f, 1f), 0.55f);
                 var blushMat = LoadOrCreateSoftPlasticMat(
