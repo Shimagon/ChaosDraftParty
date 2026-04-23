@@ -247,14 +247,19 @@ namespace ChaosDraftParty.EditorTools
                 var eyeMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/_Project/Art/Materials/EGGYBOT_Eye.mat");
                 var shineMat = LoadOrCreateMat("Assets/_Project/Art/Materials/EGGYBOT_EyeShine.mat",
                     new Color(1f, 1f, 1f, 1f), 0.9f);
-                var colorMat = LoadOrCreateSoftPlasticMat(
-                    $"Assets/_Project/Art/Materials/EGGYBOT_{names[i]}_Soft.mat",
-                    colors[i]);
-                // Blush: saturated darker version of body color
+                // Head: matte, 反射ゼロ
+                var headMat = LoadOrCreateSoftPlasticMat(
+                    $"Assets/_Project/Art/Materials/EGGYBOT_{names[i]}_HeadMatte.mat",
+                    colors[i], smoothness: 0.03f, spec: 0.0f, rim: 0.15f);
+                // Body + limbs: ツルツル gloss
+                var bodyMat = LoadOrCreateSoftPlasticMat(
+                    $"Assets/_Project/Art/Materials/EGGYBOT_{names[i]}_BodyGloss.mat",
+                    colors[i], smoothness: 0.55f, spec: 0.75f, rim: 0.40f);
+                // Blush: same matte-ish as head for consistency
                 var blushCol = Color.Lerp(colors[i], new Color(0.9f, 0.30f, 0.40f, 1f), 0.55f);
                 var blushMat = LoadOrCreateSoftPlasticMat(
                     $"Assets/_Project/Art/Materials/EGGYBOT_{names[i]}_Blush.mat",
-                    blushCol);
+                    blushCol, smoothness: 0.05f, spec: 0.05f, rim: 0.15f);
 
                 foreach (var smr in inst.GetComponentsInChildren<SkinnedMeshRenderer>())
                 {
@@ -263,7 +268,8 @@ namespace ChaosDraftParty.EditorTools
                     else if (n == "Eye_L" || n == "Eye_R") smr.sharedMaterial = eyeMat;
                     else if (n == "EyeShine_L" || n == "EyeShine_R") smr.sharedMaterial = shineMat;
                     else if (n == "Blush_L" || n == "Blush_R") smr.sharedMaterial = blushMat;
-                    else smr.sharedMaterial = colorMat;
+                    else if (n == "Head") smr.sharedMaterial = headMat;
+                    else smr.sharedMaterial = bodyMat;
                 }
                 foreach (var mr in inst.GetComponentsInChildren<MeshRenderer>())
                 {
@@ -322,13 +328,13 @@ namespace ChaosDraftParty.EditorTools
             return mat;
         }
 
-        static Material LoadOrCreateSoftPlasticMat(string path, Color baseCol)
+        static Material LoadOrCreateSoftPlasticMat(string path, Color baseCol,
+            float smoothness = 0.12f, float spec = 0.18f, float rim = 0.30f)
         {
             var shader = Shader.Find("ChaosDraftParty/EGGYBOTSoftPlastic");
             if (shader == null)
             {
-                // Shader still compiling or missing — fall back to URP Lit for this run
-                return LoadOrCreateMat(path, baseCol, 0.55f);
+                return LoadOrCreateMat(path, baseCol, smoothness);
             }
             var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
             if (mat == null)
@@ -338,10 +344,8 @@ namespace ChaosDraftParty.EditorTools
             }
             mat.shader = shader;
             mat.SetColor("_BaseColor", baseCol);
-            // Ambient tint: slightly desaturated base for indirect fill
             var ambient = Color.Lerp(baseCol, new Color(0.7f, 0.7f, 0.72f, 1f), 0.35f);
             mat.SetColor("_AmbientTint", ambient);
-            // SSS: saturated version of base for back-light glow
             var sss = Color.Lerp(baseCol, Color.white, -0.15f);
             sss.a = 1f;
             mat.SetColor("_SSSColor", sss);
@@ -351,9 +355,9 @@ namespace ChaosDraftParty.EditorTools
             mat.SetFloat("_WrapFactor", 0.60f);
             mat.SetColor("_RimColor", Color.Lerp(baseCol, Color.white, 0.45f));
             mat.SetFloat("_RimPower", 5.0f);
-            mat.SetFloat("_RimIntensity", 0.30f);
-            mat.SetFloat("_Smoothness", 0.12f);   // matte — 反射 / ツルツル抑制
-            mat.SetFloat("_SpecularIntensity", 0.18f); // soft highlight only
+            mat.SetFloat("_RimIntensity", rim);
+            mat.SetFloat("_Smoothness", smoothness);
+            mat.SetFloat("_SpecularIntensity", spec);
             EditorUtility.SetDirty(mat);
             AssetDatabase.SaveAssets();
             return mat;

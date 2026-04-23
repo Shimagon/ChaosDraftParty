@@ -25,13 +25,13 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _RimIntensity: 0.3
+    - _RimIntensity: 0.15
     - _RimPower: 5
     - _SSSDistortion: 0.3
     - _SSSPower: 2.2
     - _SSSScale: 1.05
-    - _Smoothness: 0.12
-    - _SpecularIntensity: 0.18
+    - _Smoothness: 0.05
+    - _SpecularIntensity: 0.05
     - _WrapFactor: 0.6
     m_Colors:
     - _AmbientTint: {r: 0.727625, g: 0.6155, b: 0.5471, a: 1}

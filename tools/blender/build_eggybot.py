@@ -101,15 +101,15 @@ body_lower = add_sphere("BodyLower", (0, 0, 0.30), 0.34, 56, 28, mat_pink)
 bpy.ops.mesh.primitive_cube_add(size=2, location=(0, 0, PARTING_Z + 1.0))
 boolean_difference(body_lower, bpy.context.object)
 
-# Head — overlaps body rim slightly (z 0.78) で sit-on-pot 感、埋まらない
-head = add_sphere("Head", (0, 0, 0.82), 0.28, 56, 28, mat_pink)
-squash(head, 1.12, 1.12, 0.84)
-# 底面を gently flatten（受け皿接地感）
+# Head — 丸に近い squash、「ゴム玉が重さで軽く潰される」感
+head = add_sphere("Head", (0, 0, 0.82), 0.29, 56, 28, mat_pink)
+squash(head, 1.04, 1.04, 0.94)
+# 底面を強めに flatten（重さで座ってる感、gravity sag）
 for v in head.data.vertices:
     wz = v.co.z + head.location.z
-    if wz < 0.75:
-        ratio = min(1.0, max(0.0, (0.75 - wz) / 0.12))
-        v.co.z += ratio * 0.04
+    if wz < 0.76:
+        ratio = min(1.0, max(0.0, (0.76 - wz) / 0.10))
+        v.co.z += ratio * 0.06
 
 # Arms — separate mesh、body にちょい食い込み
 arm_l = add_sphere("Arm_L", (-0.31, 0, 0.28), 0.115, 32, 16, mat_pink)
