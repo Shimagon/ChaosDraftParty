@@ -93,6 +93,28 @@ namespace ChaosDraftParty.EditorTools
             rim.shadows = LightShadows.None;
             rimGo.transform.rotation = Quaternion.Euler(-10, 185, 0);
 
+            // Accent top light — crisp specular highlight from above
+            var topGo = new GameObject("TopAccent");
+            var top = topGo.AddComponent<Light>();
+            top.type = LightType.Spot;
+            top.color = new Color(1.0f, 0.96f, 0.90f, 1f);
+            top.intensity = 8.0f;
+            top.range = 10f;
+            top.spotAngle = 80f;
+            top.innerSpotAngle = 40f;
+            top.shadows = LightShadows.None;
+            topGo.transform.position = new Vector3(0, 5, -0.5f);
+            topGo.transform.rotation = Quaternion.Euler(88, 0, 0);
+
+            // Back kick light — warm rear rim for silhouette separation
+            var kickGo = new GameObject("BackKick");
+            var kick = kickGo.AddComponent<Light>();
+            kick.type = LightType.Directional;
+            kick.color = new Color(1.0f, 0.85f, 0.6f, 1f);
+            kick.intensity = 0.8f;
+            kick.shadows = LightShadows.None;
+            kickGo.transform.rotation = Quaternion.Euler(15, 165, 0);
+
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
             RenderSettings.ambientSkyColor = new Color(0.58f, 0.66f, 0.80f, 1f);
             RenderSettings.ambientEquatorColor = new Color(0.48f, 0.50f, 0.56f, 1f);
@@ -143,8 +165,49 @@ namespace ChaosDraftParty.EditorTools
             vignette.smoothness.overrideState = true; vignette.smoothness.value = 0.45f;
             vignette.color.overrideState = true; vignette.color.value = new Color(0.05f, 0.05f, 0.08f, 1f);
 
-            // Save profile as sub-asset of scene (persistent)
+            // Depth of Field — gentle background blur (Gaussian mode for simplicity)
+            var dof = profile.Add<UnityEngine.Rendering.Universal.DepthOfField>();
+            dof.mode.overrideState = true; dof.mode.value = UnityEngine.Rendering.Universal.DepthOfFieldMode.Gaussian;
+            dof.gaussianStart.overrideState = true; dof.gaussianStart.value = 3.5f;
+            dof.gaussianEnd.overrideState = true;   dof.gaussianEnd.value = 12f;
+            dof.gaussianMaxRadius.overrideState = true; dof.gaussianMaxRadius.value = 0.9f;
+
+            // Save profile
             AssetDatabase.CreateAsset(profile, "Assets/_Project/Art/CharLab_PostFx.asset");
+
+            // --- Studio gradient skybox ---
+            var skyShader = Shader.Find("ChaosDraftParty/CharLabSkybox");
+            if (skyShader != null)
+            {
+                var skyMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/_Project/Art/CharLab_Skybox.mat");
+                if (skyMat == null)
+                {
+                    skyMat = new Material(skyShader);
+                    AssetDatabase.CreateAsset(skyMat, "Assets/_Project/Art/CharLab_Skybox.mat");
+                }
+                skyMat.shader = skyShader;
+                skyMat.SetColor("_TopColor", new Color(0.20f, 0.24f, 0.32f, 1f));
+                skyMat.SetColor("_EquatorColor", new Color(0.52f, 0.52f, 0.56f, 1f));
+                skyMat.SetColor("_GroundColor", new Color(0.14f, 0.15f, 0.18f, 1f));
+                skyMat.SetFloat("_TopExponent", 1.4f);
+                skyMat.SetFloat("_GroundExponent", 2.0f);
+                skyMat.SetFloat("_Intensity", 1.0f);
+                EditorUtility.SetDirty(skyMat);
+                AssetDatabase.SaveAssets();
+                RenderSettings.skybox = skyMat;
+            }
+
+            // --- Reflection probe for glass reflections ---
+            var probeGo = new GameObject("ReflectionProbe");
+            probeGo.transform.position = new Vector3(0, 0.6f, 0);
+            var probe = probeGo.AddComponent<ReflectionProbe>();
+            probe.mode = UnityEngine.Rendering.ReflectionProbeMode.Realtime;
+            probe.refreshMode = UnityEngine.Rendering.ReflectionProbeRefreshMode.OnAwake;
+            probe.resolution = 128;
+            probe.size = new Vector3(20, 10, 20);
+            probe.nearClipPlane = 0.1f;
+            probe.farClipPlane = 50f;
+            probe.RenderProbe();
 
             // --- Turntable Pivot (camera orbits around this) ---
             var pivot = new GameObject("TurntablePivot");
