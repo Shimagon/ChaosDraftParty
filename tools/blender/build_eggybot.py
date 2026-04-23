@@ -145,13 +145,16 @@ bpy.ops.object.modifier_apply(modifier="SHELL")
 # ============================================================
 # 6. Eyes + highlights
 # ============================================================
-EYE_Y = -0.27
+# Eyes — bigger、埋め込んで浮き防止
+#   head radius 0.29 ellipsoid: 前面 y ≈ -0.29。eye y を -0.25 に深め設置
+EYE_Y = -0.24
 EYE_Z = 0.85
 EYE_DX = 0.11
-eye_l = add_sphere("Eye_L", (-EYE_DX, EYE_Y, EYE_Z), 0.048, 24, 14, mat_dark)
-eye_r = add_sphere("Eye_R", ( EYE_DX, EYE_Y, EYE_Z), 0.048, 24, 14, mat_dark)
-hi_l = add_sphere("EyeShine_L", (-EYE_DX - 0.018, EYE_Y - 0.032, EYE_Z + 0.022), 0.015, 16, 10, mat_white)
-hi_r = add_sphere("EyeShine_R", ( EYE_DX - 0.018, EYE_Y - 0.032, EYE_Z + 0.022), 0.015, 16, 10, mat_white)
+eye_l = add_sphere("Eye_L", (-EYE_DX, EYE_Y, EYE_Z), 0.062, 28, 16, mat_dark)
+eye_r = add_sphere("Eye_R", ( EYE_DX, EYE_Y, EYE_Z), 0.062, 28, 16, mat_dark)
+# Shine は eye 表面すぐ外側
+hi_l = add_sphere("EyeShine_L", (-EYE_DX - 0.022, EYE_Y - 0.040, EYE_Z + 0.028), 0.018, 16, 10, mat_white)
+hi_r = add_sphere("EyeShine_R", ( EYE_DX - 0.022, EYE_Y - 0.040, EYE_Z + 0.028), 0.018, 16, 10, mat_white)
 
 # ほっぺ削除（user 指示「なくてもいい」）。浮いて見える問題解消。
 
