@@ -248,16 +248,16 @@ def bridge_limb_to_body(body, limb, attach_world, hole_radius,
         bpy.ops.object.mode_set(mode='OBJECT')
         return False
 
-    # --- 4. Bridge!
+    # --- 4. Bridge!（number_cuts=1 + PATH curve でsmooth neck）
     try:
         bpy.ops.mesh.bridge_edge_loops(
             type='SINGLE',
             use_merge=False,
             merge_factor=0.5,
-            number_cuts=0,
-            interpolation='LINEAR',
+            number_cuts=1,  # 中間 ring 1 本追加、neck 滑らかに
+            interpolation='PATH',  # curve-follow
             smoothness=1.0,
-            profile_shape_factor=0,
+            profile_shape_factor=0.0,  # 膨らみなし（hollow 貫通防止）
             profile_shape='SMOOTH',
         )
         print(f"[bridge] {limb_name}: bridge_edge_loops SUCCESS")
@@ -265,6 +265,29 @@ def bridge_limb_to_body(body, limb, attach_world, hole_radius,
     except Exception as e:
         print(f"[bridge ERROR] {limb_name}: bridge failed: {e}")
         success = False
+
+    # --- 5. Bridge 後、hollow 侵入した vert を外側に push（安全優先）
+    HOLLOW_CENTER = Vector((0, 0, exclude_rim_z))
+    HOLLOW_R = 0.30
+    SAFETY_MARGIN = 0.008
+    if success:
+        bm_s = bmesh.from_edit_mesh(body.data)
+        body_mw = body.matrix_world.copy()
+        pushed = 0
+        for v in bm_s.verts:
+            world_v = body_mw @ v.co
+            if (world_v - attach_world_vec).length < hole_radius * 3.0:
+                to_center = HOLLOW_CENTER - Vector(world_v)
+                dist = to_center.length
+                if dist < HOLLOW_R + SAFETY_MARGIN and dist > 0.001:
+                    # hollow 外 (r > 0.30 + safety) に push
+                    target_dist = HOLLOW_R + SAFETY_MARGIN
+                    push_vec = (-to_center.normalized()) * (target_dist - dist)
+                    v.co += push_vec  # local coord 変更 (world = local + origin, identity rotation)
+                    pushed += 1
+        bmesh.update_edit_mesh(body.data)
+        if pushed > 0:
+            print(f"[bridge] {limb_name}: pushed {pushed} hollow-penetrating verts outward")
 
     bpy.ops.object.mode_set(mode='OBJECT')
     return success
@@ -312,24 +335,69 @@ def cleanup_post_bridge(obj, merge_thr=0.00005, smooth_angle_deg=60,
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.normals_make_consistent(inside=False)
 
-    # 4. Rim edges を mark sharp（v.co は world ベース、matrix_world 経由で厳密に）
+    # 4. Rim edges を mark sharp + crease=1.0（subsurf 保護兼用）
     bm = bmesh.from_edit_mesh(obj.data)
     bm.edges.ensure_lookup_table()
+    crease_layer = bm.edges.layers.float.get("crease_edge") or bm.edges.layers.float.new("crease_edge")
     rim_count = 0
     for e in bm.edges:
         if not e.is_boundary:
             continue
-        # world z = matrix_world @ local → z 成分
         z_vals = [(obj.matrix_world @ v.co).z for v in e.verts]
         if all(abs(z - rim_z_world) < rim_tolerance for z in z_vals):
             e.smooth = False  # mark sharp
+            e[crease_layer] = 1.0  # subsurf でも rim 保持
             rim_count += 1
     bmesh.update_edit_mesh(obj.data)
-    print(f"[cleanup] marked {rim_count} rim edges as sharp")
+    print(f"[cleanup] marked {rim_count} rim edges as sharp + crease")
+
+    # 4b. Non-manifold edge 検出（warning のみ、削除は慎重に）
+    bpy.ops.mesh.select_all(action='DESELECT')
+    bpy.ops.mesh.select_non_manifold(
+        extend=False, use_wire=True, use_boundary=False,
+        use_multi_face=True, use_non_contiguous=True, use_verts=True,
+    )
+    bm = bmesh.from_edit_mesh(obj.data)
+    non_manifold_count = sum(1 for e in bm.edges if e.select)
+    if non_manifold_count > 0:
+        print(f"[cleanup WARN] {non_manifold_count} non-manifold edges detected")
+
+    # 4c. Loose verts/edges 削除（鋭化な孤立 geometry を取り除く）
+    bpy.ops.mesh.select_all(action='SELECT')
+    try:
+        bpy.ops.mesh.delete_loose(use_verts=True, use_edges=True, use_faces=False)
+    except Exception:
+        pass
 
     bpy.ops.object.mode_set(mode='OBJECT')
 
+    # 4d. 孤立 mesh 島を separate → 最大 island だけ残す
+    try:
+        bpy.context.view_layer.objects.active = obj
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_all(action='SELECT')
+        bpy.ops.mesh.separate(type='LOOSE')
+        bpy.ops.object.mode_set(mode='OBJECT')
+        # separated した子を列挙、poly 数最大を残し、他は削除
+        candidates = [o for o in bpy.data.objects if o.name.startswith(obj.name)]
+        if len(candidates) > 1:
+            # 最大 poly 数の object を main とする
+            main = max(candidates, key=lambda o: len(o.data.polygons))
+            removed = 0
+            for c in candidates:
+                if c is not main:
+                    print(f"[cleanup] removing island {c.name}: {len(c.data.polygons)} polys")
+                    bpy.data.objects.remove(c, do_unlink=True)
+                    removed += 1
+            # main の名前を元に戻す
+            main.name = obj.name
+            obj = main
+            print(f"[cleanup] kept main island, removed {removed} floating islands")
+    except Exception as e:
+        print(f"[cleanup WARN] island separate: {e}")
+
     # 5. Shade smooth + by angle
+    bpy.context.view_layer.objects.active = obj
     bpy.ops.object.shade_smooth()
     try:
         bpy.ops.object.shade_smooth_by_angle(angle=math.radians(smooth_angle_deg))
@@ -339,6 +407,7 @@ def cleanup_post_bridge(obj, merge_thr=0.00005, smooth_angle_deg=60,
 
     # Stats
     print(f"[cleanup] {obj.name}: final {len(obj.data.vertices)} verts / {len(obj.data.polygons)} faces")
+    return obj
 
 
 def verify_hollow_clearance(obj, center=(0, 0, 0.30), inner_r=0.30, margin=0.005):
@@ -454,7 +523,7 @@ for name, attach, outward, base_r, sq, hole_r in LIMB_SPECS:
 # ============================================================
 # 7. Post-Bridge cleanup (Agent2 レシピ)
 # ============================================================
-cleanup_post_bridge(
+body_lower = cleanup_post_bridge(
     body_lower,
     merge_thr=0.00005,
     smooth_angle_deg=60,
@@ -566,6 +635,7 @@ bpy.ops.object.mode_set(mode='OBJECT')
 
 # ============================================================
 # 11. Parent mesh to armature
+#    body_upper は CapHinge に 100% weight → カプセル開閉 animation 可能に
 # ============================================================
 mesh_objects = [body_lower, head, body_upper, eye_l, eye_r, mouth]
 bpy.ops.object.select_all(action='DESELECT')
@@ -574,6 +644,17 @@ for m in mesh_objects:
 armature_obj.select_set(True)
 bpy.context.view_layer.objects.active = armature_obj
 bpy.ops.object.parent_set(type='ARMATURE_AUTO')
+
+# --- body_upper を CapHinge に 100% weight 付与（capsule opening anim 準備）
+# ARMATURE_AUTO は近接 bone ベースで dome を Head/Neck に誤割当するため、
+# 明示的に全 vertex group を clear → CapHinge のみ 1.0 weight
+for vg_name in list(body_upper.vertex_groups.keys()):
+    vg = body_upper.vertex_groups.get(vg_name)
+    if vg:
+        body_upper.vertex_groups.remove(vg)
+vg_cap = body_upper.vertex_groups.new(name="CapHinge")
+vg_cap.add(range(len(body_upper.data.vertices)), 1.0, 'REPLACE')
+print(f"[armature] body_upper fully weighted to CapHinge ({len(body_upper.data.vertices)} verts)")
 
 # ============================================================
 # 12. Save + Export
