@@ -263,10 +263,10 @@ foot_x = attach_xy(FOOT_Z, FOOT_R, overlap=0.015)
 
 foot_l = add_sphere("Foot_L", (-foot_x, 0.03, FOOT_Z), FOOT_R, 32, 16, mat_pink)
 foot_r = add_sphere("Foot_R", ( foot_x, 0.03, FOOT_Z), FOOT_R, 32, 16, mat_pink)
-# Y方向 stretch で Kirby 風 oval 足に（ただし tangent 計算は pre-stretch 球基準、
-# 縦縮めで接触点がずれるが overlap 0.005 のマージン内）
-squash(foot_l, 0.9, 1.4, 0.7)
-squash(foot_r, 0.9, 1.4, 0.7)
+# Kirby 風 oval 足：x 少し細く、y 前後 stretch、z は 1.0 で tangent 計算通り接触
+# （z を 0.7 にすると foot top が 30mm 下がって body との gap が発生するため）
+squash(foot_l, 0.9, 1.4, 1.0)
+squash(foot_r, 0.9, 1.4, 1.0)
 
 limb_meshes = [hand_l, hand_r_mesh, foot_l, foot_r]
 print(f"[limbs] attached: hand @ (±{hand_x:.3f}, 0, {HAND_Z}), foot @ (±{foot_x:.3f}, 0.03, {FOOT_Z})")
