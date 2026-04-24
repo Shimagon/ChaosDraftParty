@@ -634,7 +634,11 @@ bpy.ops.export_scene.fbx(
     mesh_smooth_type='FACE',
     use_armature_deform_only=False,
     add_leaf_bones=False,
-    bake_anim=False,
+    bake_anim=True,
+    bake_anim_use_all_actions=True,
+    bake_anim_use_nla_strips=False,
+    bake_anim_step=1.0,
+    bake_anim_simplify_factor=1.0,
     path_mode='AUTO',
     embed_textures=False,
 )
