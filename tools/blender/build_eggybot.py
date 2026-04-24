@@ -110,21 +110,20 @@ def boolean_difference(target, cutter):
 # ============================================================
 def create_body_lower_metaball(material=None):
     """
-    v15.2: 「普通のカプセル」設計。
-    下 pink = 上 dome と同寸の半球お椀。rim 完全 flush。
-    手足は一旦削除（metaball 路線では body rim 拡大と limb 融合が両立しないため）。
-    将来 mascot を dome 内に配置して、腕/足は透明ドーム越しに見せる方針。
+    v15.3: 「中空お椀」設計。
+    下 pink = 上 dome と完全同じ shell 幾何の半球お椀。玉（マスコット）が入る空洞あり。
 
-    幾何:
-      UV sphere @ (0, 0, PARTING_Z) radius=DOME_RADIUS
-      → bisect z>PARTING_Z を切除 + disc fill
-      → 下半球のみ残る。rim radius == dome rim radius == DOME_RADIUS。
+    幾何 = dome と完全 mirror:
+      - base UV sphere r=0.325（dome base と同じ）at (0, 0, PARTING_Z)
+      - bisect @ z=PARTING_Z、下半分のみ残す（use_fill=False で open rim）
+      - Solidify thickness=0.05 offset=0 use_rim=False → wall shell
+      → outer r=0.35, inner r=0.30, 下半分の open-top bowl
     """
-    # Dome の実 outer rim は base sphere (0.325) + solidify outer offset (0.025) = 0.35
-    DOME_OUTER_R = 0.350
+    BASE_SPHERE_R = 0.325   # dome と同じ base
+    WALL_THICKNESS = 0.050  # dome と同じ壁厚
 
     bpy.ops.mesh.primitive_uv_sphere_add(
-        radius=DOME_OUTER_R,
+        radius=BASE_SPHERE_R,
         segments=64,
         ring_count=32,
         location=(0, 0, PARTING_Z),
@@ -133,7 +132,7 @@ def create_body_lower_metaball(material=None):
     body_mesh.name = "BodyLower"
     body_mesh.data.name = "BodyLowerMesh"
 
-    # --- Bisect: 上半分 (z>PARTING_Z) を切除、disc fill で top cap
+    # --- Bisect: 上半 (z>PARTING_Z) を切除、top は open（use_fill=False）
     bpy.ops.object.mode_set(mode='EDIT')
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.bisect(
@@ -141,10 +140,18 @@ def create_body_lower_metaball(material=None):
         plane_no=(0.0, 0.0, 1.0),
         clear_outer=True,
         clear_inner=False,
-        use_fill=True,
+        use_fill=False,
     )
-    bpy.ops.mesh.select_all(action='DESELECT')
     bpy.ops.object.mode_set(mode='OBJECT')
+
+    # --- Solidify shell（dome と完全同じパラメータ）
+    sol = body_mesh.modifiers.new(name="SHELL", type='SOLIDIFY')
+    sol.thickness = WALL_THICKNESS
+    sol.offset = 0.0
+    sol.use_even_offset = True
+    sol.use_quality_normals = True
+    sol.use_rim = False
+    bpy.ops.object.modifier_apply(modifier="SHELL")
 
     # --- Shade smooth
     bpy.ops.object.shade_smooth()
@@ -156,8 +163,9 @@ def create_body_lower_metaball(material=None):
     if material:
         body_mesh.data.materials.append(material)
 
-    print(f"[body_lower] v15.2 clean hemisphere: r={DOME_OUTER_R}, "
-          f"{len(body_mesh.data.vertices)} verts, rim@z={PARTING_Z}")
+    print(f"[body_lower] v15.3 hollow shell: outer r={BASE_SPHERE_R + WALL_THICKNESS/2:.3f}, "
+          f"inner r={BASE_SPHERE_R - WALL_THICKNESS/2:.3f}, "
+          f"{len(body_mesh.data.vertices)} verts")
     return body_mesh
 
 
