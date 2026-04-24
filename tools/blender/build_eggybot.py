@@ -110,14 +110,18 @@ def boolean_difference(target, cutter):
 # ============================================================
 def create_body_lower_metaball(material=None):
     """
-    v15.3: 「中空お椀」設計。
-    下 pink = 上 dome と完全同じ shell 幾何の半球お椀。玉（マスコット）が入る空洞あり。
+    v15.4: 中空お椀 + Kirby 手足 embed。
+    下 pink = 上 dome と同じ shell 幾何の半球お椀 + 手足 4 個 Boolean UNION 埋め込み。
 
-    幾何 = dome と完全 mirror:
-      - base UV sphere r=0.325（dome base と同じ）at (0, 0, PARTING_Z)
-      - bisect @ z=PARTING_Z、下半分のみ残す（use_fill=False で open rim）
-      - Solidify thickness=0.05 offset=0 use_rim=False → wall shell
-      → outer r=0.35, inner r=0.30, 下半分の open-top bowl
+    幾何:
+      1. base UV sphere r=0.325、bisect で下半球、Solidify(use_rim=True) で manifold shell
+         → outer r=0.336, inner r=0.314
+      2. Hand / Foot sphere 4 個 UNION：
+         - 手: (±0.37, 0, 0.15) r=0.08 → closest=0.319 > inner 0.314 ✓
+         - 足: (±0.12, 0, -0.07) r=0.09 stretch(0.9,1.4,0.7) → closest~0.325 > 0.314 ✓
+         全 limb が inner wall より外 → hollow 空洞そのまま保持
+
+    Kirby 的手足の embedding で、body から自然にふくらむ bulge に見える。
     """
     BASE_SPHERE_R = 0.325   # dome と同じ base
     WALL_THICKNESS = 0.022  # dome と同じ壁厚
@@ -132,7 +136,11 @@ def create_body_lower_metaball(material=None):
     body_mesh.name = "BodyLower"
     body_mesh.data.name = "BodyLowerMesh"
 
-    # --- Bisect: 上半 (z>PARTING_Z) を切除、top は open（use_fill=False）
+    # Material を先に割当（UNION で temp limb が material-less スロット追加するのを防ぐ）
+    if material:
+        body_mesh.data.materials.append(material)
+
+    # --- Bisect: 上半切除、top open
     bpy.ops.object.mode_set(mode='EDIT')
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.bisect(
@@ -144,27 +152,51 @@ def create_body_lower_metaball(material=None):
     )
     bpy.ops.object.mode_set(mode='OBJECT')
 
-    # --- Solidify shell（dome と完全同じパラメータ）
+    # --- Solidify shell（use_rim=True で manifold 化、Boolean UNION に必要）
     sol = body_mesh.modifiers.new(name="SHELL", type='SOLIDIFY')
     sol.thickness = WALL_THICKNESS
     sol.offset = 0.0
     sol.use_even_offset = True
     sol.use_quality_normals = True
-    sol.use_rim = False
+    sol.use_rim = True  # 上縁に annular ring 作る → closed manifold
     bpy.ops.object.modifier_apply(modifier="SHELL")
 
+    # --- Kirby 手足を UNION 埋め込み（全て inner wall 外なので hollow 保持）
+    def union_into_body(limb_name, loc, radius, stretch=None):
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=radius, segments=32, ring_count=16, location=loc)
+        limb = bpy.context.object
+        limb.name = limb_name + "_tmp"
+        if stretch:
+            limb.scale = stretch
+            bpy.ops.object.transform_apply(scale=True)
+        # limb にも同じ material 割当（UNION で slot 0 共有）
+        if material:
+            limb.data.materials.append(material)
+        # UNION into body_mesh
+        bpy.context.view_layer.objects.active = body_mesh
+        bpy.ops.object.select_all(action='DESELECT')
+        body_mesh.select_set(True)
+        mod = body_mesh.modifiers.new(name=f"UNION_{limb_name}", type='BOOLEAN')
+        mod.object = limb
+        mod.operation = 'UNION'
+        mod.solver = 'EXACT'
+        bpy.ops.object.modifier_apply(modifier=mod.name)
+        bpy.data.objects.remove(limb, do_unlink=True)
+
+    union_into_body("HandL", (-0.37, 0, 0.15), 0.08)
+    union_into_body("HandR", ( 0.37, 0, 0.15), 0.08)
+    union_into_body("FootL", (-0.12, 0, -0.07), 0.09, stretch=(0.9, 1.4, 0.7))
+    union_into_body("FootR", ( 0.12, 0, -0.07), 0.09, stretch=(0.9, 1.4, 0.7))
+
     # --- Shade smooth
+    bpy.context.view_layer.objects.active = body_mesh
     bpy.ops.object.shade_smooth()
     try:
         bpy.ops.object.shade_smooth_by_angle(angle=math.radians(60))
     except Exception:
         pass
 
-    if material:
-        body_mesh.data.materials.append(material)
-
-    print(f"[body_lower] v15.3 hollow shell: outer r={BASE_SPHERE_R + WALL_THICKNESS/2:.3f}, "
-          f"inner r={BASE_SPHERE_R - WALL_THICKNESS/2:.3f}, "
+    print(f"[body_lower] v15.4 hollow shell + Kirby limbs: "
           f"{len(body_mesh.data.vertices)} verts")
     return body_mesh
 
@@ -242,6 +274,8 @@ mouth.name = "Mouth"
 mouth.data.materials.append(mat_dark)
 bpy.ops.mesh.primitive_cube_add(size=0.5, location=(0, -0.305, MOUTH_Z + 0.25))
 boolean_difference(mouth, bpy.context.object)
+
+# v15.4: 手足は body_lower に UNION 済みで独立 mesh なし（vertex group 経由で animation）
 
 # ============================================================
 # 7. Armature
