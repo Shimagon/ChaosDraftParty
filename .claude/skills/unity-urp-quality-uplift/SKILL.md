@@ -181,6 +181,7 @@ Body 色から saturated 派生色を作って `Color.Lerp(base, red, 0.55)` で
 - 以後は **分離 parts + SSAO で接合隠し** 方針
 - `EGGYBOT_SoftPlastic.shader`, `EGGYBOT_Glass.shader`, `CharLab_Skybox.shader` が再利用資産
 - 2026-04-24 EGGYBOT v9: **Boolean UNION (EXACT solver)** で手足を body に merge → seam 完全消失 + ARMATURE_AUTO で rigging 可能を両立（commit `3af6666`）
+- 2026-04-24 EGGYBOT v10: **Bridge Edge Loops で Boolean UNION 廃止** → rim ガビガビ (moiré) 根絶 + Kirby 風 stubby 手足の manifold 接合（commit `4658928` + `bd9794a`）
 
 ---
 
@@ -234,3 +235,114 @@ def boolean_union(target, other, remove_other=True):
 tools/blender/eggybot_preview.sh
 # 内部: blender --background --python build_eggybot.py --python render_eggybot_previews.py + open preview/
 ```
+
+---
+
+## Bridge Edge Loops で限界品質 manifold 接続（v10 breakthrough）
+
+**問題**: Boolean UNION (EXACT solver) 後の pot rim 付近に **moiré 状のガビガビ texture** が Cycles render に出る。root cause は duplicate vertex (1e-7 オーダー) + degenerate face + normal 不連続。UNION 出力自体が非 manifold 近いため、shading が崩れる。
+
+**解**: UNION を完全廃止し、**bmesh で body に穴を開け + pre-shaped hemisphere limb を join + `bpy.ops.mesh.bridge_edge_loops()`** で manifold 接続に切り替え。
+
+### 核心 1: hemisphere limb の clean open edge 作成
+
+UV sphere を斜めカットすると open edge が jagged になり bridge が spike まみれに。**pre-rotate してから axis-aligned に cut** するとクリーンな赤道 ring が得られる：
+
+```python
+def create_hemisphere_limb(name, radius, squash_xyz, outward_dir_world, attach_world, protrude_offset=0.005):
+    # 1. sphere を origin に作る
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=radius, segments=32, ring_count=16, location=(0,0,0))
+    obj = bpy.context.object
+    # 2. bmesh で上半球削除（local Z > 0 の face）→ 下半球 + 赤道 open edge（clean 32-edge loop）
+    bpy.ops.object.mode_set(mode='EDIT')
+    bm = bmesh.from_edit_mesh(obj.data)
+    bm.faces.ensure_lookup_table()
+    faces_to_delete = [f for f in bm.faces if min(v.co.z for v in f.verts) > 0.0001]
+    bmesh.ops.delete(bm, geom=faces_to_delete, context='FACES')
+    bmesh.update_edit_mesh(obj.data)
+    bpy.ops.object.mode_set(mode='OBJECT')
+    # 3. Squash（local frame、Z は長さ方向）→ apply
+    obj.scale = squash_xyz
+    bpy.ops.object.transform_apply(scale=True)
+    # 4. local +Z → body 方向に rotate（opening が body を向く）→ apply
+    body_dir = -Vector(outward_dir_world).normalized()
+    quat = Vector((0,0,1)).rotation_difference(body_dir)
+    obj.rotation_mode = 'QUATERNION'
+    obj.rotation_quaternion = quat
+    bpy.ops.object.transform_apply(rotation=True)
+    # 5. attach_world + outward*epsilon に配置（bridge 用の neck 厚）
+    obj.location = Vector(attach_world) + Vector(outward_dir_world).normalized() * protrude_offset
+    return obj
+```
+
+### 核心 2: bridge の edge 選択で rim を除外
+
+join 後の boundary edges には (a) pot rim (b) body hole (c) limb opening が混在。`bridge_edge_loops` は選択された edge を全て pair するので **rim を混入させてはいけない**。world Z = PARTING_Z ± tolerance の edge を除外：
+
+```python
+for e in bm.edges:
+    if not e.is_boundary:
+        continue
+    mp_world = (body.matrix_world @ e.verts[0].co + body.matrix_world @ e.verts[1].co) * 0.5
+    if abs(mp_world.z - PARTING_Z) < 0.008:
+        continue  # rim 除外
+    if (mp_world - attach_world).length < hole_radius * 3.5:
+        e.select_set(True)
+bpy.ops.mesh.bridge_edge_loops(type='SINGLE', number_cuts=0, interpolation='LINEAR')
+```
+
+### 核心 3: Post-Bridge cleanup (moiré 根絶)
+
+```python
+def cleanup_post_bridge(obj, merge_thr=0.00005, smooth_angle_deg=60):
+    bpy.ops.object.mode_set(mode='EDIT')
+    bm = bmesh.from_edit_mesh(obj.data)
+    bmesh.ops.remove_doubles(bm, verts=list(bm.verts), dist=merge_thr)
+    # tiny area face 削除 + dissolve_degenerate + normals_make_consistent
+    # rim edge を edge.smooth=False でsharp マーク
+    bmesh.update_edit_mesh(obj.data)
+    bpy.ops.object.shade_smooth()
+    bpy.ops.object.shade_smooth_by_angle(angle=math.radians(smooth_angle_deg))
+```
+
+### ハマりポイント
+
+- **Blender 5.1 で `bpy.ops.mesh.merge_by_distance` が消失** → `bmesh.ops.remove_doubles` 経由で OK
+- **`bridge_edge_loops` の `twist` parameter は Blender 5.1 で除去済** → 呼び出しから削除
+- **primitive_uv_sphere_add + squash の v.co 座標系**: 実測すると v.co は **local frame（origin 中心）**、object.location に translation 入る。`matrix_world @ v.co` で確実に world を取る
+- **join 後 Python の limb wrapper は invalidated** → `limb.name` 等の access は join 前に save
+
+### Kirby 制約（hollow 下の妥協点）
+
+純 Kirby 型（球を body に半分めり込ませる）は hollow (pot inner r=0.30) 貫通で不可。制約内の最適解：
+- Hemisphere r=0.15-0.17、Z 方向（outward）だけ elongated（scale 1.25-1.40）
+- 他軸 (XY) は 1.0 (stubby 保持)
+- attach_world は outer surface 上（z=0.22 で arm、z=-0.02 で leg）
+- Bridge で body と manifold、見た目は Kirby 風の丸い出っ張り
+
+---
+
+## 2026-04-24 product-shot uplift の数値レシピ
+
+**SoftPlastic shader** (v10 default):
+- `_SSSPower` 2.5 → **3.8**（back-light 透過の厚み感）
+- `_InteriorShadow` 0.40 → **0.22**（pot 内壁が薄く見える）
+- `_RimIntensity` 0.6 → **0.80** / `_Smoothness` 0.35 → **0.68** / `_SpecularIntensity` 0.6 → **0.85**
+- `_RimColor` pale (0.88,0.92) → **pure white (1,1,1)**（edge pop）
+
+**Glass shader** (v10 default):
+- `_FresnelPower` 2.8 → **2.1**（physical IOR 相当の softer fresnel）
+- `_RefractionStrength` 0.025 → **0.015**（turntable 中の歪み過剰回避）
+
+**Post-FX (CharacterLab)**:
+- `TonemappingMode` ACES → **Neutral**（パーティゲームは ACES の暗部沈み不適）
+- `ambientIntensity` 0.75 → **0.88** + `ambientGroundColor` warm shift (0.30,0.30,0.34) → (0.42,0.38,0.35)
+- `Bloom.threshold` 1.0 → **0.85** / `intensity` 0.35 → **0.45** / `postExposure` +0.4 → **+0.5**
+
+**Material (per variant)**:
+- BodyGloss `smoothness` 0.82 → **0.68** / `spec` 1.10 → **0.85** / `rim` 0.55 → **0.80**
+- HeadMatte `smoothness` 0.03 → **0.10**（micro-spec で plastic 感 add） / `rim` 0.15 → **0.30**
+
+**Blender preview ↔ Unity parity**:
+- Blender Cycles の 3-point light energy を Unity Directional intensity と 1:1 揃える
+- Key 3.5 → 1.05 / Fill 1.4 → 0.45 / Rim 1.8 → 0.95 + BackKick 0.8 追加
