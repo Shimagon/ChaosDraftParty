@@ -122,14 +122,15 @@ def create_body_lower_metaball(material=None):
 
     # --- Elements (5 個: body + arms + legs)
     # (name, location, radius, stiffness)
-    # sketch #63: head 近くまで body top 伸ばし、arms/legs が silhouette から organic に
-    # ふくらむ。body r=0.42, z_c=0.10 → top z=0.52 ≈ head bottom (z=0.53)。
+    # legs を body effective field 内に収める（距離 < 0.35）。
+    # 以前 legs at z=-0.30 だと body との field gap で分離 surface に。
+    # stiffness 下げると field 広がって融合強化。
     elements = [
-        ("Body", (0.00, 0.00,  0.10), 0.42, 2.0),  # main mass、top ≈z=0.52
-        ("ArmL", (-0.33, 0.00, 0.05), 0.14, 2.0),
-        ("ArmR", ( 0.33, 0.00, 0.05), 0.14, 2.0),
-        ("LegL", (-0.20, 0.00, -0.30), 0.15, 2.0),
-        ("LegR", ( 0.20, 0.00, -0.30), 0.15, 2.0),
+        ("Body", (0.00, 0.00,  0.10), 0.42, 2.0),  # main mass
+        ("ArmL", (-0.33, 0.00, 0.05), 0.14, 1.8),
+        ("ArmR", ( 0.33, 0.00, 0.05), 0.14, 1.8),
+        ("LegL", (-0.18, 0.00, -0.18), 0.15, 1.5),  # body 近く、field 広め
+        ("LegR", ( 0.18, 0.00, -0.18), 0.15, 1.5),
     ]
     for name, loc, radius, stiffness in elements:
         elem = mball_data.elements.new()
@@ -294,12 +295,12 @@ sh_r = bone("RightShoulder", (-0.05, 0, 0.18), (-0.15, 0, 0.12), chest)
 up_r = bone("RightUpperArm", (-0.15, 0, 0.12), (-0.25, 0, 0.10), sh_r)
 lo_r = bone("RightLowerArm", (-0.25, 0, 0.10), (-0.32, 0, 0.08), up_r)
 hand_r = bone("RightHand", (-0.32, 0, 0.08), (-0.36, 0, 0.07), lo_r)
-upl_l = bone("LeftUpperLeg", (0.13, 0, 0.05), (0.13, 0, -0.08), hips)
-lol_l = bone("LeftLowerLeg", (0.13, 0, -0.08), (0.13, 0, -0.18), upl_l)
-foot_l = bone("LeftFoot", (0.13, 0, -0.18), (0.13, -0.04, -0.22), lol_l)
-upl_r = bone("RightUpperLeg", (-0.13, 0, 0.05), (-0.13, 0, -0.08), hips)
-lol_r = bone("RightLowerLeg", (-0.13, 0, -0.08), (-0.13, 0, -0.18), upl_r)
-foot_r = bone("RightFoot", (-0.13, 0, -0.18), (-0.13, -0.04, -0.22), lol_r)
+upl_l = bone("LeftUpperLeg", (0.18, 0, 0.00), (0.18, 0, -0.12), hips)
+lol_l = bone("LeftLowerLeg", (0.18, 0, -0.12), (0.18, 0, -0.22), upl_l)
+foot_l = bone("LeftFoot", (0.18, 0, -0.22), (0.18, -0.04, -0.28), lol_l)
+upl_r = bone("RightUpperLeg", (-0.18, 0, 0.00), (-0.18, 0, -0.12), hips)
+lol_r = bone("RightLowerLeg", (-0.18, 0, -0.12), (-0.18, 0, -0.22), upl_r)
+foot_r = bone("RightFoot", (-0.18, 0, -0.22), (-0.18, -0.04, -0.28), lol_r)
 
 bpy.ops.object.mode_set(mode='OBJECT')
 
