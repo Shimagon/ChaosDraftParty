@@ -188,22 +188,30 @@ def bridge_limb_to_body(body, limb, attach_world, hole_radius,
     limb_name = limb.name
     attach_world_vec = Vector(attach_world)
 
-    # --- 1. body の face 削除（attach 近傍）
+    # --- 1. body の OUTER wall 側 face のみ削除
+    # 重要: pot は Solidify shell (inner r=0.30 / outer r=0.35)。
+    # attach 近傍には outer/inner 両方の face があり、両方削除すると内壁に貫通穴
+    # → arm が pot 内部に露出 (Image #58 の hole)。
+    # radial 距離 > 0.325 (wall midline) の face = outer wall のみ削除。
     bpy.context.view_layer.objects.active = body
     bpy.ops.object.mode_set(mode='EDIT')
     bm_body = bmesh.from_edit_mesh(body.data)
     bm_body.faces.ensure_lookup_table()
 
     body_mw = body.matrix_world.copy()
+    pot_center_world = Vector((0, 0, exclude_rim_z))
+    WALL_MIDLINE = 0.325
     faces_to_delete = []
     for f in bm_body.faces:
         worlds = [body_mw @ v.co for v in f.verts]
         face_center_world = sum(worlds, Vector()) / len(worlds)
+        if (face_center_world - pot_center_world).length < WALL_MIDLINE:
+            continue  # inner wall / rim bottom を skip（outer only）
         if (face_center_world - attach_world_vec).length < hole_radius:
             faces_to_delete.append(f)
 
     if not faces_to_delete:
-        print(f"[bridge WARN] {limb_name}: no body faces within {hole_radius} of {attach_world}")
+        print(f"[bridge WARN] {limb_name}: no outer body faces within {hole_radius} of {attach_world}")
         bpy.ops.object.mode_set(mode='OBJECT')
         return False
 
@@ -347,21 +355,38 @@ def cleanup_post_bridge(obj, merge_thr=0.0002, smooth_angle_deg=60,
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.normals_make_consistent(inside=False)
 
-    # 4. Rim edges を mark sharp + crease=1.0（subsurf 保護兼用）
+    # 4. Rim edges の crease + sharp 設定
+    # 水平 edges at world z ≈ rim_z_world を全て選ぶ（rim face 内部の radial edge も
+    # 含めて crease、subsurf でも rim plate を angular 保持）。
+    bpy.ops.mesh.select_all(action='DESELECT')
     bm = bmesh.from_edit_mesh(obj.data)
     bm.edges.ensure_lookup_table()
-    crease_layer = bm.edges.layers.float.get("crease_edge") or bm.edges.layers.float.new("crease_edge")
-    rim_count = 0
+    rim_candidates = []
     for e in bm.edges:
-        if not e.is_boundary:
-            continue
         z_vals = [(obj.matrix_world @ v.co).z for v in e.verts]
-        if all(abs(z - rim_z_world) < rim_tolerance for z in z_vals):
-            e.smooth = False  # mark sharp
-            e[crease_layer] = 1.0  # subsurf でも rim 保持
-            rim_count += 1
+        z_mean = sum(z_vals) / len(z_vals)
+        if abs(z_mean - rim_z_world) > 0.010:
+            continue
+        # 水平のみ（vertical な edge は wall、crease 不要）
+        if abs(z_vals[0] - z_vals[1]) > 0.004:
+            continue
+        e.select_set(True)
+        e.smooth = False
+        rim_candidates.append(e)
     bmesh.update_edit_mesh(obj.data)
-    print(f"[cleanup] marked {rim_count} rim edges as sharp + crease")
+    print(f"[cleanup] selected {len(rim_candidates)} rim horizontal edges")
+
+    if rim_candidates:
+        try:
+            bpy.ops.transform.edge_crease(value=1.0)
+            print(f"[cleanup] rim crease=1.0 applied")
+        except Exception as e:
+            print(f"[cleanup WARN] edge_crease: {e}")
+        try:
+            bpy.ops.mesh.mark_sharp()
+            print(f"[cleanup] rim mark_sharp applied")
+        except Exception as e:
+            print(f"[cleanup WARN] mark_sharp: {e}")
 
     # 4b. 真の non-manifold (multi-face edge = 3+ face 共有) のみ検出
     bpy.ops.mesh.select_all(action='DESELECT')
