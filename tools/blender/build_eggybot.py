@@ -391,28 +391,80 @@ print(f"[body_lower] after UNION + Subsurf: {len(body_lower.data.vertices)} vert
 limb_meshes = []
 
 # ============================================================
-# 6. Eyes + Mouth
+# 6. Eyes + Mouth (v15.10: #91 reference — 顔 flat embedded dots)
 # ============================================================
-EYE_Y = -0.24
-EYE_Z = 0.85
-EYE_DX = 0.11
-eye_l = add_sphere("Eye_L", (-EYE_DX, EYE_Y, EYE_Z), 0.062, 28, 16, mat_dark)
-eye_r = add_sphere("Eye_R", ( EYE_DX, EYE_Y, EYE_Z), 0.062, 28, 16, mat_dark)
+# #90 指摘「顔パーツが浮いてる」→ head 表面に flat disc として埋め込み
+# #91 sketch「簡素な :) 」→ 小さな点 eye + 短い smile arc
+#
+# Head 表面位置計算 (head は squashed sphere: z_scale 0.98, center (0,0,0.82), r=0.29):
+#   eye 位置 (x=±0.10, z=0.87) における head 表面 world y:
+#     local_z = 0.05 → 元 local_z (squash 前) = 0.05/0.98 = 0.051
+#     local_y² = 0.29² - 0.10² - 0.051² = 0.0714 → |local_y| = 0.267
+#     head 表面 y ≈ -0.267
+EYE_DX = 0.10
+EYE_Z = 0.87
+EYE_R = 0.045
+EYE_Y = -0.257  # head 表面より 10mm 外、squash Y 0.35 で disc 化
 
-MOUTH_Z = 0.78
+eye_l = add_sphere("Eye_L", (-EYE_DX, EYE_Y, EYE_Z), EYE_R, 32, 16, mat_dark)
+eye_r = add_sphere("Eye_R", ( EYE_DX, EYE_Y, EYE_Z), EYE_R, 32, 16, mat_dark)
+# Y 方向 squash で flat disc 化 — 面から「ドット」的に見える（bulge 約 6mm）
+squash(eye_l, 1.0, 0.35, 1.1)
+squash(eye_r, 1.0, 0.35, 1.1)
+
+# --- Mouth: 小さな smile arc (#91 簡素な :))
+# head 表面 y at (0, z=0.81): local_z=-0.01, (−0.01/0.98)²=0.000104
+#   local_y² = 0.29² - 0 - 0.000104 = 0.0840 → |y| = 0.2899
+#   head 表面 y ≈ -0.290、mouth を 8mm 外に配置
+MOUTH_Y = -0.282
+MOUTH_Z = 0.80
 bpy.ops.mesh.primitive_torus_add(
-    location=(0, -0.305, MOUTH_Z),
-    major_radius=0.075,
-    minor_radius=0.012,
+    location=(0, MOUTH_Y, MOUTH_Z),
+    major_radius=0.038,
+    minor_radius=0.007,
     rotation=(math.pi/2, 0, 0),
-    major_segments=36,
-    minor_segments=10,
+    major_segments=32,
+    minor_segments=8,
 )
 mouth = bpy.context.object
 mouth.name = "Mouth"
 mouth.data.materials.append(mat_dark)
-bpy.ops.mesh.primitive_cube_add(size=0.5, location=(0, -0.305, MOUTH_Z + 0.25))
+# Upper half cut — smile curve だけ残す
+bpy.ops.mesh.primitive_cube_add(size=0.25, location=(0, MOUTH_Y, MOUTH_Z + 0.13))
 boolean_difference(mouth, bpy.context.object)
+
+# ============================================================
+# NOTE: 複数表情サポートの設計方針（M2 で実装予定）
+# ============================================================
+# 現状は 3D mesh eyes + mouth 固定。多表情（smile/sad/wink/laugh 等）の
+# 実装方法 3 つ：
+#
+# A. Texture swap（推奨、Kirby / Mario / 星のカービィ 方式）:
+#    - Head 前面に curved plane（decal）を貼り、UV mapping で顔 texture 割当
+#    - Unity 側で Material.SetTexture("_BaseMap", expression_N) で瞬時切替
+#    - 1 mesh + material swap で animation 可、最軽量、表情追加も PNG 1 枚
+#    - 作業量: face plane mesh 追加、UV、PNG 5–10 種作成
+#    - 難易度: 中（texture 作成が手間、Meshy AI or 2D illustrator ツール活用）
+#
+# B. Shape keys（Blender native morph target）:
+#    - smile/sad/angry 各表情を shape key として作成
+#    - FBX export 時に bake、Unity で Animator/BlendTree 制御
+#    - 作業量: shape key × N 表情 × eye/mouth ...
+#    - 難易度: 高（Blender sculpting 必要、export の互換性注意）
+#
+# C. Swappable mesh parts（素朴）:
+#    - Eye_L_Smile / Eye_L_Wide / ... 各 variant mesh を armature 配下に
+#    - Script で SetActive 切替
+#    - 作業量: mesh × N × parts、管理煩雑、非推奨
+#
+# 推奨: A → B → C の順。当面は fixed mesh で OK、M2 フェーズで A に拡張。
+# 顔 plane を追加する準備として、現 eye/mouth は将来 plane に置換可能な
+# shallow embed 形状で設計（Y squash 0.35 でほぼ surface decal 同等）。
+#
+# 「顔が胴体に収納される」ギミック（user 言及）:
+#   - "Head" bone で head を translate down（カプセル閉じ時に body 内部へ）
+#   - CapHinge bone で dome 開閉 → 組み合わせで gashapon opening anim 実現
+#   - 現 armature に Head bone 既存、animation 側で実装（M3-M4）
 
 # ============================================================
 # 7. Armature
