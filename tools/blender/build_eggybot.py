@@ -202,15 +202,24 @@ def bridge_limb_to_body(body, limb, attach_world, hole_radius,
     pot_center_world = Vector((0, 0, exclude_rim_z))
     WALL_MIDLINE = 0.325
     faces_to_delete = []
+    near_attach_diag = []  # diagnostic
     for f in bm_body.faces:
         worlds = [body_mw @ v.co for v in f.verts]
         face_center_world = sum(worlds, Vector()) / len(worlds)
-        if (face_center_world - pot_center_world).length < WALL_MIDLINE:
-            continue  # inner wall / rim bottom を skip（outer only）
-        if (face_center_world - attach_world_vec).length < hole_radius:
+        radial = (face_center_world - pot_center_world).length
+        dist_to_attach = (face_center_world - attach_world_vec).length
+        if dist_to_attach < hole_radius * 2.0:  # diag: 近いやつ記録
+            near_attach_diag.append((radial, dist_to_attach))
+        if radial < WALL_MIDLINE:
+            continue
+        if dist_to_attach < hole_radius:
             faces_to_delete.append(f)
 
     if not faces_to_delete:
+        # diag
+        if near_attach_diag:
+            near_attach_diag.sort(key=lambda x: x[1])
+            print(f"[bridge DBG] near attach {attach_world}: closest 3 face radial/dist = {near_attach_diag[:3]}")
         print(f"[bridge WARN] {limb_name}: no outer body faces within {hole_radius} of {attach_world}")
         bpy.ops.object.mode_set(mode='OBJECT')
         return False
@@ -494,15 +503,18 @@ WALL_THICKNESS = 0.050
 
 body_lower = add_sphere("BodyLower", (0, 0, PARTING_Z), BASE_SPHERE_R, 64, 32, mat_pink)
 
-# bmesh で top 削除（equator ring 保持）
+# bisect で local z=0 (= world PARTING_Z) ぴったりカット → pot は bottom half のみ
+# bmesh delete だと ring_count=32 (偶数) で equator ring が無く straddle face が残り、
+# pot/dome 間で material overlap + 水平 seam 発生。bisect なら clean cut。
 bpy.context.view_layer.objects.active = body_lower
 bpy.ops.object.mode_set(mode='EDIT')
-bm = bmesh.from_edit_mesh(body_lower.data)
-bm.faces.ensure_lookup_table()
-faces_to_delete = [f for f in bm.faces
-                   if min(v.co.z for v in f.verts) > 0.0001]
-bmesh.ops.delete(bm, geom=faces_to_delete, context='FACES')
-bmesh.update_edit_mesh(body_lower.data)
+bpy.ops.mesh.select_all(action='SELECT')
+bpy.ops.mesh.bisect(
+    plane_co=(0, 0, PARTING_Z),  # world z=PARTING_Z=0.30 でカット、pot 下半球のみ残す
+    plane_no=(0, 0, 1),
+    clear_outer=True,
+    use_fill=False,
+)
 bpy.ops.object.mode_set(mode='OBJECT')
 
 # Solidify offset=0 で wall 作成（rim z=PARTING_Z 保持）
@@ -545,8 +557,11 @@ for v in head.data.vertices:
 
 LIMB_SPECS = [
     # (name, attach_world, outward_world, base_radius, squash_xyz, hole_radius)
-    ("Arm_L", (-0.33, 0, 0.22), (-1.0, 0, 0.0), 0.16, (1.00, 1.00, 1.25), 0.10),
-    ("Arm_R", ( 0.33, 0, 0.22), ( 1.0, 0, 0.0), 0.16, (1.00, 1.00, 1.25), 0.10),
+    # Image #61 リファレンス: arm は body 中腹より下、stubby で rim を超えない
+    # z=0.10 で pot outer r = sqrt(0.35² - 0.20²) = 0.287 → attach_x = ±0.29
+    # radius 0.13 (小さめ) + squash (1,1,1.10) で stubby ティアドロップ
+    ("Arm_L", (-0.29, 0, 0.10), (-1.0, 0, 0.0), 0.13, (1.00, 1.00, 1.10), 0.08),
+    ("Arm_R", ( 0.29, 0, 0.10), ( 1.0, 0, 0.0), 0.13, (1.00, 1.00, 1.10), 0.08),
     ("Leg_L", (-0.13, 0, -0.02), (-0.3, 0, -1.0), 0.15, (1.00, 1.00, 1.40), 0.09),
     ("Leg_R", ( 0.13, 0, -0.02), ( 0.3, 0, -1.0), 0.15, (1.00, 1.00, 1.40), 0.09),
 ]
@@ -592,14 +607,16 @@ verify_hollow_clearance(body_lower, center=(0, 0, PARTING_Z), inner_r=0.30, marg
 # ============================================================
 body_upper = add_sphere("BodyUpperClear", (0, 0, PARTING_Z), BASE_SPHERE_R, 64, 32, mat_clear)
 
+# bisect で world z=PARTING_Z カット → dome は top half のみ（pot と完全対称）
 bpy.context.view_layer.objects.active = body_upper
 bpy.ops.object.mode_set(mode='EDIT')
-bm_u = bmesh.from_edit_mesh(body_upper.data)
-bm_u.faces.ensure_lookup_table()
-bottom_faces = [f for f in bm_u.faces
-                if max(v.co.z for v in f.verts) < -0.0001]
-bmesh.ops.delete(bm_u, geom=bottom_faces, context='FACES')
-bmesh.update_edit_mesh(body_upper.data)
+bpy.ops.mesh.select_all(action='SELECT')
+bpy.ops.mesh.bisect(
+    plane_co=(0, 0, PARTING_Z),
+    plane_no=(0, 0, 1),
+    clear_inner=True,  # 下半球 (z<PARTING_Z) を削除
+    use_fill=False,
+)
 bpy.ops.object.mode_set(mode='OBJECT')
 
 sol_dome = body_upper.modifiers.new(name="SHELL", type='SOLIDIFY')
