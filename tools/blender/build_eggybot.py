@@ -488,27 +488,42 @@ def bone(name, head_, tail_, parent=None):
         eb.use_connect = False
     return eb
 
-hips = bone("Hips", (0, 0, 0.10), (0, 0, 0.20))
-spine = bone("Spine", (0, 0, 0.20), (0, 0, 0.30), hips)
-chest = bone("Chest", (0, 0, 0.30), (0, 0, 0.50), spine)
-neck = bone("Neck", (0, 0, 0.50), (0, 0, 0.60), chest)
-head_b = bone("Head", (0, 0, 0.60), (0, 0, 0.95), neck)
+# v15.11: 手足 mesh 位置に bone を合わせる
+# 手: (±0.431, 0, 0.22), stretched (1.5, 1.0, 0.9) → 範囲 x∈[±0.311, ±0.551]
+# 足: (±0.131, 0.03, -0.10), stretched (0.9, 1.4, 1.0) → 範囲 y∈[-0.11, 0.17]
+# Mixamo / Unity Humanoid Rig 互換 naming を維持
+
+hips = bone("Hips", (0, 0, 0.05), (0, 0, 0.18))
+spine = bone("Spine", (0, 0, 0.18), (0, 0, 0.28), hips)
+chest = bone("Chest", (0, 0, 0.28), (0, 0, 0.55), spine)
+neck = bone("Neck", (0, 0, 0.55), (0, 0, 0.65), chest)
+head_b = bone("Head", (0, 0, 0.65), (0, 0, 1.10), neck)
+
+# CapHinge: dome bottom back rim (gashapon clam-shell 開閉軸)
 cap_hinge_bone = bone("CapHinge", (0, 0.34, PARTING_Z),
                       (0, 0.34, PARTING_Z + 0.12), chest)
-sh_l = bone("LeftShoulder", (0.05, 0, 0.18), (0.15, 0, 0.12), chest)
-up_l = bone("LeftUpperArm", (0.15, 0, 0.12), (0.25, 0, 0.10), sh_l)
-lo_l = bone("LeftLowerArm", (0.25, 0, 0.10), (0.32, 0, 0.08), up_l)
-hand_l = bone("LeftHand", (0.32, 0, 0.08), (0.36, 0, 0.07), lo_l)
-sh_r = bone("RightShoulder", (-0.05, 0, 0.18), (-0.15, 0, 0.12), chest)
-up_r = bone("RightUpperArm", (-0.15, 0, 0.12), (-0.25, 0, 0.10), sh_r)
-lo_r = bone("RightLowerArm", (-0.25, 0, 0.10), (-0.32, 0, 0.08), up_r)
-hand_r = bone("RightHand", (-0.32, 0, 0.08), (-0.36, 0, 0.07), lo_r)
-upl_l = bone("LeftUpperLeg", (0.18, 0, 0.00), (0.18, 0, -0.12), hips)
-lol_l = bone("LeftLowerLeg", (0.18, 0, -0.12), (0.18, 0, -0.22), upl_l)
-foot_l = bone("LeftFoot", (0.18, 0, -0.22), (0.18, -0.04, -0.28), lol_l)
-upl_r = bone("RightUpperLeg", (-0.18, 0, 0.00), (-0.18, 0, -0.12), hips)
-lol_r = bone("RightLowerLeg", (-0.18, 0, -0.12), (-0.18, 0, -0.22), upl_r)
-foot_r = bone("RightFoot", (-0.18, 0, -0.22), (-0.18, -0.04, -0.28), lol_r)
+
+# Left arm chain — hand mesh center (0.431, 0, 0.22) に向かって伸びる
+sh_l = bone("LeftShoulder", (0.15, 0, 0.28), (0.28, 0, 0.23), chest)
+up_l = bone("LeftUpperArm", (0.28, 0, 0.23), (0.40, 0, 0.22), sh_l)
+lo_l = bone("LeftLowerArm", (0.40, 0, 0.22), (0.48, 0, 0.22), up_l)
+hand_l = bone("LeftHand", (0.48, 0, 0.22), (0.54, 0, 0.22), lo_l)
+
+# Right arm chain — mirror
+sh_r = bone("RightShoulder", (-0.15, 0, 0.28), (-0.28, 0, 0.23), chest)
+up_r = bone("RightUpperArm", (-0.28, 0, 0.23), (-0.40, 0, 0.22), sh_r)
+lo_r = bone("RightLowerArm", (-0.40, 0, 0.22), (-0.48, 0, 0.22), up_r)
+hand_r = bone("RightHand", (-0.48, 0, 0.22), (-0.54, 0, 0.22), lo_r)
+
+# Left leg chain — foot mesh center (0.131, 0.03, -0.10)
+upl_l = bone("LeftUpperLeg", (0.10, 0, 0.05), (0.131, 0, -0.02), hips)
+lol_l = bone("LeftLowerLeg", (0.131, 0, -0.02), (0.131, 0, -0.09), upl_l)
+foot_l = bone("LeftFoot", (0.131, 0.03, -0.09), (0.131, -0.08, -0.15), lol_l)
+
+# Right leg chain
+upl_r = bone("RightUpperLeg", (-0.10, 0, 0.05), (-0.131, 0, -0.02), hips)
+lol_r = bone("RightLowerLeg", (-0.131, 0, -0.02), (-0.131, 0, -0.09), upl_r)
+foot_r = bone("RightFoot", (-0.131, 0.03, -0.09), (-0.131, -0.08, -0.15), lol_r)
 
 bpy.ops.object.mode_set(mode='OBJECT')
 
@@ -523,6 +538,64 @@ armature_obj.select_set(True)
 bpy.context.view_layer.objects.active = armature_obj
 bpy.ops.object.parent_set(type='ARMATURE_AUTO')
 
+# v15.11: body_lower は merged mesh（body + hands + feet 統合）→ ARMATURE_AUTO の
+# 熱拡散 weight だと腕 bone が body 半分に影響（31% 汚染検証済）。
+# 空間座標で clean に limb 領域を assign し直す。
+#   Hand 領域: |x| > 0.30 AND 0.10 < z < 0.32 → LeftUpperArm / RightUpperArm 100%
+#   Foot 領域: z < -0.04                       → LeftUpperLeg / RightUpperLeg 100%
+#   その他   : ARMATURE_AUTO の既存 weight（Hips/Spine/Chest/Neck/Head/CapHinge）維持
+
+# 既存 limb bone weight を body_lower から剥がす
+LIMB_VG_NAMES = ['LeftShoulder', 'LeftUpperArm', 'LeftLowerArm', 'LeftHand',
+                 'RightShoulder', 'RightUpperArm', 'RightLowerArm', 'RightHand',
+                 'LeftUpperLeg', 'LeftLowerLeg', 'LeftFoot',
+                 'RightUpperLeg', 'RightLowerLeg', 'RightFoot']
+for vg_name in LIMB_VG_NAMES:
+    vg = body_lower.vertex_groups.get(vg_name)
+    if vg:
+        body_lower.vertex_groups.remove(vg)
+
+# 空間座標 assign：limb bones 復活
+vg_luarm = body_lower.vertex_groups.new(name='LeftUpperArm')
+vg_ruarm = body_lower.vertex_groups.new(name='RightUpperArm')
+vg_luleg = body_lower.vertex_groups.new(name='LeftUpperLeg')
+vg_ruleg = body_lower.vertex_groups.new(name='RightUpperLeg')
+
+hand_count_l = hand_count_r = foot_count_l = foot_count_r = 0
+for i, v in enumerate(body_lower.data.vertices):
+    wx = v.co.x  # body_lower origin at (0,0,0.30), local/world x 一致
+    wy = v.co.y
+    wz_local = v.co.z  # local z、world z = wz_local + 0.30
+    wz = wz_local + PARTING_Z
+
+    if abs(wx) > 0.30 and 0.10 < wz < 0.32:
+        # Hand 領域
+        if wx > 0:
+            vg_luarm.add([i], 1.0, 'REPLACE')
+            hand_count_l += 1
+        else:
+            vg_ruarm.add([i], 1.0, 'REPLACE')
+            hand_count_r += 1
+    elif wz < -0.04:
+        # Foot 領域（bowl 底 z=-0.036 より下の部分は全部 foot）
+        if wx > 0:
+            vg_luleg.add([i], 1.0, 'REPLACE')
+            foot_count_l += 1
+        else:
+            vg_ruleg.add([i], 1.0, 'REPLACE')
+            foot_count_r += 1
+
+# 残りの bone VG は空 group として追加（Unity Humanoid Rig が要求）
+for vg_name in ['LeftShoulder', 'LeftLowerArm', 'LeftHand',
+                'RightShoulder', 'RightLowerArm', 'RightHand',
+                'LeftLowerLeg', 'LeftFoot',
+                'RightLowerLeg', 'RightFoot']:
+    if not body_lower.vertex_groups.get(vg_name):
+        body_lower.vertex_groups.new(name=vg_name)
+
+print(f"[armature] body_lower spatial weights: "
+      f"hand L={hand_count_l} R={hand_count_r}, foot L={foot_count_l} R={foot_count_r}")
+
 # body_upper (clear dome) を CapHinge 100% weight で開閉 anim 可能に
 for vg_name in list(body_upper.vertex_groups.keys()):
     vg = body_upper.vertex_groups.get(vg_name)
@@ -531,6 +604,17 @@ for vg_name in list(body_upper.vertex_groups.keys()):
 vg_cap = body_upper.vertex_groups.new(name="CapHinge")
 vg_cap.add(range(len(body_upper.data.vertices)), 1.0, 'REPLACE')
 print(f"[armature] body_upper → CapHinge 100% weight ({len(body_upper.data.vertices)} verts)")
+
+# v15.11: head / eye_l / eye_r / mouth を Head bone 100% weight に明示設定
+# ARMATURE_AUTO は小さい object で weight 不確定になりがち → 明示化で顔 animation の
+# 予測可能性を保証、また gashapon 開閉時の head retract も Head bone 制御で完結
+for obj, obj_name in [(head, "Head"), (eye_l, "Eye_L"),
+                       (eye_r, "Eye_R"), (mouth, "Mouth")]:
+    for vg_name in list(obj.vertex_groups.keys()):
+        obj.vertex_groups.remove(obj.vertex_groups[vg_name])
+    vg = obj.vertex_groups.new(name="Head")
+    vg.add(range(len(obj.data.vertices)), 1.0, 'REPLACE')
+print(f"[armature] head + eyes + mouth → Head bone 100% weight (4 objects)")
 
 # ============================================================
 # 9. Save + Export
