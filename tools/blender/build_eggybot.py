@@ -110,18 +110,14 @@ def boolean_difference(target, cutter):
 # ============================================================
 def create_body_lower_metaball(material=None):
     """
-    v15.4: 中空お椀 + Kirby 手足 embed。
-    下 pink = 上 dome と同じ shell 幾何の半球お椀 + 手足 4 個 Boolean UNION 埋め込み。
+    v15.3: 「中空お椀」設計。
+    下 pink = 上 dome と完全同じ shell 幾何の半球お椀。玉（マスコット）が入る空洞あり。
 
-    幾何:
-      1. base UV sphere r=0.325、bisect で下半球、Solidify(use_rim=True) で manifold shell
-         → outer r=0.336, inner r=0.314
-      2. Hand / Foot sphere 4 個 UNION：
-         - 手: (±0.37, 0, 0.15) r=0.08 → closest=0.319 > inner 0.314 ✓
-         - 足: (±0.12, 0, -0.07) r=0.09 stretch(0.9,1.4,0.7) → closest~0.325 > 0.314 ✓
-         全 limb が inner wall より外 → hollow 空洞そのまま保持
-
-    Kirby 的手足の embedding で、body から自然にふくらむ bulge に見える。
+    幾何 = dome と完全 mirror:
+      - base UV sphere r=0.325（dome base と同じ）at (0, 0, PARTING_Z)
+      - bisect @ z=PARTING_Z、下半分のみ残す（use_fill=False で open rim）
+      - Solidify thickness=0.05 offset=0 use_rim=False → wall shell
+      → outer r=0.35, inner r=0.30, 下半分の open-top bowl
     """
     BASE_SPHERE_R = 0.325   # dome と同じ base
     WALL_THICKNESS = 0.022  # dome と同じ壁厚
@@ -136,11 +132,7 @@ def create_body_lower_metaball(material=None):
     body_mesh.name = "BodyLower"
     body_mesh.data.name = "BodyLowerMesh"
 
-    # Material を先に割当（UNION で temp limb が material-less スロット追加するのを防ぐ）
-    if material:
-        body_mesh.data.materials.append(material)
-
-    # --- Bisect: 上半切除、top open
+    # --- Bisect: 上半 (z>PARTING_Z) を切除、top は open（use_fill=False）
     bpy.ops.object.mode_set(mode='EDIT')
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.bisect(
@@ -152,53 +144,27 @@ def create_body_lower_metaball(material=None):
     )
     bpy.ops.object.mode_set(mode='OBJECT')
 
-    # --- Solidify shell（use_rim=True で manifold 化、Boolean UNION に必要）
+    # --- Solidify shell（dome と完全同じパラメータ）
     sol = body_mesh.modifiers.new(name="SHELL", type='SOLIDIFY')
     sol.thickness = WALL_THICKNESS
     sol.offset = 0.0
     sol.use_even_offset = True
     sol.use_quality_normals = True
-    sol.use_rim = True  # 上縁に annular ring 作る → closed manifold
+    sol.use_rim = False
     bpy.ops.object.modifier_apply(modifier="SHELL")
 
-    # --- Kirby 手足を UNION 埋め込み（全て inner wall 外なので hollow 保持）
-    def union_into_body(limb_name, loc, radius, stretch=None):
-        bpy.ops.mesh.primitive_uv_sphere_add(radius=radius, segments=32, ring_count=16, location=loc)
-        limb = bpy.context.object
-        limb.name = limb_name + "_tmp"
-        if stretch:
-            limb.scale = stretch
-            bpy.ops.object.transform_apply(scale=True)
-        # limb にも同じ material 割当（UNION で slot 0 共有）
-        if material:
-            limb.data.materials.append(material)
-        # UNION into body_mesh
-        bpy.context.view_layer.objects.active = body_mesh
-        bpy.ops.object.select_all(action='DESELECT')
-        body_mesh.select_set(True)
-        mod = body_mesh.modifiers.new(name=f"UNION_{limb_name}", type='BOOLEAN')
-        mod.object = limb
-        mod.operation = 'UNION'
-        mod.solver = 'EXACT'
-        bpy.ops.object.modifier_apply(modifier=mod.name)
-        bpy.data.objects.remove(limb, do_unlink=True)
-
-    # Hand z=0.22 + r=0.08 → hand top が z=0.30 rim に ちょうど届く（透明 dome 領域には入らない）
-    # dist = √(0.40²+0.08²) = 0.408 → closest = 0.328 > inner 0.314 (margin 14mm)
-    union_into_body("HandL", (-0.40, 0, 0.22), 0.08)
-    union_into_body("HandR", ( 0.40, 0, 0.22), 0.08)
-    union_into_body("FootL", (-0.12, 0, -0.07), 0.09, stretch=(0.9, 1.4, 0.7))
-    union_into_body("FootR", ( 0.12, 0, -0.07), 0.09, stretch=(0.9, 1.4, 0.7))
-
     # --- Shade smooth
-    bpy.context.view_layer.objects.active = body_mesh
     bpy.ops.object.shade_smooth()
     try:
         bpy.ops.object.shade_smooth_by_angle(angle=math.radians(60))
     except Exception:
         pass
 
-    print(f"[body_lower] v15.4 hollow shell + Kirby limbs: "
+    if material:
+        body_mesh.data.materials.append(material)
+
+    print(f"[body_lower] v15.3 hollow shell: outer r={BASE_SPHERE_R + WALL_THICKNESS/2:.3f}, "
+          f"inner r={BASE_SPHERE_R - WALL_THICKNESS/2:.3f}, "
           f"{len(body_mesh.data.vertices)} verts")
     return body_mesh
 
@@ -254,6 +220,58 @@ except Exception:
     pass
 
 # ============================================================
+# 5.5 Kirby 風 手足 — 計算で attach（溶接しない、body 外球に tangent 食い込み位置）
+# ============================================================
+# 戦略: Boolean UNION / metaball を廃止、独立 mesh として数学的に body 外面に
+# 「ほんの少しめり込む」位置を計算して配置。
+#   - body outer sphere: center (0,0,PARTING_Z), radius 0.336
+#   - limb sphere を body_center から (0.336 + r_limb - overlap) 離す → 外壁に数 mm 食い込む
+#   - overlap = 0.005 (5mm) なら visual に gap 消えるが inner wall 0.314 には届かず hollow 保持
+# 各 limb は独立 mesh で armature bone 個別 animation 可能、body shell は無傷。
+
+BODY_OUTER_R = 0.336  # body_lower outer surface radius
+HOLLOW_INNER_R = 0.314  # inner wall radius (touch しない制約)
+
+def attach_xy(z, r_limb, overlap=0.015, body_cz=PARTING_Z, body_r=BODY_OUTER_R):
+    """
+    Return x (or y) displacement so a sphere of radius r_limb at (x, 0, z)
+    overlaps body outer sphere by `overlap` meters (closest surfaces intersect by that much).
+    Returns None if geometrically impossible (too far in z).
+    """
+    d_required = body_r + r_limb - overlap
+    dz = z - body_cz
+    x2 = d_required * d_required - dz * dz
+    if x2 < 0:
+        return None
+    # Verify hollow stays clean: limb closest to body center must be > HOLLOW_INNER_R
+    limb_closest = d_required - r_limb
+    assert limb_closest > HOLLOW_INNER_R, f"limb at z={z} r={r_limb} would breach inner wall"
+    return math.sqrt(x2)
+
+# Hand: Kirby-style, attached at upper-body side. z=0.22 (rim 直下)
+HAND_R = 0.08
+HAND_Z = 0.22
+hand_x = attach_xy(HAND_Z, HAND_R, overlap=0.015)
+
+hand_l = add_sphere("Hand_L", (-hand_x, 0, HAND_Z), HAND_R, 32, 16, mat_pink)
+hand_r_mesh = add_sphere("Hand_R", ( hand_x, 0, HAND_Z), HAND_R, 32, 16, mat_pink)
+
+# Foot: Kirby-style, attached below body
+FOOT_R = 0.10
+FOOT_Z = -0.10
+foot_x = attach_xy(FOOT_Z, FOOT_R, overlap=0.015)
+
+foot_l = add_sphere("Foot_L", (-foot_x, 0.03, FOOT_Z), FOOT_R, 32, 16, mat_pink)
+foot_r = add_sphere("Foot_R", ( foot_x, 0.03, FOOT_Z), FOOT_R, 32, 16, mat_pink)
+# Y方向 stretch で Kirby 風 oval 足に（ただし tangent 計算は pre-stretch 球基準、
+# 縦縮めで接触点がずれるが overlap 0.005 のマージン内）
+squash(foot_l, 0.9, 1.4, 0.7)
+squash(foot_r, 0.9, 1.4, 0.7)
+
+limb_meshes = [hand_l, hand_r_mesh, foot_l, foot_r]
+print(f"[limbs] attached: hand @ (±{hand_x:.3f}, 0, {HAND_Z}), foot @ (±{foot_x:.3f}, 0.03, {FOOT_Z})")
+
+# ============================================================
 # 6. Eyes + Mouth
 # ============================================================
 EYE_Y = -0.24
@@ -276,8 +294,6 @@ mouth.name = "Mouth"
 mouth.data.materials.append(mat_dark)
 bpy.ops.mesh.primitive_cube_add(size=0.5, location=(0, -0.305, MOUTH_Z + 0.25))
 boolean_difference(mouth, bpy.context.object)
-
-# v15.4: 手足は body_lower に UNION 済みで独立 mesh なし（vertex group 経由で animation）
 
 # ============================================================
 # 7. Armature
@@ -328,7 +344,7 @@ bpy.ops.object.mode_set(mode='OBJECT')
 # ============================================================
 # 8. Parent mesh to armature (ARMATURE_AUTO + CapHinge 明示 weight)
 # ============================================================
-mesh_objects = [body_lower, head, body_upper, eye_l, eye_r, mouth]
+mesh_objects = [body_lower, head, body_upper, eye_l, eye_r, mouth] + limb_meshes
 bpy.ops.object.select_all(action='DESELECT')
 for m in mesh_objects:
     m.select_set(True)
