@@ -110,67 +110,30 @@ def boolean_difference(target, cutter):
 # ============================================================
 def create_body_lower_metaball(material=None):
     """
-    複数 metaball element を同 family に配置 → 融合 → mesh 変換。
-    Body + 4 limb が 1 piece の silhouette になる。
-    上面 (world z > PARTING_Z) はカットして top cap を作る（dome と flush 接合）。
+    v15.2: 「普通のカプセル」設計。
+    下 pink = 上 dome と同寸の半球お椀。rim 完全 flush。
+    手足は一旦削除（metaball 路線では body rim 拡大と limb 融合が両立しないため）。
+    将来 mascot を dome 内に配置して、腕/足は透明ドーム越しに見せる方針。
+
+    幾何:
+      UV sphere @ (0, 0, PARTING_Z) radius=DOME_RADIUS
+      → bisect z>PARTING_Z を切除 + disc fill
+      → 下半球のみ残る。rim radius == dome rim radius == DOME_RADIUS。
     """
-    # --- Metaball data block
-    mball_data = bpy.data.metaballs.new(name="EggybotBody")
-    mball_data.resolution = 0.015        # mesh 変換解像度（小さい→高密度）
-    mball_data.render_resolution = 0.010
-    mball_data.threshold = 0.60          # 融合強度
+    # Dome の実 outer rim は base sphere (0.325) + solidify outer offset (0.025) = 0.35
+    DOME_OUTER_R = 0.350
 
-    # --- Elements (5 個: body + arms + legs)
-    # (name, location, radius, stiffness)
-    # legs を body effective field 内に収める（距離 < 0.35）。
-    # 以前 legs at z=-0.30 だと body との field gap で分離 surface に。
-    # stiffness 下げると field 広がって融合強化。
-    elements = [
-        ("Body", (0.00, 0.00,  0.10), 0.42, 2.0),  # main mass
-        ("ArmL", (-0.33, 0.00, 0.05), 0.14, 1.8),
-        ("ArmR", ( 0.33, 0.00, 0.05), 0.14, 1.8),
-        ("LegL", (-0.18, 0.00, -0.18), 0.15, 1.5),  # body 近く、field 広め
-        ("LegR", ( 0.18, 0.00, -0.18), 0.15, 1.5),
-    ]
-    for name, loc, radius, stiffness in elements:
-        elem = mball_data.elements.new()
-        elem.co = Vector(loc)
-        elem.radius = radius
-        elem.stiffness = stiffness
-        elem.type = 'BALL'
-
-    # --- Object 生成
-    mball_obj = bpy.data.objects.new("BodyLower_MB", object_data=mball_data)
-    bpy.context.collection.objects.link(mball_obj)
-    mball_obj.location = (0, 0, 0)
-
-    # --- Convert to mesh
-    bpy.context.view_layer.objects.active = mball_obj
-    bpy.ops.object.select_all(action='DESELECT')
-    mball_obj.select_set(True)
-    bpy.ops.object.convert(target='MESH')
+    bpy.ops.mesh.primitive_uv_sphere_add(
+        radius=DOME_OUTER_R,
+        segments=64,
+        ring_count=32,
+        location=(0, 0, PARTING_Z),
+    )
     body_mesh = bpy.context.object
     body_mesh.name = "BodyLower"
     body_mesh.data.name = "BodyLowerMesh"
 
-    print(f"[metaball] post-convert: {len(body_mesh.data.vertices)} verts / "
-          f"{len(body_mesh.data.polygons)} faces")
-
-    # --- Subdivision Surface 1 段 apply（rim crease で保持）
-    sub = body_mesh.modifiers.new(name="OrganicSubsurf", type='SUBSURF')
-    sub.levels = 1
-    sub.render_levels = 2
-    sub.use_creases = True
-    bpy.ops.object.modifier_apply(modifier="OrganicSubsurf")
-    print(f"[metaball] Subsurf 1 level applied")
-
-    # --- Bisect at z=PARTING_Z → dome rim と flush な flat top cap 生成
-    # metaball + Subsurf 後だと top が丸く膨らんで dome rim (z=PARTING_Z) より
-    # 数 cm 上にはみ出す。カプセル感を出すため水平カット + disc fill。
-    # Subsurf 済み mesh を cut するので rim が Subsurf で丸められる心配なし。
-    bpy.context.view_layer.objects.active = body_mesh
-    bpy.ops.object.select_all(action='DESELECT')
-    body_mesh.select_set(True)
+    # --- Bisect: 上半分 (z>PARTING_Z) を切除、disc fill で top cap
     bpy.ops.object.mode_set(mode='EDIT')
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.bisect(
@@ -182,21 +145,19 @@ def create_body_lower_metaball(material=None):
     )
     bpy.ops.mesh.select_all(action='DESELECT')
     bpy.ops.object.mode_set(mode='OBJECT')
-    print(f"[metaball] bisect @ z={PARTING_Z} → flush rim with dome")
 
-    # --- Shade smooth + by angle
+    # --- Shade smooth
     bpy.ops.object.shade_smooth()
     try:
         bpy.ops.object.shade_smooth_by_angle(angle=math.radians(60))
     except Exception:
         pass
 
-    # --- Material
     if material:
         body_mesh.data.materials.append(material)
 
-    print(f"[metaball] BodyLower final: {len(body_mesh.data.vertices)} verts / "
-          f"{len(body_mesh.data.polygons)} faces")
+    print(f"[body_lower] v15.2 clean hemisphere: r={DOME_OUTER_R}, "
+          f"{len(body_mesh.data.vertices)} verts, rim@z={PARTING_Z}")
     return body_mesh
 
 
