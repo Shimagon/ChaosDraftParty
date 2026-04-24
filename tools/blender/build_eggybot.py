@@ -177,8 +177,8 @@ def create_body_lower_metaball(material=None):
 # ============================================================
 body_lower = create_body_lower_metaball(material=mat_pink)
 
-# Head — ほぼ球、底軽く flatten
-head = add_sphere("Head", (0, 0, 0.82), 0.29, 64, 32, mat_pink)
+# Head mesh — bone と同名を避けて HeadMesh に rename (Unity Humanoid Rig 混乱回避)
+head = add_sphere("HeadMesh", (0, 0, 0.82), 0.29, 64, 32, mat_pink)
 squash(head, 1.00, 1.00, 0.98)
 for v in head.data.vertices:
     wz = v.co.z + head.location.z
