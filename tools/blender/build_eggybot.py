@@ -110,62 +110,139 @@ def boolean_difference(target, cutter):
 # ============================================================
 def create_body_lower_metaball(material=None):
     """
-    v15.3: 「中空お椀」設計。
-    下 pink = 上 dome と完全同じ shell 幾何の半球お椀。玉（マスコット）が入る空洞あり。
+    v15.7: Voxel Remesh「ペタって覆う」方式で Kirby 風 seamless blend。
 
-    幾何 = dome と完全 mirror:
-      - base UV sphere r=0.325（dome base と同じ）at (0, 0, PARTING_Z)
-      - bisect @ z=PARTING_Z、下半分のみ残す（use_fill=False で open rim）
-      - Solidify thickness=0.05 offset=0 use_rim=False → wall shell
-      → outer r=0.35, inner r=0.30, 下半分の open-top bowl
+    パイプライン:
+      1. Outer 半球（z<=PARTING_Z のみ）+ Hand x2 + Foot x2 を join（同一 object）
+      2. Voxel Remesh で全てを包む 1 枚の連続皮に再生成 → 手足 body 接合 seamless
+      3. Inner 半球（smooth, flipped normals）を別途作成 → hollow 保持
+      4. Outer remeshed + Inner を最終 join
+
+      結果: outer に手足 bulge が滑らかに融合、inner 側は smooth なまま中空保持。
     """
-    BASE_SPHERE_R = 0.325   # dome と同じ base
-    WALL_THICKNESS = 0.022  # dome と同じ壁厚
+    OUTER_R = 0.336
+    INNER_R = 0.314
 
+    # ===== 1. Outer hemisphere =====
     bpy.ops.mesh.primitive_uv_sphere_add(
-        radius=BASE_SPHERE_R,
-        segments=64,
-        ring_count=32,
+        radius=OUTER_R, segments=64, ring_count=32,
         location=(0, 0, PARTING_Z),
     )
-    body_mesh = bpy.context.object
-    body_mesh.name = "BodyLower"
-    body_mesh.data.name = "BodyLowerMesh"
+    outer = bpy.context.object
+    outer.name = "BodyLowerOuter"
 
-    # --- Bisect: 上半 (z>PARTING_Z) を切除、top は open（use_fill=False）
     bpy.ops.object.mode_set(mode='EDIT')
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.bisect(
-        plane_co=(0.0, 0.0, PARTING_Z),
-        plane_no=(0.0, 0.0, 1.0),
-        clear_outer=True,
-        clear_inner=False,
-        use_fill=False,
+        plane_co=(0, 0, PARTING_Z), plane_no=(0, 0, 1),
+        clear_outer=True, use_fill=False,
     )
     bpy.ops.object.mode_set(mode='OBJECT')
 
-    # --- Solidify shell（dome と完全同じパラメータ）
-    sol = body_mesh.modifiers.new(name="SHELL", type='SOLIDIFY')
-    sol.thickness = WALL_THICKNESS
-    sol.offset = 0.0
-    sol.use_even_offset = True
-    sol.use_quality_normals = True
-    sol.use_rim = False
-    bpy.ops.object.modifier_apply(modifier="SHELL")
+    if material:
+        outer.data.materials.append(material)
 
-    # --- Shade smooth
+    # ===== 2. Hand/foot spheres at calculated attach positions =====
+    def attach_xy(z, r_limb, overlap=0.015, body_r=OUTER_R):
+        d_req = body_r + r_limb - overlap
+        dz = z - PARTING_Z
+        return math.sqrt(d_req * d_req - dz * dz)
+
+    HAND_R, HAND_Z = 0.08, 0.19  # rim から少し離して voxel remesh artifact 防ぐ
+    FOOT_R, FOOT_Z = 0.10, -0.10
+    hand_x = attach_xy(HAND_Z, HAND_R)
+    foot_x = attach_xy(FOOT_Z, FOOT_R)
+
+    limb_specs = [
+        ("HandL", (-hand_x, 0, HAND_Z), HAND_R, (1, 1, 1)),
+        ("HandR", ( hand_x, 0, HAND_Z), HAND_R, (1, 1, 1)),
+        ("FootL", (-foot_x, 0.03, FOOT_Z), FOOT_R, (0.9, 1.4, 1.0)),
+        ("FootR", ( foot_x, 0.03, FOOT_Z), FOOT_R, (0.9, 1.4, 1.0)),
+    ]
+    limbs = []
+    for name, loc, r, stretch in limb_specs:
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=r, segments=32, ring_count=16, location=loc)
+        l = bpy.context.object
+        l.name = name + "_tmp"
+        if stretch != (1, 1, 1):
+            l.scale = stretch
+            bpy.ops.object.select_all(action='DESELECT')
+            l.select_set(True)
+            bpy.context.view_layer.objects.active = l
+            bpy.ops.object.transform_apply(scale=True)
+        if material:
+            l.data.materials.append(material)
+        limbs.append(l)
+
+    # ===== 3. Join outer + limbs into one =====
+    bpy.ops.object.select_all(action='DESELECT')
+    for l in limbs:
+        l.select_set(True)
+    outer.select_set(True)
+    bpy.context.view_layer.objects.active = outer
+    bpy.ops.object.join()
+    body_outer = outer  # joined result
+
+    # ===== 4. Voxel Remesh — user's 「ペタって覆う」 idea =====
+    # voxel 小さいほど形保持、大きいほど滑らかブレンド。0.012 (12mm) で balance
+    remesh = body_outer.modifiers.new(name="VoxelWrap", type='REMESH')
+    remesh.mode = 'VOXEL'
+    remesh.voxel_size = 0.006
+    remesh.use_smooth_shade = True
+    bpy.ops.object.modifier_apply(modifier="VoxelWrap")
+    print(f"[body_lower] v15.7 voxel remesh: {len(body_outer.data.vertices)} verts (outer)")
+
+    # --- Smooth modifier で voxel artifacts を後処理
+    smooth = body_outer.modifiers.new(name="SmoothVoxelArtifacts", type='SMOOTH')
+    smooth.factor = 1.0
+    smooth.iterations = 15
+    bpy.ops.object.modifier_apply(modifier="SmoothVoxelArtifacts")
+
+    # Subsurf 1 level で最終 polish
+    subsurf = body_outer.modifiers.new(name="FinalSmooth", type='SUBSURF')
+    subsurf.levels = 1
+    subsurf.render_levels = 1
+    bpy.ops.object.modifier_apply(modifier="FinalSmooth")
+
+    # ===== 5. Inner smooth hemisphere (flipped normals, 手足 bump なし) =====
+    bpy.ops.mesh.primitive_uv_sphere_add(
+        radius=INNER_R, segments=64, ring_count=32,
+        location=(0, 0, PARTING_Z),
+    )
+    inner = bpy.context.object
+    inner.name = "BodyLowerInner"
+
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.bisect(
+        plane_co=(0, 0, PARTING_Z), plane_no=(0, 0, 1),
+        clear_outer=True, use_fill=False,
+    )
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.flip_normals()
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+    if material:
+        inner.data.materials.append(material)
+
+    # ===== 6. Join inner into body_outer for final shell =====
+    bpy.ops.object.select_all(action='DESELECT')
+    inner.select_set(True)
+    body_outer.select_set(True)
+    bpy.context.view_layer.objects.active = body_outer
+    bpy.ops.object.join()
+
+    body_mesh = body_outer
+    body_mesh.name = "BodyLower"
+    body_mesh.data.name = "BodyLowerMesh"
+
     bpy.ops.object.shade_smooth()
     try:
         bpy.ops.object.shade_smooth_by_angle(angle=math.radians(60))
     except Exception:
         pass
 
-    if material:
-        body_mesh.data.materials.append(material)
-
-    print(f"[body_lower] v15.3 hollow shell: outer r={BASE_SPHERE_R + WALL_THICKNESS/2:.3f}, "
-          f"inner r={BASE_SPHERE_R - WALL_THICKNESS/2:.3f}, "
-          f"{len(body_mesh.data.vertices)} verts")
+    print(f"[body_lower] v15.7 final: {len(body_mesh.data.vertices)} verts (outer+inner joined)")
     return body_mesh
 
 
@@ -220,56 +297,7 @@ except Exception:
     pass
 
 # ============================================================
-# 5.5 Kirby 風 手足 — 計算で attach（溶接しない、body 外球に tangent 食い込み位置）
-# ============================================================
-# 戦略: Boolean UNION / metaball を廃止、独立 mesh として数学的に body 外面に
-# 「ほんの少しめり込む」位置を計算して配置。
-#   - body outer sphere: center (0,0,PARTING_Z), radius 0.336
-#   - limb sphere を body_center から (0.336 + r_limb - overlap) 離す → 外壁に数 mm 食い込む
-#   - overlap = 0.005 (5mm) なら visual に gap 消えるが inner wall 0.314 には届かず hollow 保持
-# 各 limb は独立 mesh で armature bone 個別 animation 可能、body shell は無傷。
-
-BODY_OUTER_R = 0.336  # body_lower outer surface radius
-HOLLOW_INNER_R = 0.314  # inner wall radius (touch しない制約)
-
-def attach_xy(z, r_limb, overlap=0.015, body_cz=PARTING_Z, body_r=BODY_OUTER_R):
-    """
-    Return x (or y) displacement so a sphere of radius r_limb at (x, 0, z)
-    overlaps body outer sphere by `overlap` meters (closest surfaces intersect by that much).
-    Returns None if geometrically impossible (too far in z).
-    """
-    d_required = body_r + r_limb - overlap
-    dz = z - body_cz
-    x2 = d_required * d_required - dz * dz
-    if x2 < 0:
-        return None
-    # Verify hollow stays clean: limb closest to body center must be > HOLLOW_INNER_R
-    limb_closest = d_required - r_limb
-    assert limb_closest > HOLLOW_INNER_R, f"limb at z={z} r={r_limb} would breach inner wall"
-    return math.sqrt(x2)
-
-# Hand: Kirby-style, attached at upper-body side. z=0.22 (rim 直下)
-HAND_R = 0.08
-HAND_Z = 0.22
-hand_x = attach_xy(HAND_Z, HAND_R, overlap=0.015)
-
-hand_l = add_sphere("Hand_L", (-hand_x, 0, HAND_Z), HAND_R, 32, 16, mat_pink)
-hand_r_mesh = add_sphere("Hand_R", ( hand_x, 0, HAND_Z), HAND_R, 32, 16, mat_pink)
-
-# Foot: Kirby-style, attached below body
-FOOT_R = 0.10
-FOOT_Z = -0.10
-foot_x = attach_xy(FOOT_Z, FOOT_R, overlap=0.015)
-
-foot_l = add_sphere("Foot_L", (-foot_x, 0.03, FOOT_Z), FOOT_R, 32, 16, mat_pink)
-foot_r = add_sphere("Foot_R", ( foot_x, 0.03, FOOT_Z), FOOT_R, 32, 16, mat_pink)
-# Kirby 風 oval 足：x 少し細く、y 前後 stretch、z は 1.0 で tangent 計算通り接触
-# （z を 0.7 にすると foot top が 30mm 下がって body との gap が発生するため）
-squash(foot_l, 0.9, 1.4, 1.0)
-squash(foot_r, 0.9, 1.4, 1.0)
-
-limb_meshes = [hand_l, hand_r_mesh, foot_l, foot_r]
-print(f"[limbs] attached: hand @ (±{hand_x:.3f}, 0, {HAND_Z}), foot @ (±{foot_x:.3f}, 0.03, {FOOT_Z})")
+# v15.7: 手足は create_body_lower_metaball() 内で Voxel Remesh により body と融合済み
 
 # ============================================================
 # 6. Eyes + Mouth
@@ -344,7 +372,7 @@ bpy.ops.object.mode_set(mode='OBJECT')
 # ============================================================
 # 8. Parent mesh to armature (ARMATURE_AUTO + CapHinge 明示 weight)
 # ============================================================
-mesh_objects = [body_lower, head, body_upper, eye_l, eye_r, mouth] + limb_meshes
+mesh_objects = [body_lower, head, body_upper, eye_l, eye_r, mouth]
 bpy.ops.object.select_all(action='DESELECT')
 for m in mesh_objects:
     m.select_set(True)
