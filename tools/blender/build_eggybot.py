@@ -183,8 +183,10 @@ def create_body_lower_metaball(material=None):
         bpy.ops.object.modifier_apply(modifier=mod.name)
         bpy.data.objects.remove(limb, do_unlink=True)
 
-    union_into_body("HandL", (-0.37, 0, 0.15), 0.08)
-    union_into_body("HandR", ( 0.37, 0, 0.15), 0.08)
+    # Hand z=0.22 + r=0.08 → hand top が z=0.30 rim に ちょうど届く（透明 dome 領域には入らない）
+    # dist = √(0.40²+0.08²) = 0.408 → closest = 0.328 > inner 0.314 (margin 14mm)
+    union_into_body("HandL", (-0.40, 0, 0.22), 0.08)
+    union_into_body("HandR", ( 0.40, 0, 0.22), 0.08)
     union_into_body("FootL", (-0.12, 0, -0.07), 0.09, stretch=(0.9, 1.4, 0.7))
     union_into_body("FootR", ( 0.12, 0, -0.07), 0.09, stretch=(0.9, 1.4, 0.7))
 
