@@ -144,13 +144,16 @@ def create_body_lower_metaball(material=None):
     )
     bpy.ops.object.mode_set(mode='OBJECT')
 
-    # --- Solidify shell（dome と完全同じパラメータ）
+    # --- Solidify shell（v15.9: use_rim=True で top を manifold 閉塞）
+    # Boolean UNION は非 manifold で see-through を起こすため、
+    # use_rim=True で outer/inner 間に ring 面を生成 → closed manifold bowl
     sol = body_mesh.modifiers.new(name="SHELL", type='SOLIDIFY')
     sol.thickness = WALL_THICKNESS
     sol.offset = 0.0
     sol.use_even_offset = True
     sol.use_quality_normals = True
-    sol.use_rim = False
+    sol.use_rim = True
+    sol.use_rim_only = False
     bpy.ops.object.modifier_apply(modifier="SHELL")
 
     # --- Shade smooth
@@ -248,13 +251,34 @@ def attach_xy(z, r_limb, overlap=0.015, body_cz=PARTING_Z, body_r=BODY_OUTER_R):
     assert limb_closest > HOLLOW_INNER_R, f"limb at z={z} r={r_limb} would breach inner wall"
     return math.sqrt(x2)
 
-# Hand: Kirby-style, attached at upper-body side. z=0.22 (rim 直下)
+# Hand: Kirby-style, v15.9 で「伸ばした手」化 — 外向きに elongate（#89 reference）
+# 元 UV sphere r=0.08 を outward 1.5 倍 stretch → 実効 x 半径 0.12
+# 位置計算：hand 内側 edge が body outer + 15mm overlap 位置
 HAND_R = 0.08
 HAND_Z = 0.22
-hand_x = attach_xy(HAND_Z, HAND_R, overlap=0.015)
+HAND_STRETCH = (1.5, 1.0, 0.9)   # 外向き伸び + 少し上下 flatten
+HAND_EFFECTIVE_XR = HAND_R * HAND_STRETCH[0]  # 0.12
+
+# body outer surface x at HAND_Z
+body_x_at_hand_z = math.sqrt(BODY_OUTER_R**2 - (HAND_Z - PARTING_Z)**2)
+hand_x = body_x_at_hand_z - 0.015 + HAND_EFFECTIVE_XR  # 0.3264 - 0.015 + 0.12 = 0.4314
+
+# Hollow 侵入 check: stretched ellipsoid の最短点距離
+# vec hand→body, 正規化、effective radius in that direction
+_dx, _dz = -hand_x, PARTING_Z - HAND_Z
+_d = math.sqrt(_dx*_dx + _dz*_dz)
+_ux, _uz = _dx/_d, _dz/_d
+_a, _c = HAND_R * HAND_STRETCH[0], HAND_R * HAND_STRETCH[2]
+_r_eff = 1.0 / math.sqrt((_ux*_ux)/(_a*_a) + (_uz*_uz)/(_c*_c))
+_clearance = (_d - _r_eff) - HOLLOW_INNER_R
+assert _clearance > 0.003, f"hand breaches inner wall: clearance={_clearance:.4f}"
+print(f"[hand] stretched elbow clearance: {_clearance*1000:.1f}mm safe")
 
 hand_l = add_sphere("Hand_L", (-hand_x, 0, HAND_Z), HAND_R, 32, 16, mat_pink)
 hand_r_mesh = add_sphere("Hand_R", ( hand_x, 0, HAND_Z), HAND_R, 32, 16, mat_pink)
+# Apply stretch AFTER placement, BEFORE Boolean UNION
+squash(hand_l, *HAND_STRETCH)
+squash(hand_r_mesh, *HAND_STRETCH)
 
 # Foot: Kirby-style, attached below body
 FOOT_R = 0.10
@@ -322,14 +346,45 @@ bpy.ops.mesh.remove_doubles(threshold=0.0015)
 bpy.ops.mesh.normals_make_consistent(inside=False)
 bpy.ops.object.mode_set(mode='OBJECT')
 
-# Shade smooth by angle: 45° で seam smooth、rim (~90°) sharp 保持
+# --- v15.9: Rim edges に crease=1.0 を付ける（Subsurf で rim sharp 保持）
+# body_lower の origin は world z=PARTING_Z、LOCAL 座標で rim は z=±0.011
+# （bisect は world 0.30 で切る → local z=0 で cut、その後 solidify offset=0 thick=0.022 で ±0.011）
+import bmesh
+RIM_OUTER_Z_LOCAL = 0.011
+RIM_INNER_Z_LOCAL = -0.011
+bm = bmesh.new()
+bm.from_mesh(body_lower.data)
+crease_layer = bm.edges.layers.float.get('crease_edge') or bm.edges.layers.float.new('crease_edge')
+creased = 0
+for edge in bm.edges:
+    z0 = edge.verts[0].co.z
+    z1 = edge.verts[1].co.z
+    on_outer = abs(z0 - RIM_OUTER_Z_LOCAL) < 0.004 and abs(z1 - RIM_OUTER_Z_LOCAL) < 0.004
+    on_inner = abs(z0 - RIM_INNER_Z_LOCAL) < 0.004 and abs(z1 - RIM_INNER_Z_LOCAL) < 0.004
+    if on_outer or on_inner:
+        edge[crease_layer] = 1.0
+        creased += 1
+bm.to_mesh(body_lower.data)
+bm.free()
+print(f"[rim crease] {creased} edges marked (local z=±0.011)")
+
+# --- v15.9: Subdivision Surface level 1 で hand-body blend を smooth 化
+# rim edges は crease=1.0 で sharp 保持、他は 1 段 subdivide で seam 滑らか
+subsurf = body_lower.modifiers.new(name="SmoothBlend", type='SUBSURF')
+subsurf.levels = 1
+subsurf.render_levels = 1
+subsurf.use_creases = True
+bpy.context.view_layer.objects.active = body_lower
+bpy.ops.object.modifier_apply(modifier="SmoothBlend")
+
+# Shade smooth by angle: 45° で seam smooth、rim crease edge は sharp
 bpy.ops.object.shade_smooth()
 try:
     bpy.ops.object.shade_smooth_by_angle(angle=math.radians(45))
 except Exception:
     pass
 
-print(f"[body_lower] after UNION: {len(body_lower.data.vertices)} verts, "
+print(f"[body_lower] after UNION + Subsurf: {len(body_lower.data.vertices)} verts, "
       f"{len(body_lower.data.polygons)} faces")
 
 # limb 個別 mesh は UNION で消費された
