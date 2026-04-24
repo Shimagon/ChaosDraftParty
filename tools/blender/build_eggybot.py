@@ -156,10 +156,6 @@ def create_body_lower_metaball(material=None):
     print(f"[metaball] post-convert: {len(body_mesh.data.vertices)} verts / "
           f"{len(body_mesh.data.polygons)} faces")
 
-    # bisect 廃止: 「粘土塊の自然な丸み」を保つため top cap を作らない。
-    # body top が dome 内部 (z>PARTING_Z) に軽くはみ出すが、dome は transparent
-    # なので character が capsule に入ってる visible effect に貢献する。
-
     # --- Subdivision Surface 1 段 apply（rim crease で保持）
     sub = body_mesh.modifiers.new(name="OrganicSubsurf", type='SUBSURF')
     sub.levels = 1
@@ -167,6 +163,26 @@ def create_body_lower_metaball(material=None):
     sub.use_creases = True
     bpy.ops.object.modifier_apply(modifier="OrganicSubsurf")
     print(f"[metaball] Subsurf 1 level applied")
+
+    # --- Bisect at z=PARTING_Z → dome rim と flush な flat top cap 生成
+    # metaball + Subsurf 後だと top が丸く膨らんで dome rim (z=PARTING_Z) より
+    # 数 cm 上にはみ出す。カプセル感を出すため水平カット + disc fill。
+    # Subsurf 済み mesh を cut するので rim が Subsurf で丸められる心配なし。
+    bpy.context.view_layer.objects.active = body_mesh
+    bpy.ops.object.select_all(action='DESELECT')
+    body_mesh.select_set(True)
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.bisect(
+        plane_co=(0.0, 0.0, PARTING_Z),
+        plane_no=(0.0, 0.0, 1.0),
+        clear_outer=True,
+        clear_inner=False,
+        use_fill=True,
+    )
+    bpy.ops.mesh.select_all(action='DESELECT')
+    bpy.ops.object.mode_set(mode='OBJECT')
+    print(f"[metaball] bisect @ z={PARTING_Z} → flush rim with dome")
 
     # --- Shade smooth + by angle
     bpy.ops.object.shade_smooth()
