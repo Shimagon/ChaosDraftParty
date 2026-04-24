@@ -31,12 +31,17 @@ def add_light(name, loc, rot, energy, color, light_type='SUN'):
     obj.location = loc
     obj.rotation_euler = rot
 
-add_light("Key", (2, -2, 3), (math.radians(45), 0, math.radians(40)),
-          energy=3.5, color=(1.0, 0.98, 0.92))
-add_light("Fill", (-3, -1, 2), (math.radians(30), 0, math.radians(-120)),
-          energy=1.4, color=(0.78, 0.85, 0.95))
-add_light("Rim", (0, 3, 2), (math.radians(-10), 0, math.radians(180)),
-          energy=1.8, color=(1.0, 0.80, 0.92))
+# Unity CharacterLab の 5 light setup と値を mirror（parity 確保、Unity 実機と見え方を揃える）
+# key/fill/rim の比率: 1.05 : 0.45 : 0.95 → Unity と同じ illumination 分布
+add_light("Key", (2, -2, 3), (math.radians(40), 0, math.radians(35)),
+          energy=1.05, color=(1.0, 0.96, 0.88))
+add_light("Fill", (-3, -1, 2), (math.radians(30), 0, math.radians(-135)),
+          energy=0.45, color=(0.72, 0.80, 0.95))
+add_light("Rim", (0, 3, 2), (math.radians(-10), 0, math.radians(185)),
+          energy=0.95, color=(1.0, 0.72, 0.88))
+# BackKick warm silhouette（Unity 側に合わせて追加）
+add_light("BackKick", (1, 3, 1.5), (math.radians(15), 0, math.radians(165)),
+          energy=0.8, color=(1.0, 0.85, 0.60))
 
 # World background (mid-gray studio)
 world = bpy.data.worlds.get("World") or bpy.data.worlds.new("World")

@@ -14,13 +14,13 @@ Shader "ChaosDraftParty/EGGYBOTGlass"
         [HDR] _TintColor        ("Tint Color", Color)      = (0.82, 0.86, 0.92, 1.0)
         _BaseAlpha              ("Base Alpha",     Range(0, 1))  = 0.08
         _EdgeAlpha              ("Edge Alpha",     Range(0, 1))  = 0.92
-        _FresnelPower           ("Fresnel Power",  Range(0.5, 8)) = 2.8
+        _FresnelPower           ("Fresnel Power",  Range(0.5, 8)) = 2.1
         [HDR] _RimColor         ("Rim Color",      Color)        = (1.0, 1.0, 1.0, 1.0)
         _RimPower               ("Rim Power",      Range(1, 32)) = 8.0
         _RimIntensity           ("Rim Intensity",  Range(0, 4))  = 1.2
         _DiffuseTint            ("Diffuse Tint",   Range(0, 1))  = 0.35
-        _Smoothness             ("Specular Smoothness", Range(0,1)) = 0.88
-        _RefractionStrength     ("Refraction Strength", Range(0, 0.1)) = 0.025
+        _Smoothness             ("Specular Smoothness", Range(0,1)) = 0.82
+        _RefractionStrength     ("Refraction Strength", Range(0, 0.1)) = 0.015
         _RefractionMix          ("Refraction Mix",      Range(0, 1))   = 0.65
     }
 

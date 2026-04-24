@@ -118,8 +118,8 @@ namespace ChaosDraftParty.EditorTools
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
             RenderSettings.ambientSkyColor = new Color(0.58f, 0.66f, 0.80f, 1f);
             RenderSettings.ambientEquatorColor = new Color(0.48f, 0.50f, 0.56f, 1f);
-            RenderSettings.ambientGroundColor = new Color(0.30f, 0.30f, 0.34f, 1f);
-            RenderSettings.ambientIntensity = 0.75f;
+            RenderSettings.ambientGroundColor = new Color(0.42f, 0.38f, 0.35f, 1f);  // warm shift
+            RenderSettings.ambientIntensity = 0.88f;  // lift for product-shot feel
 
             // --- Camera ---
             var camGo = new GameObject("Main Camera");
@@ -145,20 +145,21 @@ namespace ChaosDraftParty.EditorTools
             vol.sharedProfile = profile;
 
             var bloom = profile.Add<UnityEngine.Rendering.Universal.Bloom>();
-            bloom.threshold.overrideState = true; bloom.threshold.value = 1.0f;
-            bloom.intensity.overrideState = true; bloom.intensity.value = 0.35f;
+            bloom.threshold.overrideState = true; bloom.threshold.value = 0.85f;
+            bloom.intensity.overrideState = true; bloom.intensity.value = 0.45f;
             bloom.scatter.overrideState = true; bloom.scatter.value = 0.75f;
             bloom.tint.overrideState = true; bloom.tint.value = new Color(1f, 0.95f, 0.92f, 1f);
 
             var color = profile.Add<UnityEngine.Rendering.Universal.ColorAdjustments>();
-            color.postExposure.overrideState = true; color.postExposure.value = 0.4f;
+            color.postExposure.overrideState = true; color.postExposure.value = 0.5f;
             color.contrast.overrideState = true; color.contrast.value = 12f;
             color.saturation.overrideState = true; color.saturation.value = 8f;
             color.colorFilter.overrideState = true;
             color.colorFilter.value = new Color(1.02f, 0.98f, 0.96f, 1f);
 
             var tone = profile.Add<UnityEngine.Rendering.Universal.Tonemapping>();
-            tone.mode.overrideState = true; tone.mode.value = UnityEngine.Rendering.Universal.TonemappingMode.ACES;
+            tone.mode.overrideState = true; tone.mode.value = UnityEngine.Rendering.Universal.TonemappingMode.Neutral;
+            // VISUAL_TARGET.md §1: Neutral is preferred over ACES for party-game pop (ACES crushes darks).
 
             var vignette = profile.Add<UnityEngine.Rendering.Universal.Vignette>();
             vignette.intensity.overrideState = true; vignette.intensity.value = 0.28f;
@@ -247,15 +248,15 @@ namespace ChaosDraftParty.EditorTools
                 var eyeMat = AssetDatabase.LoadAssetAtPath<Material>("Assets/_Project/Art/Materials/EGGYBOT_Eye.mat");
                 var shineMat = LoadOrCreateMat("Assets/_Project/Art/Materials/EGGYBOT_EyeShine.mat",
                     new Color(1f, 1f, 1f, 1f), 0.9f);
-                // Head: matte, 反射ゼロ
+                // Head: matte with slight micro-spec, softer rim pop
                 var headMat = LoadOrCreateSoftPlasticMat(
                     $"Assets/_Project/Art/Materials/EGGYBOT_{names[i]}_HeadMatte.mat",
-                    colors[i], smoothness: 0.03f, spec: 0.0f, rim: 0.15f);
-                // Body + limbs: テカテカ gloss、pot は両面描画で内側も描画
+                    colors[i], smoothness: 0.10f, spec: 0.0f, rim: 0.30f);
+                // Body + limbs: soft gloss (not mirror)、pot 内側は interior shadow で柔らかく
                 var bodyMat = LoadOrCreateSoftPlasticMat(
                     $"Assets/_Project/Art/Materials/EGGYBOT_{names[i]}_BodyGloss.mat",
-                    colors[i], smoothness: 0.82f, spec: 1.10f, rim: 0.55f,
-                    doubleSided: true, interiorShadow: 0.55f);
+                    colors[i], smoothness: 0.68f, spec: 0.85f, rim: 0.80f,
+                    doubleSided: true, interiorShadow: 0.22f);
 
                 foreach (var smr in inst.GetComponentsInChildren<SkinnedMeshRenderer>())
                 {
@@ -349,7 +350,7 @@ namespace ChaosDraftParty.EditorTools
             mat.SetFloat("_SSSPower", 2.2f);
             mat.SetFloat("_SSSScale", 1.05f);
             mat.SetFloat("_WrapFactor", 0.60f);
-            mat.SetColor("_RimColor", Color.Lerp(baseCol, Color.white, 0.45f));
+            mat.SetColor("_RimColor", Color.white);  // pure white rim for sharp product-shot edge pop
             mat.SetFloat("_RimPower", 5.0f);
             mat.SetFloat("_RimIntensity", rim);
             mat.SetFloat("_Smoothness", smoothness);

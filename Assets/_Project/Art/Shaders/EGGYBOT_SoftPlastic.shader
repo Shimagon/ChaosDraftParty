@@ -16,16 +16,16 @@ Shader "ChaosDraftParty/EGGYBOTSoftPlastic"
         _AmbientTint            ("Ambient Tint", Color) = (0.75, 0.60, 0.68, 1.0)
         _SSSColor               ("SSS Color (back-light)", Color) = (1.0, 0.55, 0.55, 1.0)
         _SSSDistortion          ("SSS Distortion", Range(0, 1)) = 0.25
-        _SSSPower               ("SSS Power", Range(1, 8)) = 2.5
+        _SSSPower               ("SSS Power", Range(1, 8)) = 3.8
         _SSSScale               ("SSS Scale", Range(0, 3)) = 1.1
         _WrapFactor             ("Wrap Lighting", Range(0, 1)) = 0.55
-        [HDR] _RimColor         ("Rim Color", Color) = (1.0, 0.88, 0.92, 1.0)
+        [HDR] _RimColor         ("Rim Color", Color) = (1.0, 1.0, 1.0, 1.0)
         _RimPower               ("Rim Power", Range(1, 12)) = 4.0
-        _RimIntensity           ("Rim Intensity", Range(0, 2)) = 0.6
-        _Smoothness             ("Specular Smoothness", Range(0, 1)) = 0.35
-        _SpecularIntensity      ("Specular Intensity", Range(0, 2)) = 0.6
+        _RimIntensity           ("Rim Intensity", Range(0, 2)) = 0.8
+        _Smoothness             ("Specular Smoothness", Range(0, 1)) = 0.68
+        _SpecularIntensity      ("Specular Intensity", Range(0, 2)) = 0.85
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull Mode", Float) = 2
-        _InteriorShadow         ("Interior Shadow (backface darken)", Range(0, 1)) = 0.40
+        _InteriorShadow         ("Interior Shadow (backface darken)", Range(0, 1)) = 0.22
     }
 
     SubShader
