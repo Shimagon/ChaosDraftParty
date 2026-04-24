@@ -120,7 +120,7 @@ def create_body_lower_metaball(material=None):
       → outer r=0.35, inner r=0.30, 下半分の open-top bowl
     """
     BASE_SPHERE_R = 0.325   # dome と同じ base
-    WALL_THICKNESS = 0.050  # dome と同じ壁厚
+    WALL_THICKNESS = 0.022  # dome と同じ壁厚
 
     bpy.ops.mesh.primitive_uv_sphere_add(
         radius=BASE_SPHERE_R,
@@ -187,7 +187,7 @@ for v in head.data.vertices:
 # 5. Body Upper Clear (Glass dome) — pot rim r=0.35 と flush
 # ============================================================
 BASE_SPHERE_R = 0.325  # Solidify offset=0 thick=0.05 で outer=0.35 に一致
-WALL_THICKNESS = 0.050
+WALL_THICKNESS = 0.022
 
 body_upper = add_sphere("BodyUpperClear", (0, 0, PARTING_Z),
                         BASE_SPHERE_R, 64, 32, mat_clear)
