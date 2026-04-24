@@ -64,6 +64,8 @@ description: ChaosDraftParty（Unity 6 + NGO + Relay + URP のソロ卒業制作
 42. [カスタム URP Skybox Shader のハードル — Procedural tuning が速い](#42-カスタム-urp-skybox-shader-のハードル--procedural-tuning-が速い)
 43. [Unity bridge が長時間 down する罠（create_script 連発後）](#43-unity-bridge-が長時間-down-する罠create_script-連発後)
 44. [Unity session down 時の手書き .meta 戦略](#44-unity-session-down-時の手書き-meta-戦略)
+49. [Blender viewport を Material Preview mode にすると Unity URP shader が壊れる](#49-blender-viewport-を-material-preview-mode-にすると-unity-urp-shader-が壊れる)
+50. [ユーザー承認があったときだけナレッジ化する（無条件保存禁止）](#50-ユーザー承認があったときだけナレッジ化する無条件保存禁止)
 
 ---
 
@@ -1283,6 +1285,63 @@ tmp.colorGradient = new TMPro.VertexGradient(
 > 6. Visual 系の変更なら Game View スクショで目視 OK
 
 **初遭遇:** 2026-04-22（MainMenu Commit A-C error 0 件で push → ユーザー「本当に確認してる？笑」）
+
+---
+
+---
+
+## #49. Blender viewport を Material Preview mode にすると Unity URP shader が壊れる
+
+**症状:** Blender 内で material 確認のため `space.shading.type = 'MATERIAL'`（Material Preview mode）に切替えると、Unity URP HLSL shader（`EGGYBOT_Glass` など）が Eevee preview と互換性なく、**ガラスが砂嵐ノイズ** + **ピンクが HDRI 反射で薄く** 見えてユーザーから「変になった」クレーム。
+
+**原因:** Unity URP 用 `.shader`（`Shader "ChaosDraftParty/EGGYBOTGlass"`）は HLSL + URP ライブラリ依存で、Blender の Eevee は解釈できない。Material Preview mode は node-based shader を HDRI で評価するが、URP shader は node 化されてないため fallback 表現が破綻する。
+
+**回避策:**
+
+```python
+# Blender viewport は「Solid mode + color_type='MATERIAL'」で固定する
+for area in bpy.context.screen.areas:
+    if area.type == 'VIEW_3D':
+        for space in area.spaces:
+            if space.type == 'VIEW_3D':
+                space.shading.type = 'SOLID'
+                space.shading.color_type = 'MATERIAL'  # diffuse_color 表示
+```
+
+**両 material に `diffuse_color` を Solid mode 用に必ず設定する**（Principled BSDF の Base Color だけでは Solid mode に反映されない）:
+
+```python
+pink.diffuse_color  = (0.96, 0.55, 0.65, 1.0)
+clear.diffuse_color = (0.82, 0.86, 0.92, 0.35)  # alpha 低めで透け感
+```
+
+**教訓:** Blender viewport は「**実 render のプレビュー**」じゃなく「**形状の確認ツール**」として扱う。マテリアルの最終見え方は Unity 側 URP render で検証する。Blender で綺麗に見せたい誘惑で Material Preview に切替えない。
+
+**初遭遇:** 2026-04-24（v15 レビュー中に色確認のため切替 → ノイズまみれで即 revert）
+
+---
+
+## #50. ユーザー承認があったときだけナレッジ化する（無条件保存禁止）
+
+**ルール:** このスキルと `memory/` への追記は、**ユーザーが fix を明示的に褒めた / 承認した時のみ** 行う。毎 correction 後に反射的に保存しない。
+
+**理由:** 途中経過の誤った学習（ユーザーが後で「やっぱ違う」と翻す候補案）を memory 化すると、将来セッションが間違った前提で動く。褒め（「ナイス」「いい感じ」「これで OK」「戻った」など正フィードバック）はユーザーが **最終確定** を意思表示したシグナル。
+
+**判定フロー:**
+
+1. 修正 / 実装完了を Claude が報告
+2. ユーザーの次レス確認：
+   - **「ナイス」「良い」「戻った」「OK」等の正フィードバック** → skill / memory 追記の合図
+   - **「まだ変」「違う」等の negative** → 保存しない、追加修正
+   - **無言で次タスク指示** → 保存しない（承認未確定）
+3. 正フィードバック + 「記録して」と明示されたら即追記
+4. 正フィードバックのみ（記録指示なし）の場合は、**重要な罠ならユーザーに「skill に残していい？」と 1 回だけ確認**
+
+**悪い例（禁止）:** Claude が勝手に「次から気をつけます」と memory に書いて push。
+
+**良い例（推奨）:** 「ナイス戻った、ナレッジに残して」→ その時だけ skill 追記 + commit。
+
+**初遭遇:** 2026-04-24（Material Preview 事故の直後、ユーザーが「褒めた時だけ記録して」とルール明言）
 
 ---
 
