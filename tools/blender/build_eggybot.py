@@ -248,16 +248,20 @@ def bridge_limb_to_body(body, limb, attach_world, hole_radius,
         bpy.ops.object.mode_set(mode='OBJECT')
         return False
 
-    # --- 4. Bridge!（number_cuts=1 + PATH curve でsmooth neck）
+    # --- 4. Bridge!（number_cuts=0 で intermediate ring を作らない）
+    # 理由: intermediate ring を作ると interpolation が body wall 内 (r=0.30-0.35) に
+    #       vert を配置して既存 wall face と coplanar 重複 → moiré artifact。
+    #       2 つの端 ring を直接接続（短い neck）で wall 内部に vert が生まれない。
+    #       organic 化は後段の Subdivision Surface で担保。
     try:
         bpy.ops.mesh.bridge_edge_loops(
             type='SINGLE',
             use_merge=False,
             merge_factor=0.5,
-            number_cuts=1,  # 中間 ring 1 本追加、neck 滑らかに
-            interpolation='PATH',  # curve-follow
+            number_cuts=0,  # NO intermediate ring (wall 内 vert 防止)
+            interpolation='LINEAR',
             smoothness=1.0,
-            profile_shape_factor=0.0,  # 膨らみなし（hollow 貫通防止）
+            profile_shape_factor=0.0,
             profile_shape='SMOOTH',
         )
         print(f"[bridge] {limb_name}: bridge_edge_loops SUCCESS")
@@ -266,35 +270,43 @@ def bridge_limb_to_body(body, limb, attach_world, hole_radius,
         print(f"[bridge ERROR] {limb_name}: bridge failed: {e}")
         success = False
 
-    # --- 5. Bridge 後、hollow 侵入した vert を外側に push（安全優先）
-    HOLLOW_CENTER = Vector((0, 0, exclude_rim_z))
-    HOLLOW_R = 0.30
-    SAFETY_MARGIN = 0.008
-    if success:
-        bm_s = bmesh.from_edit_mesh(body.data)
-        body_mw = body.matrix_world.copy()
-        pushed = 0
-        for v in bm_s.verts:
-            world_v = body_mw @ v.co
-            if (world_v - attach_world_vec).length < hole_radius * 3.0:
-                to_center = HOLLOW_CENTER - Vector(world_v)
-                dist = to_center.length
-                if dist < HOLLOW_R + SAFETY_MARGIN and dist > 0.001:
-                    # hollow 外 (r > 0.30 + safety) に push
-                    target_dist = HOLLOW_R + SAFETY_MARGIN
-                    push_vec = (-to_center.normalized()) * (target_dist - dist)
-                    v.co += push_vec  # local coord 変更 (world = local + origin, identity rotation)
-                    pushed += 1
-        bmesh.update_edit_mesh(body.data)
-        if pushed > 0:
-            print(f"[bridge] {limb_name}: pushed {pushed} hollow-penetrating verts outward")
+    # hollow-push は廃止（むしろ wall 内に vert を配置して artifact を作っていた）
 
     bpy.ops.object.mode_set(mode='OBJECT')
     return success
 
 
-def cleanup_post_bridge(obj, merge_thr=0.00005, smooth_angle_deg=60,
-                       rim_z_world=0.30, rim_tolerance=0.005):
+def delete_wall_interior_faces(obj, pot_center=(0, 0, 0.30),
+                                inner_r=0.30, outer_r=0.35, margin=0.003):
+    """
+    Pot wall volume 内部 (inner_r+margin < r < outer_r-margin) に centroid がある face を削除。
+    Bridge が誤って wall 内に作った floating face の根絶用。
+    """
+    import bmesh
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.mode_set(mode='EDIT')
+    bm = bmesh.from_edit_mesh(obj.data)
+    bm.faces.ensure_lookup_table()
+    mw = obj.matrix_world.copy()
+    center_vec = Vector(pot_center)
+    wall_inner = inner_r + margin
+    wall_outer = outer_r - margin
+    interior = []
+    for f in bm.faces:
+        centroid = sum((mw @ v.co for v in f.verts), Vector()) / len(f.verts)
+        r = (centroid - center_vec).length
+        if wall_inner < r < wall_outer:
+            interior.append(f)
+    if interior:
+        bmesh.ops.delete(bm, geom=interior, context='FACES')
+        bmesh.update_edit_mesh(obj.data)
+        print(f"[cleanup] deleted {len(interior)} wall-interior floating faces")
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+
+def cleanup_post_bridge(obj, merge_thr=0.0002, smooth_angle_deg=60,
+                       rim_z_world=0.30, rim_tolerance=0.005,
+                       apply_subsurf=True, subsurf_levels=1):
     """
     Bridge/UNION 後の mesh を systematic にclean up:
     1. merge_by_distance（duplicate 除去、1e-5 オーダー）
@@ -351,16 +363,16 @@ def cleanup_post_bridge(obj, merge_thr=0.00005, smooth_angle_deg=60,
     bmesh.update_edit_mesh(obj.data)
     print(f"[cleanup] marked {rim_count} rim edges as sharp + crease")
 
-    # 4b. Non-manifold edge 検出（warning のみ、削除は慎重に）
+    # 4b. 真の non-manifold (multi-face edge = 3+ face 共有) のみ検出
     bpy.ops.mesh.select_all(action='DESELECT')
     bpy.ops.mesh.select_non_manifold(
-        extend=False, use_wire=True, use_boundary=False,
-        use_multi_face=True, use_non_contiguous=True, use_verts=True,
+        extend=False, use_wire=False, use_boundary=False,
+        use_multi_face=True, use_non_contiguous=False, use_verts=False,
     )
     bm = bmesh.from_edit_mesh(obj.data)
-    non_manifold_count = sum(1 for e in bm.edges if e.select)
-    if non_manifold_count > 0:
-        print(f"[cleanup WARN] {non_manifold_count} non-manifold edges detected")
+    multi_face_count = sum(1 for e in bm.edges if e.select)
+    if multi_face_count > 0:
+        print(f"[cleanup WARN] {multi_face_count} multi-face (真の non-manifold) edges")
 
     # 4c. Loose verts/edges 削除（鋭化な孤立 geometry を取り除く）
     bpy.ops.mesh.select_all(action='SELECT')
@@ -396,16 +408,34 @@ def cleanup_post_bridge(obj, merge_thr=0.00005, smooth_angle_deg=60,
     except Exception as e:
         print(f"[cleanup WARN] island separate: {e}")
 
-    # 5. Shade smooth + by angle
+    # 4e. Wall interior 削除は rim face まで巻き込むので廃止
+    #     代わりに島 separate（既に適用済み）+ hollow-push 除去で wall 内 vert 発生を防ぐ
+
+    # 5. Shade smooth
     bpy.context.view_layer.objects.active = obj
     bpy.ops.object.shade_smooth()
+
+    # 6. Subdivision Surface 1 段で bridge neck を organic に smooth
+    #    rim edges は edge.crease=1.0 で preserve される
+    if apply_subsurf:
+        sub = obj.modifiers.new(name="OrganicSubsurf", type='SUBSURF')
+        sub.levels = subsurf_levels
+        sub.render_levels = subsurf_levels + 1
+        sub.use_creases = True
+        try:
+            bpy.ops.object.modifier_apply(modifier="OrganicSubsurf")
+            print(f"[cleanup] Subsurf {subsurf_levels} level applied (rim crease preserved)")
+        except Exception as e:
+            print(f"[cleanup WARN] Subsurf apply failed: {e}")
+            obj.modifiers.remove(obj.modifiers.get("OrganicSubsurf"))
+
+    # 7. shade_smooth_by_angle (Subsurf 後に再適用、rim sharpness 維持)
     try:
         bpy.ops.object.shade_smooth_by_angle(angle=math.radians(smooth_angle_deg))
         print(f"[cleanup] shade_smooth_by_angle({smooth_angle_deg}°) applied")
     except Exception as e:
         print(f"[cleanup WARN] shade_smooth_by_angle not available: {e}")
 
-    # Stats
     print(f"[cleanup] {obj.name}: final {len(obj.data.vertices)} verts / {len(obj.data.polygons)} faces")
     return obj
 
@@ -490,8 +520,6 @@ for v in head.data.vertices:
 
 LIMB_SPECS = [
     # (name, attach_world, outward_world, base_radius, squash_xyz, hole_radius)
-    # squash: (X_width, Y_depth, Z_length) — Z は長さ方向（outward 方向）
-    # Kirby 風 stubby: Z (長さ) 控えめ、XY (幅) robust に
     ("Arm_L", (-0.33, 0, 0.22), (-1.0, 0, 0.0), 0.16, (1.00, 1.00, 1.25), 0.10),
     ("Arm_R", ( 0.33, 0, 0.22), ( 1.0, 0, 0.0), 0.16, (1.00, 1.00, 1.25), 0.10),
     ("Leg_L", (-0.13, 0, -0.02), (-0.3, 0, -1.0), 0.15, (1.00, 1.00, 1.40), 0.09),
@@ -505,7 +533,7 @@ for name, attach, outward, base_r, sq, hole_r in LIMB_SPECS:
         squash_xyz=sq,
         outward_dir_world=outward,
         attach_world=attach,
-        protrude_offset=0.006,
+        protrude_offset=0.008,  # pot outer から epsilon 離す（z-fight 回避）
         material=mat_pink,
     )
 
