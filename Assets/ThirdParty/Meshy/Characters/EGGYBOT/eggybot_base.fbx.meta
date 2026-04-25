@@ -5,7 +5,7 @@ ModelImporter:
   internalIDToNameTable: []
   externalObjects: {}
   materials:
-    materialImportMode: 2
+    materialImportMode: 1
     materialName: 0
     materialSearch: 1
     materialLocation: 1
@@ -241,16 +241,6 @@ ModelImporter:
       position: {x: 0, y: 0, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 1}
       scale: {x: 1, y: 1, z: 1}
-    - name: Arm_L
-      parentName: eggybot_base(Clone)
-      position: {x: 0.3, y: 0.26, z: 0}
-      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
-      scale: {x: 1, y: 1, z: 1}
-    - name: Arm_R
-      parentName: eggybot_base(Clone)
-      position: {x: -0.3, y: 0.26, z: 0}
-      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
-      scale: {x: 1, y: 1, z: 1}
     - name: BodyLower
       parentName: eggybot_base(Clone)
       position: {x: -0, y: 0.3, z: 0}
@@ -260,135 +250,130 @@ ModelImporter:
       parentName: eggybot_base(Clone)
       position: {x: -0, y: 0.3, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
-      scale: {x: 1.02, y: 1.02, z: 1.02}
+      scale: {x: 1, y: 1, z: 1}
     - name: EggybotArmature
       parentName: eggybot_base(Clone)
-      position: {x: -0, y: 0, z: 0}
+      position: {x: 0, y: 0.11130784, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
       scale: {x: 1, y: 1, z: 1}
     - name: Hips
       parentName: EggybotArmature
-      position: {x: -0, y: 0, z: 0.25}
-      rotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
-      scale: {x: 1, y: 0.99999994, z: 0.99999994}
+      position: {x: -0, y: 0, z: 0.05}
+      rotation: {x: 0.7071068, y: 0, z: -0, w: 0.7071067}
+      scale: {x: 1, y: 1, z: 1}
     - name: Spine
       parentName: Hips
-      position: {x: -0, y: 0.099999994, z: 0}
-      rotation: {x: -0, y: -0, z: -0, w: 1}
-      scale: {x: 1, y: 0.9999994, z: 0.9999994}
+      position: {x: -0, y: 0.13000001, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
     - name: Chest
       parentName: Spine
       position: {x: -0, y: 0.099999994, z: 0}
-      rotation: {x: -0, y: -0, z: -0, w: 1}
-      scale: {x: 1, y: 1.0000002, z: 1.0000002}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
     - name: Neck
       parentName: Chest
-      position: {x: -0, y: 0.15000004, z: 0}
-      rotation: {x: -0, y: -0, z: -0, w: 1}
+      position: {x: -0, y: 0.27, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     - name: Head
       parentName: Neck
-      position: {x: -0, y: 0.07999998, z: 0}
-      rotation: {x: -0, y: -0, z: -0, w: 1}
-      scale: {x: 1, y: 1.0000001, z: 1.0000001}
+      position: {x: -0, y: 0.099999964, z: 0}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
+    - name: CapHinge
+      parentName: Chest
+      position: {x: -0, y: 0.02000001, z: -0.34}
+      rotation: {x: 0, y: -0, z: -0, w: 1}
+      scale: {x: 1, y: 1, z: 1}
     - name: LeftShoulder
       parentName: Chest
-      position: {x: -0.05, y: -0.099999994, z: 0}
-      rotation: {x: 0.64367384, y: -0.47891322, z: -0.47891316, w: -0.3563262}
-      scale: {x: 1.000002, y: 1.0000032, z: 1.0000036}
+      position: {x: -0.15, y: 0, z: 0}
+      rotation: {x: 0.6709035, y: -0.47893423, z: -0.46077594, w: -0.32893163}
+      scale: {x: 1, y: 1.0000001, z: 1}
     - name: LeftUpperArm
       parentName: LeftShoulder
-      position: {x: -9.313226e-10, y: 0.10440306, z: 0}
-      rotation: {x: 0.10544609, y: 0.062939584, z: 0.039070357, w: 0.99166185}
-      scale: {x: 1.0000004, y: 1.000002, z: 1.0000008}
+      position: {x: 0.0000000037252903, y: 0.13928387, z: -0.000000007450581}
+      rotation: {x: 0.1379667, y: -0.14011446, z: 0.03160006, w: 0.97996664}
+      scale: {x: 0.9999998, y: 0.9999999, z: 0.99999994}
     - name: LeftLowerArm
       parentName: LeftUpperArm
-      position: {x: 0.000000012181699, y: 0.098488554, z: -0.000000029355288}
-      rotation: {x: 0.044955418, y: -0.04816203, z: 0.01743586, w: 0.99767506}
-      scale: {x: 1.0000023, y: 1.0000021, z: 1.0000021}
+      position: {x: 2.3283064e-10, y: 0.12041592, z: 0.000000007450581}
+      rotation: {x: 0.041522782, y: -0.041522752, z: 0.0017271237, w: 0.9982729}
+      scale: {x: 0.9999999, y: 0.9999998, z: 0.99999994}
     - name: LeftHand
       parentName: LeftLowerArm
-      position: {x: -0.000000005735817, y: 0.06324559, z: -0.000000021780155}
-      rotation: {x: -0.15811372, y: 0.15811399, z: -0.025658278, w: -0.97434175}
-      scale: {x: 1.0000014, y: 1.0000011, z: 1.0000024}
+      position: {x: 1.37390125e-17, y: 0.07999998, z: -0.0000000035762788}
+      rotation: {x: -0.0000000037252903, y: 1.9862584e-16, z: -2.3283087e-10, w: 1}
+      scale: {x: 1, y: 1, z: 1}
     - name: RightShoulder
       parentName: Chest
-      position: {x: 0.05, y: -0.099999994, z: 0}
-      rotation: {x: 0.64367384, y: 0.47891322, z: 0.47891316, w: -0.3563262}
-      scale: {x: 1.000002, y: 1.0000032, z: 1.0000036}
+      position: {x: 0.15, y: 0, z: 0}
+      rotation: {x: 0.6709035, y: 0.47893423, z: 0.46077594, w: -0.32893163}
+      scale: {x: 1, y: 1.0000001, z: 1}
     - name: RightUpperArm
       parentName: RightShoulder
-      position: {x: 9.313226e-10, y: 0.10440306, z: 0}
-      rotation: {x: 0.10544609, y: -0.062939584, z: -0.039070357, w: 0.99166185}
-      scale: {x: 1.0000004, y: 1.000002, z: 1.0000008}
+      position: {x: -0.0000000037252903, y: 0.13928387, z: -0.000000007450581}
+      rotation: {x: 0.1379667, y: 0.14011446, z: -0.03160006, w: 0.97996664}
+      scale: {x: 0.9999998, y: 0.9999999, z: 0.99999994}
     - name: RightLowerArm
       parentName: RightUpperArm
-      position: {x: -0.000000012181699, y: 0.098488554, z: -0.000000029355288}
-      rotation: {x: 0.044955418, y: 0.04816203, z: -0.01743586, w: 0.99767506}
-      scale: {x: 1.0000023, y: 1.0000021, z: 1.0000021}
+      position: {x: -2.3283064e-10, y: 0.12041592, z: 0.000000007450581}
+      rotation: {x: 0.041522782, y: 0.041522752, z: -0.0017271237, w: 0.9982729}
+      scale: {x: 0.9999999, y: 0.9999998, z: 0.99999994}
     - name: RightHand
       parentName: RightLowerArm
-      position: {x: 0.000000005735817, y: 0.06324559, z: -0.000000021780155}
-      rotation: {x: -0.15811372, y: -0.15811399, z: 0.025658278, w: -0.97434175}
-      scale: {x: 1.0000014, y: 1.0000011, z: 1.0000024}
+      position: {x: -1.37390125e-17, y: 0.07999998, z: -0.0000000035762788}
+      rotation: {x: -0.0000000037252903, y: -1.9862584e-16, z: 2.3283087e-10, w: 1}
+      scale: {x: 1, y: 1, z: 1}
     - name: LeftUpperLeg
       parentName: Hips
-      position: {x: -0.12, y: -0.030000001, z: 0}
-      rotation: {x: 1, y: 3.5527137e-15, z: -0.00000007549791, w: 0}
-      scale: {x: 1, y: 0.9999994, z: 0.9999994}
+      position: {x: -0.1, y: 0, z: 0}
+      rotation: {x: 0.9678329, y: -0.14308819, z: -0.20471744, w: -0.03026626}
+      scale: {x: 0.9999996, y: 0.9999999, z: 1}
     - name: LeftLowerLeg
       parentName: LeftUpperLeg
-      position: {x: -0, y: 0.120000005, z: 0}
-      rotation: {x: -0, y: 0.00000007549791, z: 3.5527137e-15, w: 1}
-      scale: {x: 1, y: 1.0000002, z: 1.0000002}
+      position: {x: -0.000000007919967, y: 0.07655716, z: -0.0000000012852251}
+      rotation: {x: -0.042825267, y: 0.20246306, z: -0.2024632, w: 0.95717466}
+      scale: {x: 1, y: 0.99999994, z: 1.0000001}
     - name: LeftFoot
       parentName: LeftLowerLeg
-      position: {x: -0, y: 0.060000002, z: 0}
-      rotation: {x: -0.22975296, y: -0, z: 9.503858e-17, w: 0.973249}
-      scale: {x: 1, y: 1.0000023, z: 1.0000023}
+      position: {x: 0.0000000010058283, y: 0.07000004, z: 0.03}
+      rotation: {x: -0.50949425, y: -0.031459555, z: 0.05299504, w: 0.8582642}
+      scale: {x: 1, y: 1, z: 1}
     - name: RightUpperLeg
       parentName: Hips
-      position: {x: 0.12, y: -0.030000001, z: 0}
-      rotation: {x: 1, y: 3.5527137e-15, z: -0.00000007549791, w: 0}
-      scale: {x: 1, y: 0.9999994, z: 0.9999994}
+      position: {x: 0.1, y: 0, z: 0}
+      rotation: {x: 0.9678329, y: 0.14308819, z: 0.20471744, w: -0.03026626}
+      scale: {x: 0.9999996, y: 0.9999999, z: 1}
     - name: RightLowerLeg
       parentName: RightUpperLeg
-      position: {x: -0, y: 0.120000005, z: 0}
-      rotation: {x: -0, y: 0.00000007549791, z: 3.5527137e-15, w: 1}
-      scale: {x: 1, y: 1.0000002, z: 1.0000002}
+      position: {x: 0.000000007919967, y: 0.07655716, z: -0.0000000012852251}
+      rotation: {x: -0.042825267, y: -0.20246306, z: 0.2024632, w: 0.95717466}
+      scale: {x: 1, y: 0.99999994, z: 1.0000001}
     - name: RightFoot
       parentName: RightLowerLeg
-      position: {x: -0, y: 0.060000002, z: 0}
-      rotation: {x: -0.22975296, y: -0, z: 9.503858e-17, w: 0.973249}
-      scale: {x: 1, y: 1.0000023, z: 1.0000023}
+      position: {x: -0.0000000010058283, y: 0.07000004, z: 0.03}
+      rotation: {x: -0.50949425, y: 0.031459555, z: -0.05299504, w: 0.8582642}
+      scale: {x: 1, y: 1, z: 1}
     - name: Eye_L
-      parentName: eggybot_base(Clone)
-      position: {x: 0.07, y: 0.84, z: 0.2}
-      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
-      scale: {x: 1, y: 1, z: 1}
-    - name: Eye_R
-      parentName: eggybot_base(Clone)
-      position: {x: -0.07, y: 0.84, z: 0.2}
-      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
-      scale: {x: 1, y: 1, z: 1}
-    - name: Head
-      parentName: eggybot_base(Clone)
-      position: {x: -0, y: 0.82, z: 0}
-      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
-      scale: {x: 1, y: 1, z: 1}
-    - name: Leg_L
       parentName: eggybot_base(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
       scale: {x: 1, y: 1, z: 1}
-    - name: Leg_R
+    - name: Eye_R
+      parentName: eggybot_base(Clone)
+      position: {x: -0, y: 0, z: 0}
+      rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
+      scale: {x: 1, y: 1, z: 1}
+    - name: HeadMesh
       parentName: eggybot_base(Clone)
       position: {x: -0, y: 0, z: 0}
       rotation: {x: -0.7071068, y: 0, z: -0, w: 0.7071067}
       scale: {x: 1, y: 1, z: 1}
     - name: Mouth
       parentName: eggybot_base(Clone)
-      position: {x: -0, y: 0.8, z: 0.205}
+      position: {x: -0, y: 0.8, z: 0.282}
       rotation: {x: -0.00000003774895, y: 0, z: -0, w: 1}
       scale: {x: 1, y: 1, z: 1}
     armTwist: 0
@@ -405,7 +390,7 @@ ModelImporter:
     skeletonHasParents: 0
   lastHumanDescriptionAvatarSource: {instanceID: 0}
   autoGenerateAvatarMappingIfUnspecified: 1
-  animationType: 2
+  animationType: 3
   humanoidOversampling: 1
   avatarSetup: 1
   addHumanoidExtraRootOnlyWhenUsingAvatar: 1

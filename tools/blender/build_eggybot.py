@@ -561,29 +561,44 @@ vg_ruarm = body_lower.vertex_groups.new(name='RightUpperArm')
 vg_luleg = body_lower.vertex_groups.new(name='LeftUpperLeg')
 vg_ruleg = body_lower.vertex_groups.new(name='RightUpperLeg')
 
+# 楕円体距離で limb bump にだけ bind（squashed shape に追従、体本体には伸びない）
+# Hand 形状: (x stretch 1.5, y 0.7, z 0.95) × HAND_R(0.08) → 0.12 × 0.056 × 0.076
+# Foot 形状: (x 0.9, y 1.4, z 1.0) × FOOT_R(0.10) → 0.09 × 0.14 × 0.10
+# ellipsoid 半径 = bump 実寸 × 1.15（境界 transition だけ少し緩める）
+HAND_RX, HAND_RY, HAND_RZ = 0.120, 0.056, 0.076  # 1.0× bump 実寸（bump 表面のみ）
+FOOT_RX, FOOT_RY, FOOT_RZ = 0.090, 0.140, 0.100
+
+HAND_L_CTR = ( hand_x, 0.0, HAND_Z)
+HAND_R_CTR = (-hand_x, 0.0, HAND_Z)
+FOOT_L_CTR = ( foot_x, 0.03, FOOT_Z)
+FOOT_R_CTR = (-foot_x, 0.03, FOOT_Z)
+
+def ellip_d_sq(p, ctr, rx, ry, rz):
+    return ((p[0]-ctr[0])/rx)**2 + ((p[1]-ctr[1])/ry)**2 + ((p[2]-ctr[2])/rz)**2
+
 hand_count_l = hand_count_r = foot_count_l = foot_count_r = 0
 for i, v in enumerate(body_lower.data.vertices):
-    wx = v.co.x  # body_lower origin at (0,0,0.30), local/world x 一致
-    wy = v.co.y
-    wz_local = v.co.z  # local z、world z = wz_local + 0.30
-    wz = wz_local + PARTING_Z
+    p = (v.co.x, v.co.y, v.co.z + PARTING_Z)
 
-    if abs(wx) > 0.30 and 0.10 < wz < 0.32:
-        # Hand 領域
-        if wx > 0:
-            vg_luarm.add([i], 1.0, 'REPLACE')
-            hand_count_l += 1
-        else:
-            vg_ruarm.add([i], 1.0, 'REPLACE')
-            hand_count_r += 1
-    elif wz < -0.04:
-        # Foot 領域（bowl 底 z=-0.036 より下の部分は全部 foot）
-        if wx > 0:
-            vg_luleg.add([i], 1.0, 'REPLACE')
-            foot_count_l += 1
-        else:
-            vg_ruleg.add([i], 1.0, 'REPLACE')
-            foot_count_r += 1
+    dl_h = ellip_d_sq(p, HAND_L_CTR, HAND_RX, HAND_RY, HAND_RZ)
+    dr_h = ellip_d_sq(p, HAND_R_CTR, HAND_RX, HAND_RY, HAND_RZ)
+    dl_f = ellip_d_sq(p, FOOT_L_CTR, FOOT_RX, FOOT_RY, FOOT_RZ)
+    dr_f = ellip_d_sq(p, FOOT_R_CTR, FOOT_RX, FOOT_RY, FOOT_RZ)
+
+    candidates = [
+        (dl_h, vg_luarm, 'hl'),
+        (dr_h, vg_ruarm, 'hr'),
+        (dl_f, vg_luleg, 'fl'),
+        (dr_f, vg_ruleg, 'fr'),
+    ]
+    candidates.sort(key=lambda c: c[0])
+    best_d, best_vg, best_tag = candidates[0]
+    if best_d < 1.0:  # 楕円体内
+        best_vg.add([i], 1.0, 'REPLACE')
+        if best_tag == 'hl': hand_count_l += 1
+        elif best_tag == 'hr': hand_count_r += 1
+        elif best_tag == 'fl': foot_count_l += 1
+        elif best_tag == 'fr': foot_count_r += 1
 
 # 残りの bone VG は空 group として追加（Unity Humanoid Rig が要求）
 for vg_name in ['LeftShoulder', 'LeftLowerArm', 'LeftHand',
