@@ -65,10 +65,10 @@ bpy.ops.object.mode_set(mode='OBJECT')
 # bump 周辺の頂点は UpperArm に bind、shoulder 寄りも UpperArm
 # transition で body と滑らか接続
 
-H_RX, H_RY, H_RZ = 0.130, 0.060, 0.080  # inner ellipsoid (100% UpperArm)
-F_RX, F_RY, F_RZ = 0.090, 0.140, 0.100
-H_TRX, H_TRY, H_TRZ = 0.220, 0.110, 0.130  # outer (transition)
-F_TRX, F_TRY, F_TRZ = 0.180, 0.220, 0.180
+H_RX, H_RY, H_RZ = 0.150, 0.075, 0.095  # inner ellipsoid (100% UpperArm) ← 拡大
+F_RX, F_RY, F_RZ = 0.105, 0.155, 0.115
+H_TRX, H_TRY, H_TRZ = 0.170, 0.090, 0.110  # outer (transition) ← 狭く
+F_TRX, F_TRY, F_TRZ = 0.125, 0.175, 0.135
 
 # bone center for weight = bump center（mesh 位置）
 HAND_L_CTR = ( HAND_X, 0.0, HAND_Z)
