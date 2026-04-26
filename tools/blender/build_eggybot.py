@@ -268,8 +268,10 @@ def attach_xy(z, r_limb, overlap=0.015, body_cz=PARTING_Z, body_r=BODY_OUTER_R):
 # 位置計算：hand 内側 edge が body outer + 15mm overlap 位置
 HAND_R = 0.08
 HAND_Z = 0.22
-HAND_STRETCH = (1.5, 1.0, 0.9)   # 外向き伸び + 少し上下 flatten
-HAND_EFFECTIVE_XR = HAND_R * HAND_STRETCH[0]  # 0.12
+# v15.18: 1.5 → 1.2 に緩和（引き伸ばされ感を視覚的に抑制）。
+# Z は 0.9 → 0.95 で flatten もごく薄く。
+HAND_STRETCH = (1.2, 1.0, 0.95)  # 外向き伸び（mild）+ ごく薄 flatten
+HAND_EFFECTIVE_XR = HAND_R * HAND_STRETCH[0]  # 0.096
 
 # body outer surface x at HAND_Z
 body_x_at_hand_z = math.sqrt(BODY_OUTER_R**2 - (HAND_Z - PARTING_Z)**2)
@@ -588,10 +590,10 @@ vg_luleg = body_lower.vertex_groups.new(name='LeftUpperLeg')
 vg_ruleg = body_lower.vertex_groups.new(name='RightUpperLeg')
 
 # 楕円体距離で limb bump にだけ bind（squashed shape に追従、体本体には伸びない）
-# Hand 形状: (x stretch 1.5, y 0.7, z 0.95) × HAND_R(0.08) → 0.12 × 0.056 × 0.076
+# v15.18: HAND_STRETCH (1.2, 1.0, 0.95) × HAND_R(0.08) → 0.096 × 0.080 × 0.076
 # Foot 形状: (x 0.9, y 1.4, z 1.0) × FOOT_R(0.10) → 0.09 × 0.14 × 0.10
-# ellipsoid 半径 = bump 実寸 × 1.15（境界 transition だけ少し緩める）
-HAND_RX, HAND_RY, HAND_RZ = 0.120, 0.056, 0.076  # 1.0× bump 実寸（bump 表面のみ）
+# ellipsoid 半径 = bump 実寸（vertex group binding 用、squashed shape に同期）
+HAND_RX, HAND_RY, HAND_RZ = 0.096, 0.080, 0.076  # v15.18: 1.2 × 1.0 × 0.95 stretch 反映
 FOOT_RX, FOOT_RY, FOOT_RZ = 0.090, 0.140, 0.100
 
 HAND_L_CTR = ( hand_x, 0.0, HAND_Z)
