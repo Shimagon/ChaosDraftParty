@@ -46,6 +46,10 @@ namespace ChaosDraftParty.Core
                  "false の場合は bodyRenderer.transform.position を center base として使用。")]
         public bool trackHipsBone = true;
 
+        [Tooltip("v15.18: SDF center を直接示す Transform。設定すれば Hips offset 計算より優先される。" +
+                 "Hips 配下に Empty を置いて Inspector で位置調整したいケース用。")]
+        public Transform bodyCenterTransform;
+
         [Tooltip("デバッグ Gizmo を Scene view に描く。")]
         public bool drawDebugGizmo = false;
 
@@ -111,6 +115,10 @@ namespace ChaosDraftParty.Core
 
         Vector3 ComputeBodyCenter()
         {
+            if (bodyCenterTransform != null)
+            {
+                return bodyCenterTransform.position;
+            }
             if (trackHipsBone && _hipsBone != null)
             {
                 return _hipsBone.position + _hipsBone.TransformDirection(bodyCenterOffsetLocal);
