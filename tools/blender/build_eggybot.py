@@ -28,12 +28,24 @@ import bpy
 import bmesh
 import math
 import os
+import json
 from mathutils import Vector
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 OUT_DIR = os.path.join(PROJECT_ROOT, "Assets", "ThirdParty", "Meshy", "Characters", "EGGYBOT")
 FBX_PATH = os.path.join(OUT_DIR, "eggybot_base.fbx")
 BLEND_PATH = os.path.join(OUT_DIR, "eggybot_source.blend")
+
+# v15.15: ユーザーが手動調整した骨位置を JSON で永久保存
+# extract_bone_layout.py で抽出された値が build に焼き込まれる
+BONE_LAYOUT_PATH = os.path.join(os.path.dirname(__file__), "eggybot_bone_layout.json")
+USER_BONE_LAYOUT = None
+if os.path.exists(BONE_LAYOUT_PATH):
+    with open(BONE_LAYOUT_PATH) as _f:
+        USER_BONE_LAYOUT = json.load(_f)
+    print(f"[bones] loaded user layout: {len(USER_BONE_LAYOUT)} bones from {BONE_LAYOUT_PATH}")
+else:
+    print(f"[bones] no user layout JSON, using defaults from build script")
 
 os.makedirs(OUT_DIR, exist_ok=True)
 
@@ -274,10 +286,11 @@ _clearance = (_d - _r_eff) - HOLLOW_INNER_R
 assert _clearance > 0.003, f"hand breaches inner wall: clearance={_clearance:.4f}"
 print(f"[hand] stretched elbow clearance: {_clearance*1000:.1f}mm safe")
 
-hand_l = add_sphere("Hand_L", (-hand_x, 0, HAND_Z), HAND_R, 32, 16, mat_pink)
+# v15.15: hand_l_mesh と hand_r_mesh で命名統一（後で hand_l はボーン名と衝突するため）
+hand_l_mesh = add_sphere("Hand_L", (-hand_x, 0, HAND_Z), HAND_R, 32, 16, mat_pink)
 hand_r_mesh = add_sphere("Hand_R", ( hand_x, 0, HAND_Z), HAND_R, 32, 16, mat_pink)
 # Apply stretch AFTER placement, BEFORE Boolean UNION
-squash(hand_l, *HAND_STRETCH)
+squash(hand_l_mesh, *HAND_STRETCH)
 squash(hand_r_mesh, *HAND_STRETCH)
 
 # Foot: Kirby-style, attached below body
@@ -292,8 +305,10 @@ foot_r = add_sphere("Foot_R", ( foot_x, 0.03, FOOT_Z), FOOT_R, 32, 16, mat_pink)
 squash(foot_l, 0.9, 1.4, 1.0)
 squash(foot_r, 0.9, 1.4, 1.0)
 
-limb_meshes_for_union = [hand_l, hand_r_mesh, foot_l, foot_r]
-print(f"[limbs] placed for UNION: hand @ (±{hand_x:.3f}, 0, {HAND_Z}), foot @ (±{foot_x:.3f}, 0.03, {FOOT_Z})")
+# v15.15: 手は分離維持（Unity Stencil でクリップ）、足は UNION 一体化
+limb_meshes_for_union = [foot_l, foot_r]  # hand 除外
+limb_meshes_separate = [hand_l_mesh, hand_r_mesh]  # hand は独立 mesh のまま
+print(f"[limbs] hand SEPARATE @ (±{hand_x:.3f}, 0, {HAND_Z}), foot UNION @ (±{foot_x:.3f}, 0.03, {FOOT_Z})")
 
 # ============================================================
 # 5.6 Boolean UNION + Merge by Distance + Shade Smooth by Angle
@@ -387,8 +402,15 @@ except Exception:
 print(f"[body_lower] after UNION + Subsurf: {len(body_lower.data.vertices)} verts, "
       f"{len(body_lower.data.polygons)} faces")
 
-# limb 個別 mesh は UNION で消費された
-limb_meshes = []
+# v15.15: hand は分離維持、足だけ UNION で消費された
+limb_meshes = limb_meshes_separate  # [hand_l_mesh, hand_r_mesh]
+# 手 mesh に Pink material 維持（後で Unity 側で ArmClip material に差し替え予定）
+for h in limb_meshes:
+    if mat_pink not in h.data.materials[:]:
+        if h.data.materials:
+            h.data.materials[0] = mat_pink
+        else:
+            h.data.materials.append(mat_pink)
 
 # ============================================================
 # 6. Eyes + Mouth (v15.10: #91 reference — 顔 flat embedded dots)
@@ -480,9 +502,17 @@ for b in list(arm.edit_bones):
     arm.edit_bones.remove(b)
 
 def bone(name, head_, tail_, parent=None):
+    """JSON layout が読み込まれてればそれを優先、無ければ default 引数を使う"""
     eb = arm.edit_bones.new(name)
-    eb.head = head_
-    eb.tail = tail_
+    if USER_BONE_LAYOUT and name in USER_BONE_LAYOUT:
+        info = USER_BONE_LAYOUT[name]
+        eb.head = tuple(info["head"])
+        eb.tail = tuple(info["tail"])
+        if "roll" in info:
+            eb.roll = info["roll"]
+    else:
+        eb.head = head_
+        eb.tail = tail_
     if parent is not None:
         eb.parent = parent
         eb.use_connect = False
@@ -610,6 +640,25 @@ for vg_name in ['LeftShoulder', 'LeftLowerArm', 'LeftHand',
 
 print(f"[armature] body_lower spatial weights: "
       f"hand L={hand_count_l} R={hand_count_r}, foot L={foot_count_l} R={foot_count_r}")
+
+# v15.15: 分離 hand mesh の weight を LeftUpperArm/RightUpperArm に 100% 焼く
+# Unity Humanoid Rig が要求する全 bone VG も空 group として追加
+for hand_obj, arm_bone in [(hand_l_mesh, 'LeftUpperArm'), (hand_r_mesh, 'RightUpperArm')]:
+    # 既存 vertex group クリア（ARMATURE_AUTO の auto-weight を上書き）
+    for vg_name in list(hand_obj.vertex_groups.keys()):
+        hand_obj.vertex_groups.remove(hand_obj.vertex_groups[vg_name])
+    # 主 bone weight 100%
+    vg = hand_obj.vertex_groups.new(name=arm_bone)
+    vg.add(range(len(hand_obj.data.vertices)), 1.0, 'REPLACE')
+    # 残り全 humanoid bone を空 group で追加（FBX export 安全策）
+    for vg_name in ['Hips', 'Spine', 'Chest', 'Neck', 'Head', 'CapHinge',
+                    'LeftShoulder', 'LeftUpperArm', 'LeftLowerArm', 'LeftHand',
+                    'RightShoulder', 'RightUpperArm', 'RightLowerArm', 'RightHand',
+                    'LeftUpperLeg', 'LeftLowerLeg', 'LeftFoot',
+                    'RightUpperLeg', 'RightLowerLeg', 'RightFoot']:
+        if not hand_obj.vertex_groups.get(vg_name):
+            hand_obj.vertex_groups.new(name=vg_name)
+    print(f"[armature] {hand_obj.name} → {arm_bone} 100% weight ({len(hand_obj.data.vertices)} verts)")
 
 # body_upper (clear dome) を CapHinge 100% weight で開閉 anim 可能に
 for vg_name in list(body_upper.vertex_groups.keys()):

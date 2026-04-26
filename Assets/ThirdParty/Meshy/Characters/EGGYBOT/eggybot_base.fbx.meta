@@ -178,7 +178,7 @@ ModelImporter:
         max: {x: 0, y: 0, z: 0}
         value: {x: 0, y: 0, z: 0}
         length: 0
-        modified: 0
+        modified: 1
     - boneName: RightShoulder
       humanName: RightShoulder
       limit:
@@ -186,7 +186,7 @@ ModelImporter:
         max: {x: 0, y: 0, z: 0}
         value: {x: 0, y: 0, z: 0}
         length: 0
-        modified: 0
+        modified: 1
     - boneName: LeftUpperArm
       humanName: LeftUpperArm
       limit:
@@ -194,7 +194,7 @@ ModelImporter:
         max: {x: 0, y: 0, z: 0}
         value: {x: 0, y: 0, z: 0}
         length: 0
-        modified: 0
+        modified: 1
     - boneName: RightUpperArm
       humanName: RightUpperArm
       limit:
@@ -202,7 +202,7 @@ ModelImporter:
         max: {x: 0, y: 0, z: 0}
         value: {x: 0, y: 0, z: 0}
         length: 0
-        modified: 0
+        modified: 1
     - boneName: LeftLowerArm
       humanName: LeftLowerArm
       limit:
@@ -210,7 +210,7 @@ ModelImporter:
         max: {x: 0, y: 0, z: 0}
         value: {x: 0, y: 0, z: 0}
         length: 0
-        modified: 0
+        modified: 1
     - boneName: RightLowerArm
       humanName: RightLowerArm
       limit:
@@ -218,7 +218,7 @@ ModelImporter:
         max: {x: 0, y: 0, z: 0}
         value: {x: 0, y: 0, z: 0}
         length: 0
-        modified: 0
+        modified: 1
     - boneName: LeftHand
       humanName: LeftHand
       limit:
@@ -226,7 +226,7 @@ ModelImporter:
         max: {x: 0, y: 0, z: 0}
         value: {x: 0, y: 0, z: 0}
         length: 0
-        modified: 0
+        modified: 1
     - boneName: RightHand
       humanName: RightHand
       limit:
@@ -234,7 +234,7 @@ ModelImporter:
         max: {x: 0, y: 0, z: 0}
         value: {x: 0, y: 0, z: 0}
         length: 0
-        modified: 0
+        modified: 1
     skeleton:
     - name: eggybot_base(Clone)
       parentName: 
