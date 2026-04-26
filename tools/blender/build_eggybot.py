@@ -144,7 +144,8 @@ def create_body_lower_metaball(material=None):
     body_mesh.name = "BodyLower"
     body_mesh.data.name = "BodyLowerMesh"
 
-    # --- Bisect: 上半 (z>PARTING_Z) を切除、top は open（use_fill=False）
+    # --- Bisect: 上半 (z>PARTING_Z) を切除
+    # v15.15: use_fill=True で top に disc face 生成 → body 内部が見えなくなる
     bpy.ops.object.mode_set(mode='EDIT')
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.bisect(
@@ -152,7 +153,7 @@ def create_body_lower_metaball(material=None):
         plane_no=(0.0, 0.0, 1.0),
         clear_outer=True,
         clear_inner=False,
-        use_fill=False,
+        use_fill=True,
     )
     bpy.ops.object.mode_set(mode='OBJECT')
 
