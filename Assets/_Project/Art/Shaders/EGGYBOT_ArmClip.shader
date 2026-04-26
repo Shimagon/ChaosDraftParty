@@ -1,7 +1,17 @@
-// EGGYBOT arm shader: SoftPlastic + Stencil reader (NotEqual).
-// 描画時に Stencil = _StencilRef のピクセルは描画しない（Body が先に書いた所）。
-// → 体の中に隠れた手の部分が自動非表示。
-// Render queue を Body の後にして描画順序を保証。
+// EGGYBOT arm shader: SoftPlastic + SDF-based clipping (revolutionary).
+// Stencil approach は URP forward renderer で信頼性に欠ける + screen-space で角度依存。
+// 代わりに 3D SDF（球体距離）で「体の中にあるピクセル」を確実に discard。
+//
+// 仕組み:
+//   1. Body の world 中心 / 半径 / 上端 Y を C# (EggybotShaderBinder.cs) が material に毎フレーム配信
+//   2. fragment shader で current pixel の worldPos を取得
+//   3. worldPos.y < bodyTopY AND length(worldPos - bodyCenter) < bodyRadius なら discard
+//   4. 結果: 体の半球内にある手のピクセルは確実に消える、外は見える
+//
+// メリット:
+//   - 描画順非依存（stencil は body→arm の順序が必須）
+//   - カメラ角度非依存（stencil は screen-space で誤動作する）
+//   - URP / HDRP 共通で動く
 Shader "ChaosDraftParty/EGGYBOTArmClip"
 {
     Properties
@@ -20,7 +30,12 @@ Shader "ChaosDraftParty/EGGYBOTArmClip"
         _SpecularIntensity      ("Specular Intensity", Range(0, 2)) = 0.85
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull Mode", Float) = 2
         _InteriorShadow         ("Interior Shadow (backface darken)", Range(0, 1)) = 0.22
-        _StencilRef             ("Stencil Ref (compare)", Range(0, 255)) = 1
+
+        // SDF clip parameters (set by EggybotShaderBinder.cs at runtime)
+        _BodyCenter             ("Body Center (world)", Vector) = (0, 0.5, 0, 0)
+        _BodyRadius             ("Body Radius", Float) = 0.336
+        _BodyTopY               ("Body Top Y (world)", Float) = 0.5
+        _ClipMargin             ("Clip Margin (mm)", Range(-50, 50)) = 0
     }
 
     SubShader
@@ -36,16 +51,6 @@ Shader "ChaosDraftParty/EGGYBOTArmClip"
         {
             Name "ForwardLit"
             Tags { "LightMode" = "UniversalForward" }
-
-            // v15.15: Stencil reader — 体が描いた stencil = 1 のピクセルは discard
-            // 結果：体内部に隠れた腕の部分は描画されず、自動的に体に隠される
-            Stencil
-            {
-                Ref [_StencilRef]
-                Comp NotEqual
-                Pass Keep
-                Fail Keep
-            }
 
             ZWrite On
             Cull [_Cull]
@@ -77,7 +82,10 @@ Shader "ChaosDraftParty/EGGYBOTArmClip"
                 half  _SpecularIntensity;
                 half  _Cull;
                 half  _InteriorShadow;
-                half  _StencilRef;
+                float4 _BodyCenter;
+                float  _BodyRadius;
+                float  _BodyTopY;
+                float  _ClipMargin;
             CBUFFER_END
 
             struct Attributes
@@ -108,6 +116,18 @@ Shader "ChaosDraftParty/EGGYBOTArmClip"
 
             half4 frag(Varyings IN, FRONT_FACE_TYPE isFront : FRONT_FACE_SEMANTIC) : SV_Target
             {
+                // === SDF-based clip: discard if pixel is inside body's hemisphere ===
+                float marginM = _ClipMargin * 0.001;  // mm → m
+                if (IN.positionWS.y < _BodyTopY + marginM)
+                {
+                    float3 toBody = IN.positionWS - _BodyCenter.xyz;
+                    float dist = length(toBody);
+                    if (dist < _BodyRadius + marginM)
+                    {
+                        discard;
+                    }
+                }
+
                 float3 N = normalize(IN.normalWS);
                 bool front = IS_FRONT_VFACE(isFront, true, false);
                 if (!front) N = -N;

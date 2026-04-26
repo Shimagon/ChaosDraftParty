@@ -36,14 +36,8 @@ Shader "ChaosDraftParty/EGGYBOTBodyMask"
             Name "ForwardLit"
             Tags { "LightMode" = "UniversalForward" }
 
-            // v15.15: Stencil writer — 体描画時に stencil = _StencilRef に書き込む
-            Stencil
-            {
-                Ref [_StencilRef]
-                Comp Always
-                Pass Replace
-            }
-
+            // v15.16: Stencil 廃止（SDF clip に置換、ArmClip 側が body 球で discard）
+            // BodyMask は通常 SoftPlastic と同じレンダリング、shader 名だけ別
             ZWrite On
             Cull [_Cull]
 

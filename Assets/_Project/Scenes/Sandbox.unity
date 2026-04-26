@@ -215,6 +215,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 353698979}
   m_CullTransparentMesh: 1
+--- !u!137 &381394356 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 7852931700138113700, guid: 164261a2df6c0444c9aa5613bb206000, type: 3}
+  m_PrefabInstance: {fileID: 1513301646}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &465550602
 GameObject:
   m_ObjectHideFlags: 0
@@ -354,6 +359,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 465550602}
   m_CullTransparentMesh: 1
+--- !u!137 &505815721 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -9006652649445441987, guid: 164261a2df6c0444c9aa5613bb206000, type: 3}
+  m_PrefabInstance: {fileID: 1513301646}
+  m_PrefabAsset: {fileID: 0}
 --- !u!28 &559145650
 Texture2D:
   m_ObjectHideFlags: 0
@@ -1144,6 +1154,30 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!1 &1484340761 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 164261a2df6c0444c9aa5613bb206000, type: 3}
+  m_PrefabInstance: {fileID: 1513301646}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1484340764
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1484340761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2cc0657801bd24f9baaa3ad805e60813, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ChaosDraftParty.Core::ChaosDraftParty.Core.EggybotShaderBinder
+  bodyRenderer: {fileID: 1677475286}
+  handRenderers:
+  - {fileID: 381394356}
+  - {fileID: 505815721}
+  bodyRadius: 0.336
+  bodyTopOffset: 0
+  clipMarginMM: 0
 --- !u!1001 &1513301646
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1227,7 +1261,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 164261a2df6c0444c9aa5613bb206000, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1484340764}
   m_SourcePrefab: {fileID: 100100000, guid: 164261a2df6c0444c9aa5613bb206000, type: 3}
 --- !u!1 &1601295839
 GameObject:
@@ -1447,6 +1484,11 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!137 &1677475286 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 3114502584831768288, guid: 164261a2df6c0444c9aa5613bb206000, type: 3}
+  m_PrefabInstance: {fileID: 1513301646}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1766902713
 GameObject:
   m_ObjectHideFlags: 0
@@ -1947,8 +1989,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2037012922}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.0277457, y: 0, z: 0, w: 0.999615}
-  m_LocalPosition: {x: 0, y: 0.6, z: -1.8}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.5, z: -1.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
