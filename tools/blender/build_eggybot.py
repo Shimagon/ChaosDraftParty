@@ -273,18 +273,12 @@ HAND_EFFECTIVE_XR = HAND_R * HAND_STRETCH[0]  # 0.12
 
 # body outer surface x at HAND_Z
 body_x_at_hand_z = math.sqrt(BODY_OUTER_R**2 - (HAND_Z - PARTING_Z)**2)
-hand_x = body_x_at_hand_z - 0.015 + HAND_EFFECTIVE_XR  # 0.3264 - 0.015 + 0.12 = 0.4314
-
-# Hollow 侵入 check: stretched ellipsoid の最短点距離
-# vec hand→body, 正規化、effective radius in that direction
-_dx, _dz = -hand_x, PARTING_Z - HAND_Z
-_d = math.sqrt(_dx*_dx + _dz*_dz)
-_ux, _uz = _dx/_d, _dz/_d
-_a, _c = HAND_R * HAND_STRETCH[0], HAND_R * HAND_STRETCH[2]
-_r_eff = 1.0 / math.sqrt((_ux*_ux)/(_a*_a) + (_uz*_uz)/(_c*_c))
-_clearance = (_d - _r_eff) - HOLLOW_INNER_R
-assert _clearance > 0.003, f"hand breaches inner wall: clearance={_clearance:.4f}"
-print(f"[hand] stretched elbow clearance: {_clearance*1000:.1f}mm safe")
+# v15.15-deep: 手中心を体表面に置く → 半分体内（stencil hide）/ 半分体外（visible）
+# ユーザー断面図 #123/#124 通りの「肩から自然に生えてる」感を実現
+hand_x = body_x_at_hand_z  # ≈ 0.3264 (体表面ぴったり)
+print(f"[hand] center at body surface: hand_x={hand_x:.4f}, "
+      f"inside body: {hand_x - HAND_EFFECTIVE_XR:.3f} to {body_x_at_hand_z:.3f}, "
+      f"outside (visible): {body_x_at_hand_z:.3f} to {hand_x + HAND_EFFECTIVE_XR:.3f}")
 
 # v15.15: hand_l_mesh と hand_r_mesh で命名統一（後で hand_l はボーン名と衝突するため）
 hand_l_mesh = add_sphere("Hand_L", (-hand_x, 0, HAND_Z), HAND_R, 32, 16, mat_pink)
