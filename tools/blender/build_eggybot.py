@@ -273,16 +273,18 @@ HAND_EFFECTIVE_XR = HAND_R * HAND_STRETCH[0]  # 0.12
 
 # body outer surface x at HAND_Z
 body_x_at_hand_z = math.sqrt(BODY_OUTER_R**2 - (HAND_Z - PARTING_Z)**2)
-# v15.15-deep: 手中心を体表面に置く → 半分体内（stencil hide）/ 半分体外（visible）
-# ユーザー断面図 #123/#124 通りの「肩から自然に生えてる」感を実現
-hand_x = body_x_at_hand_z  # ≈ 0.3264 (体表面ぴったり)
+# v15.16-B: 手をやや外側へ。SDF で内側 7cm 隠れて外側 17cm 見える「肩から伸びた腕」感
+# 体表面 0.326 + 0.054 = 0.38（54mm 外側に push）
+hand_x = body_x_at_hand_z + 0.054  # ≈ 0.380
 print(f"[hand] center at body surface: hand_x={hand_x:.4f}, "
       f"inside body: {hand_x - HAND_EFFECTIVE_XR:.3f} to {body_x_at_hand_z:.3f}, "
       f"outside (visible): {body_x_at_hand_z:.3f} to {hand_x + HAND_EFFECTIVE_XR:.3f}")
 
-# v15.15: hand_l_mesh と hand_r_mesh で命名統一（後で hand_l はボーン名と衝突するため）
-hand_l_mesh = add_sphere("Hand_L", (-hand_x, 0, HAND_Z), HAND_R, 32, 16, mat_pink)
-hand_r_mesh = add_sphere("Hand_R", ( hand_x, 0, HAND_Z), HAND_R, 32, 16, mat_pink)
+# v15.16: Mixamo Humanoid の muscle space convention に合わせて L/R 修正
+# LeftUpperArm bone は character left = +X side、Hand_L mesh も +X に配置
+# （v15.15 まで Hand_L が -X だったので bone と反対側にあり、anim で破綻してた）
+hand_l_mesh = add_sphere("Hand_L", ( hand_x, 0, HAND_Z), HAND_R, 32, 16, mat_pink)
+hand_r_mesh = add_sphere("Hand_R", (-hand_x, 0, HAND_Z), HAND_R, 32, 16, mat_pink)
 # Apply stretch AFTER placement, BEFORE Boolean UNION
 squash(hand_l_mesh, *HAND_STRETCH)
 squash(hand_r_mesh, *HAND_STRETCH)
