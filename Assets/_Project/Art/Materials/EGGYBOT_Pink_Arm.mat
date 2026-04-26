@@ -87,9 +87,12 @@ Material:
     - _AlphaToMask: 0
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
+    - _BodyRadius: 0.336
+    - _BodyTopY: 0.5
     - _BumpScale: 1
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
+    - _ClipMargin: 0
     - _Cull: 0
     - _Cutoff: 0.5
     - _DetailAlbedoMapScale: 1
@@ -126,6 +129,7 @@ Material:
     m_Colors:
     - _AmbientTint: {r: 0.75, g: 0.6, b: 0.68, a: 1}
     - _BaseColor: {r: 0.98, g: 0.62, b: 0.72, a: 1}
+    - _BodyCenter: {r: 0, g: 0.5, b: 0, a: 0}
     - _Color: {r: 0.98, g: 0.62, b: 0.72, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _RimColor: {r: 1, g: 1, b: 1, a: 1}

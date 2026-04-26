@@ -1001,8 +1001,11 @@ MonoBehaviour:
   - {fileID: 1194605955}
   - {fileID: 1194605954}
   bodyRadius: 0.336
-  bodyTopOffset: 0
-  clipMarginMM: 0
+  bodyCenterOffsetLocal: {x: 0, y: 0.18, z: 0}
+  bodyTopOffsetFromCenter: 0
+  clipMarginMM: 80
+  trackHipsBone: 1
+  drawDebugGizmo: 0
 --- !u!1 &1372340768
 GameObject:
   m_ObjectHideFlags: 0
@@ -1989,8 +1992,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2037012922}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.35826376, y: 0, z: 0, w: 0.9336204}
-  m_LocalPosition: {x: 0, y: 1.4, z: -1}
+  m_LocalRotation: {x: 0.06484443, y: 0.38173974, z: -0.02685944, w: 0.9216011}
+  m_LocalPosition: {x: -1, y: 1.116, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

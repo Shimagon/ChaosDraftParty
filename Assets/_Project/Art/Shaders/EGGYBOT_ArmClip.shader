@@ -1,9 +1,11 @@
-// EGGYBOT arm shader: SoftPlastic + SDF-based clipping (revolutionary).
+// EGGYBOT arm shader: SoftPlastic + SDF-based clipping (v15.17 SRP Batcher fix).
 // Stencil approach は URP forward renderer で信頼性に欠ける + screen-space で角度依存。
 // 代わりに 3D SDF（球体距離）で「体の中にあるピクセル」を確実に discard。
 //
 // 仕組み:
-//   1. Body の world 中心 / 半径 / 上端 Y を C# (EggybotShaderBinder.cs) が material に毎フレーム配信
+//   1. Body の world 中心 / 半径 / 上端 Y を C# (EggybotShaderBinder.cs) が
+//      Shader.SetGlobalVector / SetGlobalFloat で global uniform として配信
+//      （MaterialPropertyBlock は SRP Batcher 有効時に黙殺されるので使わない）
 //   2. fragment shader で current pixel の worldPos を取得
 //   3. worldPos.y < bodyTopY AND length(worldPos - bodyCenter) < bodyRadius なら discard
 //   4. 結果: 体の半球内にある手のピクセルは確実に消える、外は見える
@@ -12,6 +14,7 @@
 //   - 描画順非依存（stencil は body→arm の順序が必須）
 //   - カメラ角度非依存（stencil は screen-space で誤動作する）
 //   - URP / HDRP 共通で動く
+//   - SRP Batcher 完全互換（CBUFFER に余計な per-frame 値を入れない）
 Shader "ChaosDraftParty/EGGYBOTArmClip"
 {
     Properties
@@ -31,11 +34,6 @@ Shader "ChaosDraftParty/EGGYBOTArmClip"
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull Mode", Float) = 2
         _InteriorShadow         ("Interior Shadow (backface darken)", Range(0, 1)) = 0.22
 
-        // SDF clip parameters (set by EggybotShaderBinder.cs at runtime)
-        _BodyCenter             ("Body Center (world)", Vector) = (0, 0.5, 0, 0)
-        _BodyRadius             ("Body Radius", Float) = 0.336
-        _BodyTopY               ("Body Top Y (world)", Float) = 0.5
-        _ClipMargin             ("Clip Margin (mm)", Range(-50, 50)) = 0
     }
 
     SubShader
@@ -82,11 +80,15 @@ Shader "ChaosDraftParty/EGGYBOTArmClip"
                 half  _SpecularIntensity;
                 half  _Cull;
                 half  _InteriorShadow;
-                float4 _BodyCenter;
-                float  _BodyRadius;
-                float  _BodyTopY;
-                float  _ClipMargin;
             CBUFFER_END
+
+            // SRP Batcher が UnityPerMaterial の値をキャッシュする問題を回避するため、
+            // 動的に変わる SDF clip パラメータは CBUFFER 外の global uniform として宣言する。
+            // EggybotShaderBinder が Shader.SetGlobalVector / SetGlobalFloat で毎フレーム配信。
+            float4 _EGGYBOT_BodyCenter;
+            float  _EGGYBOT_BodyRadius;
+            float  _EGGYBOT_BodyTopY;
+            float  _EGGYBOT_ClipMargin;
 
             struct Attributes
             {
@@ -116,16 +118,17 @@ Shader "ChaosDraftParty/EGGYBOTArmClip"
 
             half4 frag(Varyings IN, FRONT_FACE_TYPE isFront : FRONT_FACE_SEMANTIC) : SV_Target
             {
-                // === SDF-based clip: discard if pixel is inside body's hemisphere ===
-                float marginM = _ClipMargin * 0.001;  // mm → m
-                if (IN.positionWS.y < _BodyTopY + marginM)
+                // === SDF-based clip: discard if pixel is inside the FULL body sphere ===
+                // 旧: Y < bodyTopY の半球内のみ discard → hand 上端の verts (body center より上)
+                //     を見逃して bowl 内側に visible だった (v15.17 で修正)。
+                // 新: 純粋に sphere SDF で「sphere 内なら discard」。
+                //     HEAD は別 shader (BodyMask) を使うので head が消える心配なし。
+                float marginM = _EGGYBOT_ClipMargin * 0.001;  // mm → m
+                float3 toBody = IN.positionWS - _EGGYBOT_BodyCenter.xyz;
+                float dist = length(toBody);
+                if (dist < _EGGYBOT_BodyRadius + marginM)
                 {
-                    float3 toBody = IN.positionWS - _BodyCenter.xyz;
-                    float dist = length(toBody);
-                    if (dist < _BodyRadius + marginM)
-                    {
-                        discard;
-                    }
+                    discard;
                 }
 
                 float3 N = normalize(IN.normalWS);
