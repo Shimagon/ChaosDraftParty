@@ -75,3 +75,6 @@ meshy_output/
 *.env.local
 .meshy
 Meshy_API_Key*
+
+# Office temp lock files
+~$*
