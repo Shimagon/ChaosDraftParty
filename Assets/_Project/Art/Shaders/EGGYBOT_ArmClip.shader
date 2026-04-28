@@ -131,6 +131,29 @@ Shader "ChaosDraftParty/EGGYBOTArmClip"
                     discard;
                 }
 
+                // === v15.18: View-occlusion clip ===
+                // 半透明 body 越しに「裏側の hand」が透けて見える問題を根治。
+                // Camera→vert ray が body sphere と交差してて、交点が vert より手前なら discard。
+                // 反対側 (camera から見て body の裏) の hand vert を完全に消す。
+                {
+                    float3 camWS = GetCameraPositionWS();
+                    float3 toVert = IN.positionWS - camWS;
+                    float tv = length(toVert);
+                    float3 D = toVert / max(tv, 1e-6);
+                    float3 OC = camWS - _EGGYBOT_BodyCenter.xyz;
+                    float b = dot(OC, D);
+                    float c = dot(OC, OC) - _EGGYBOT_BodyRadius * _EGGYBOT_BodyRadius;
+                    float disc = b * b - c;
+                    if (disc > 0.0)
+                    {
+                        float t1 = -b - sqrt(disc);  // body 入射点 depth
+                        if (t1 > 0.0 && t1 < tv - 0.001)
+                        {
+                            discard;  // body 越しの裏側 vert
+                        }
+                    }
+                }
+
                 float3 N = normalize(IN.normalWS);
                 bool front = IS_FRONT_VFACE(isFront, true, false);
                 if (!front) N = -N;
