@@ -284,6 +284,61 @@ Session
 
 ---
 
+## Shader / SDF / Visual デバッグの原則（2026-04-29 追加）
+
+### 原則 1: 思い込みで proposal するな、まず実測
+
+shader / SDF / mesh / bone の挙動が想定と違う時:
+
+1. **数値を取る前に修正案を出さない**
+2. Unity MCP `execute_code` で:
+   - mesh の全 vertex world position
+   - vertex の target との距離
+   - shader uniform の global 値（`Shader.GetGlobalVector`）
+   - SkinnedMR の `bones`, `rootBone`, `bounds.center`, weights
+   - Animator の `humanScale`, `bodyPosition`, 各 bone localPos
+3. 並列 Agent 3 個で多角検証:
+   - **Agent A**: 既存仮説の検証 or 反証（数値ベース）
+   - **Agent B**: pixel-level / vertex-level の実態解析
+   - **Agent C**: 代替アプローチ網羅（Web 検索、Unity Doc 含む）
+
+### 原則 2: SkinnedMR の bounds.center ≠ mesh の幾何中心
+
+SkinnedMR の bounds は bone weight 単位で計算される。**mesh の見た目の中心ではない**。
+
+判定球 / SDF center を決める時は、`bounds.center` を信じず、vertex の min/max から幾何中心を計算する:
+
+```csharp
+var verts = smr.sharedMesh.vertices;
+var min = verts[0]; var max = verts[0];
+foreach (var v in verts) { min = Vector3.Min(min, v); max = Vector3.Max(max, v); }
+var center = smr.transform.TransformPoint((min + max) / 2f);
+```
+
+### 原則 3: bone と mesh の親子関係は別 hierarchy で繋がる
+
+Transform.parent と SkinnedMR.bones は別物。**Transform 上は同じ親でも、SkinnedMR.bones が違う rig を指してたら mesh は別の動きをする**。
+
+例: EGGYBOT v16 では bowl (BodyLower / BodyUpperClear) が `EggybotArmature` の bones に bind されてて、Hand_L/R は `mixamorig:` 系の Transform child。両者は **独立して動く**ので判定球の追従設計を間違えると壊れる。
+
+### 原則 4: 失敗を残せ
+
+うまく行かなかった試行は **memory に記録**。同じ罠を二度踏まない:
+- `memory/feedback_*.md`: 失敗パターンと回避策
+- `memory/session_*.md`: 試行の流れと教訓
+- `.claude/skills/chaosdraftparty-gotchas/SKILL.md`: 罠の追加
+
+詳細: `feedback_shader_pixel_first.md`, `feedback_bone_mesh_hierarchy.md`, `project_eggybot_v16_clip_v16final.md`
+
+### 原則 5: 視覚 / 微調整は user、機械的構築は Claude
+
+bone 位置の最終微調整、色の最終決定、形状の判断は **user**。
+rough rig 構築、script 実装、初期値設定、scene 操作は **Claude**。
+
+「不安なところは user、機械的なところは Claude」を堅持。Claude が勝手に視覚デザインを変えない（feedback_ask_before_visual_change.md）。
+
+---
+
 ## 既知の技術リスク（対策付き）
 
 | リスク | 影響 | 対策 |
@@ -310,6 +365,7 @@ Session
 ## 変更履歴
 
 - **v1.0 (2026-04-21)**：初版。M1開始時点のベースライン。
+- **v1.1 (2026-04-29)**：「Shader / SDF / Visual デバッグの原則」セクション追加。EGGYBOT v16 SDF clip 修正セッションの教訓を反映（思い込み禁止、並列 agent + 実測、SkinnedMR bounds.center の罠）。
 - 以降、実装進行と共に本書を更新すること。
 
 ---

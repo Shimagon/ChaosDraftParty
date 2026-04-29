@@ -66,6 +66,8 @@ description: ChaosDraftParty（Unity 6 + NGO + Relay + URP のソロ卒業制作
 44. [Unity session down 時の手書き .meta 戦略](#44-unity-session-down-時の手書き-meta-戦略)
 49. [Blender viewport を Material Preview mode にすると Unity URP shader が壊れる](#49-blender-viewport-を-material-preview-mode-にすると-unity-urp-shader-が壊れる)
 50. [ユーザー承認があったときだけナレッジ化する（無条件保存禁止）](#50-ユーザー承認があったときだけナレッジ化する無条件保存禁止)
+51. [SDF 判定球の center は mesh の bounds.center じゃなく「全体の球中心」](#51-sdf-判定球の-center-は-mesh-の-boundscenter-じゃなく全体の球中心)
+52. [shader / SDF 系問題は「実測 → 並列 agent レビュー → 提案」の順序固定](#52-shader--sdf-系問題は実測--並列-agent-レビュー--提案の順序固定)
 
 ---
 
@@ -1342,6 +1344,83 @@ clear.diffuse_color = (0.82, 0.86, 0.92, 0.35)  # alpha 低めで透け感
 **良い例（推奨）:** 「ナイス戻った、ナレッジに残して」→ その時だけ skill 追記 + commit。
 
 **初遭遇:** 2026-04-24（Material Preview 事故の直後、ユーザーが「褒めた時だけ記録して」とルール明言）
+
+---
+
+## #51. SDF 判定球の center は mesh の bounds.center じゃなく「全体の球中心」
+
+**症状:** EGGYBOT v16 SDF body clip shader が「Hand が bowl にめり込んでも消えない」「離れた所で切れる」「Walking で挙動が変」。判定球の center を `BodyLower.bounds.center` (= (0, 0.33, 0)) に置いてたが、bowl の上ドーム (BodyUpperClear) が SDF 射程外で discard されない。
+
+**原因:** bowl は **下椀 + 上ドームで完全な球**（中心 (0, 0.50, 0)、半径 0.336）として表現される。しかし SkinnedMeshRenderer の `bounds.center` は bone weight に応じて計算され、**幾何中心ではなく bone weight bounds の中心**（BodyLower は下半球、BodyUpperClear は上半球）。これを center に使うと半分しかカバーしない。
+
+**回避策:**
+```csharp
+// BodyClip 判定球は bowl 全体の幾何中心に置く
+bodyClip.position = new Vector3(0f, 0.50f, 0f);  // ← bowl 全体 sphere の center
+bodyClip.localScale = Vector3.one * 0.672f;      // radius 0.336 (bowl mesh sphere 半径)
+
+binder.bodyCenterTransform = bodyClip.transform;
+binder.bodyCenterOffsetLocal = Vector3.zero;     // offset 0
+binder.bodyRadius = 0.336f;
+binder.clipMarginMM = 5f;                        // 安全マージン
+binder.trackHipsBone = false;                    // bowl 自体が動かないので追従不要
+```
+
+判定球の center を確かめる手順:
+1. `mesh.bounds.center` を見ない（罠）
+2. mesh の **vertex の min/max world position** から幾何中心を計算
+3. 球状 mesh なら `(min + max) / 2`、楕円体なら別途計算
+
+**確認方法（execute_code）:**
+```csharp
+var smr = bowl.GetComponent<SkinnedMeshRenderer>();
+var verts = smr.sharedMesh.vertices;
+var min = verts[0]; var max = verts[0];
+foreach (var v in verts) { min = Vector3.Min(min, v); max = Vector3.Max(max, v); }
+var center = (min + max) / 2f;  // local
+var worldCenter = smr.transform.TransformPoint(center);
+// これが真の幾何中心。bounds.center とは違うことが多い
+```
+
+**初遭遇:** 2026-04-29（EGGYBOT v16 humanoid SDF clip 修正セッション、ユーザー「めっちゃよくなってきた」承認）
+
+---
+
+## #52. shader / SDF 系問題は「実測 → 並列 agent レビュー → 提案」の順序固定
+
+**症状:** shader / mesh / bone の挙動デバッグで、思い込みで仮説を立てて修正 → 全部外す → 何時間も溶ける。
+
+**原因:** Claude が「Walking が原因だろう」「muscle が大きすぎる」「Avatar humanScale が」と数値も見ずに仮説を立てる癖。実態を見ると全部見当違いなことが多い。
+
+**回避策（フロー固定）:**
+
+1. **数値を取る前に proposal しない。** ユーザーから「修正して」と言われても、まず実測。
+2. **execute_code で実測:**
+   - mesh の全 vertex world position
+   - vertex 距離 (target との)
+   - shader uniform の global 値（`Shader.GetGlobalVector`）
+   - SkinnedMR の `bones`, `rootBone`, `bounds.center`, weights
+   - Animator の `humanScale`, `bodyPosition`, 各 bone localPos
+3. **並列 Agent 3 個（標準 set）:**
+   - **Agent A**: 既存仮説の検証 or 反証（数値ベース）
+   - **Agent B**: pixel-level / vertex-level の実態解析
+   - **Agent C**: 代替アプローチ網羅（Web 検索、Unity Doc、Forum 含む）
+4. 並列結果を統合 → 真因特定 → そこから修正
+5. 「思い込み」proposal の前に「俺、実測してないけど proposal していい？」と自問
+
+**Token / 時間コスト:**
+- 並列 3 agent で約 600〜900 sec、token 数千〜1万
+- 思い込みベースの 5 回試行錯誤の時間より遥かに速い
+- ユーザーが「徹底的に調べて」「マルチで」と言った時はこの方式必須
+
+**典型的な誤った思い込み（避けるべき）:**
+- 「Walking クリップが原因」→ 実は static T-pose ですでに破綻してた
+- 「Avatar humanScale で Hips Y がスケールされて 0.49 にズレる」→ 実は Mecanim の足元基準補正で正しい高さ
+- 「Mesh の bounds.center = 幾何中心」→ SkinnedMR では bone weight 由来で違う
+- 「bone を動かして直す」→ Avatar 不整合の原因にもなる、最後の手段
+- 「shader が動いてない」→ 実は仕様通り、判定範囲が間違ってるだけ
+
+**初遭遇:** 2026-04-29（EGGYBOT v16 SDF clip ズレで 5 仮説外した後、並列 agent 3 個で 1 回で真因特定）
 
 ---
 
