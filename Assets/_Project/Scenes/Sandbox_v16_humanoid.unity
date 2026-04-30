@@ -3653,9 +3653,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce547dfb05f0e104a8c4776f9d13bdd0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: ChaosDraftParty.Core::ChaosDraftParty.Core.EggybotPoseLock
-  yOffset: -0.219
-  symmetrizeShoulders: 1
-  symmetrizeHands: 1
+  yOffset: -0.19
+  symmetrizeShoulders: 0
+  symmetrizeHands: 0
   applyRootMotion: 0
   editHipsY: 0.267
 --- !u!4 &1185093311764613726

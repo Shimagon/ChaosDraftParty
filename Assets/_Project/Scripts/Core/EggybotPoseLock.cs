@@ -28,15 +28,15 @@ namespace ChaosDraftParty.Core
     [RequireComponent(typeof(Animator))]
     public class EggybotPoseLock : MonoBehaviour
     {
-        [Tooltip("Play 時の Hips Y 浮上の補正量。Edit Hips Y - Play Hips Y で測定。EGGYBOT v16 は -0.219 前後。")]
+        [Tooltip("Play 時の Hips Y 浮上の補正量。Edit Hips Y - Play Hips Y で測定。EGGYBOT v16 は -0.19 前後 (-0.219 でより精密)。")]
         // TODO(M2): EggybotConfig SO に移管
-        [SerializeField] float yOffset = -0.219f;
+        [SerializeField] float yOffset = -0.19f;
 
-        [Tooltip("Shoulder L/R を world で対称化する。Mecanim の muscle 計算ズレを打ち消す。")]
-        [SerializeField] bool symmetrizeShoulders = true;
+        [Tooltip("Shoulder L/R を world で対称化する。Mecanim の muscle 計算ズレを打ち消す。デフォルト false (元動作優先)、必要シーンで true に。")]
+        [SerializeField] bool symmetrizeShoulders = false;
 
-        [Tooltip("Hand L/R を world で対称化する。Walking arm swing の Z 揺れは消えるが humanScale 0.36 では元々小さい。")]
-        [SerializeField] bool symmetrizeHands = true;
+        [Tooltip("Hand L/R を world で対称化する。Walking arm swing の Z 揺れは消えるが humanScale 0.36 では元々小さい。デフォルト false (元動作優先)。")]
+        [SerializeField] bool symmetrizeHands = false;
 
         [Tooltip("Animator.applyRootMotion を Awake で何に設定するか。Mixamo の in-place Walking なら false。\nXZ 移動が必要な走行クリップ等の将来用フラグ。通常は false のまま。")]
         [SerializeField] bool applyRootMotion = false;
