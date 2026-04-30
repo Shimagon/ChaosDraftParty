@@ -1424,12 +1424,74 @@ var worldCenter = smr.transform.TransformPoint(center);
 
 ---
 
+## #53. Mecanim humanoid の Hips Y 浮上は LateUpdate Hips 直書きで解決（bodyPosition shift は効かない）
+
+**症状:** Mixamo の Walking クリップを humanScale が 1 から大きく外れたキャラ（EGGYBOT v16 は 0.36）に再生すると、Hips が +0.19m 浮上する。Edit T-pose と Play T-pose が一致しない。
+
+**効かなかった「典型解」:**
+- ❌ `OnAnimatorMove` で `anim.bodyPosition.y += -0.19f` → Walking の `lockRootHeightY=true` で baked された Y は打ち消せない
+- ❌ AvatarBuilder.BuildHumanAvatar で T-pose を新しくする → muscle 正規化で user 手動 bone 編集が消える、罠 #54 参照
+
+**正解:**
+
+```csharp
+[RequireComponent(typeof(Animator))]
+public class EggybotPoseLock : MonoBehaviour {
+    [SerializeField] float yOffset = -0.19f;
+    Animator anim; Transform hips;
+    void Awake() {
+        anim = GetComponent<Animator>();
+        hips = anim.GetBoneTransform(HumanBodyBones.Hips);
+    }
+    void LateUpdate() {
+        var p = hips.position;
+        p.y += yOffset;
+        hips.position = p;
+    }
+}
+```
+
+LateUpdate は Animator.Update 直後なので、Mecanim が書いた Hips position に対して **直接 offset を加算**できる。Hips が動くと全 humanoid bone は親追従で一括シフト → Walking 動作維持。
+
+**初遭遇:** 2026-04-30（EGGYBOT v16 Step 5、Mac 引継ぎ後の humanoid 化）
+
+**関連:**
+- `Assets/_Project/Scripts/Core/EggybotPoseLock.cs`
+- commit `c155759`
+
+---
+
+## #54. humanoid Avatar 再構築は user 手動 bone 編集を破壊する
+
+**症状:** User が Inspector で bone を綺麗に配置 → AvatarBuilder.BuildHumanAvatar で Avatar 再構築 → シーン保存で **bone 位置が +0.19m 持ち上がる + 左右反転** が永続化される。
+
+**原因:**
+1. **muscle 正規化**: HumanDescription.skeleton で渡した localPosition は「目安」。Avatar の T-pose は muscle 角度 + 標準骨長 × humanScale で再構築される
+2. **AlwaysAnimate**: Animator.cullingMode=AlwaysAnimate だと **Edit mode でも humanoid pose が常時評価**され、bone position を Avatar T-pose で永続書き換える
+3. シーン保存で焼き込まれる
+
+**回避策:**
+- ❌ Avatar 再構築する → muscle 正規化で user 編集消える
+- ✅ **Avatar はそのままにして PoseLock (罠 #53) で補正** が最安全
+
+**復旧手順（焼き込まれた場合）:**
+1. _temp_unload.unity を作って Sandbox を unload (罠 #52 参照)
+2. `git checkout <healthy_commit> -- scene.unity Avatar.asset`
+3. Sandbox 再 load
+
+**初遭遇:** 2026-04-30（EGGYBOT v16 Step 5、Avatar 再構築後にシーンが壊れて 716af15 まで戻して復旧）
+
+**関連:**
+- `memory/feedback_avatar_rebuild_caution.md`
+- `memory/feedback_mecanim_hips_lateupdate.md`
+
+---
+
 ## 追加候補（まだ踏んでない、踏んだら書く）
 
 - [ ] Prefab に ClientNetworkTransform つけた時の挙動
 - [ ] NGO 2.x の ServerRpc パラメータ制約
 - [ ] Relay JoinCode の形式とバリデーション
 - [ ] Input System アクション Assign 時の GUID ズレ
-- [ ] Mixamo FBX リターゲット時の hip 固定問題
 - [ ] LFS 越しの .dll に同期遅延
 - [ ] ParrelSync クローンでの Library/ 競合
