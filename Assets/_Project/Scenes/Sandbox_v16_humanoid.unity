@@ -3589,6 +3589,7 @@ GameObject:
   - component: {fileID: 1657408148}
   - component: {fileID: 1657408150}
   - component: {fileID: 919132147590576065}
+  - component: {fileID: 919132147590576066}
   m_Layer: 0
   m_Name: EGGYBOT_v16
   m_TagString: Untagged
@@ -3640,6 +3641,21 @@ MonoBehaviour:
   - {fileID: 1769765166}
   - {fileID: 1978046666}
   - {fileID: 503448559}
+--- !u!114 &919132147590576066
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 919132147590576064}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ce547dfb05f0e104a8c4776f9d13bdd0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ChaosDraftParty.Core::ChaosDraftParty.Core.EggybotPoseLock
+  yOffset: -0.19
+  applyRootMotion: 0
+  editHipsY: 0.267
 --- !u!4 &1185093311764613726
 Transform:
   m_ObjectHideFlags: 0
