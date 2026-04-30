@@ -41,7 +41,13 @@ Shader "ChaosDraftParty/EGGYBOTGlass"
 
             Blend One OneMinusSrcAlpha
             ZWrite Off
-            Cull Back
+            Cull Off // 両面描画化: hemisphere の裏側 rim 帯も shading されて連続シルエットに
+            // 設計意図: Cull Off + ZWrite Off で hemisphere の表裏が同フラグメントに重なる時、
+            // 描画順は draw call 順依存（深度ソートなし）。premultiplied alpha (Blend One OneMinusSrcAlpha) なので
+            // 二重加算で grazing 帯がやや明るく出る場合がある。_EdgeAlpha / _RimIntensity を上げる際は
+            // 二重加算による白飛びを目視確認すること。Z-fighting は ZWrite Off により回避済み。
+            // NOTE: Pass 2 (Silhouette) で連続シルエットが描けるなら、この Cull Off は厳密には不要。
+            // 裏面 rim の視覚効果が user 確認で不要と判断されたら Cull Back に戻して描画負荷を削減すること。
 
             HLSLPROGRAM
             #pragma vertex vert
@@ -96,11 +102,16 @@ Shader "ChaosDraftParty/EGGYBOTGlass"
 
             half4 frag(Varyings IN) : SV_Target
             {
+                // 注意: 裏面ポリゴン (Cull Off) では N が反転するため、後段の NdotL/NdotH は
+                // saturate により 0 寄りになる。これにより裏面の diffuse / specular は意図的に薄く出る。
+                // 一方、fresnel / rim は abs(dot(N, V)) で対称化してあるので両面で連続して見える。
+                // → 「裏面は rim のみ表現、diffuse/specular は意図的に抑制」が本 shader の設計。
                 float3 N = normalize(IN.normalWS);
                 float3 V = normalize(GetCameraPositionWS() - IN.positionWS);
 
                 // Fresnel — edges face away from camera
-                half NdotV   = saturate(dot(N, V));
+                // abs(dot) で grazing 帯の符号クランプを除去 → rim/fresnel が両面で対称になり線が切れない
+                half NdotV   = abs(dot(N, V));
                 half fresnel = pow(1.0 - NdotV, _FresnelPower);
 
                 // Alpha: thin in center, opaque at edges (matches real glass)
