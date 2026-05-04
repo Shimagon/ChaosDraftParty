@@ -3,59 +3,73 @@ using UnityEngine;
 namespace ChaosDraftParty.Core
 {
     /// <summary>
-    /// EGGYBOT のしゃがみ動作: Head bone を bowl の中に Lerp で収納する。
+    /// EGGYBOT のしゃがみ動作: FaceVisual GameObject の localPosition.y を Lerp で下げて
+    /// 顔 (HeadMesh + Eye + Mouth) を bowl 内部に沈める。
     ///
-    /// コンセプト: EGGYBOT 自身がカプセルなので、しゃがみ = 顔のついた頭が bowl 内部に沈み込む動き。
-    /// SDF clip shader (EggybotShaderBinder, 半径 0.336 の判定球) が pixel 単位で頭を消すので、
-    /// 物理的には Head bone Y を下げるだけで「カプセルに頭が呑まれる」演出が成立する。
-    /// bowl (BodyLower / BodyUpperClear) や Hips は一切触らない。
+    /// 設計 (2026-05-04 user 提案):
+    /// - mixamorig:Head bone の child に HeadAnchor (empty + SphereCollider 当たり判定用、固定)
+    /// - HeadAnchor の child に FaceVisual (empty、これが crouch で上下する)
+    /// - FaceVisual の child に 4 つの face mesh (MeshRenderer 化済)
+    /// - crouch = FaceVisual.localPosition.y を 0 (立ち) ↔ -crouchDepth (収納) で Lerp
+    /// - HeadAnchor は Head bone 追従、SphereCollider は常に頭位置に残る (game logic 用)
     ///
-    /// 実行順: PoseLock (default 0) → EggybotCrouch (100) で Head を後勝ちで上書き。
+    /// なぜこの設計か:
+    /// - face mesh は元々 Hips bone で skinning されてた → Head bone 動かしても visual 動かなかった
+    /// - 静的 Mesh 化 + GameObject 階層で動かす方が確実
     /// </summary>
-    [DefaultExecutionOrder(100)]
-    [RequireComponent(typeof(Animator))]
     public class EggybotCrouch : MonoBehaviour
     {
-        [Tooltip("立ち姿勢の Head world Y。EGGYBOT v16 は 0.91 前後。")]
-        // TODO(M2): EggybotConfig SO に移管
-        [SerializeField] float standingHeadY = 0.91f;
+        [Tooltip("crouch 動作で上下動する FaceVisual Transform。HeadAnchor の child。Inspector で割当。")]
+        [SerializeField] Transform faceVisual;
 
-        [Tooltip("しゃがみ姿勢の Head world Y。bowl 中心 Y=0.50 より下に置くと SDF で完全に消える。0.30 推奨。")]
-        // TODO(M2): EggybotConfig SO に移管
-        [SerializeField] float crouchingHeadY = 0.30f;
+        [Tooltip("crouch 時に FaceVisual を下げる量 (m)。0.60 で頭が完全に bowl 内に沈む。")]
+        [SerializeField] float crouchDepth = 0.60f;
 
-        [Tooltip("立ち↔しゃがみの Lerp 速度。値が大きいほど速く切り替わる。5 推奨。")]
+        [Tooltip("立ち↔しゃがみの Lerp 速度。値が大きいほど速く切り替わる。8 推奨。")]
         [SerializeField] float lerpSpeed = 8f;
 
         [Tooltip("Inspector toggle でテスト。Play 中に切替可。M2 でスキル / ノックアウトに繋ぐ。")]
         [SerializeField] public bool isCrouching;
 
         public bool IsCrouching => isCrouching;
+        public Transform FaceVisual => faceVisual;
+        public float GetCrouchDepth() => crouchDepth;
 
-        Animator anim;
-        Transform head;
+        // Sequence script からの外部制御中は lerp を停止 (ぴょんッ→スポン アニメ用)
+        public bool ExternalControl { get; set; }
+
         float currentY;
+        bool synced;
 
         void Awake()
         {
-            anim = GetComponent<Animator>();
-            head = anim.GetBoneTransform(HumanBodyBones.Head);
-            if (head == null)
-            {
-                Debug.LogWarning("[EggybotCrouch] Head bone not found. Avatar が Humanoid か確認");
-                return;
-            }
-            currentY = standingHeadY;
+#if UNITY_EDITOR
+            // Editor の Game view 非フォーカス時でも Editor playerLoop を動かす
+            // (ビルド後に副作用が残らないよう Editor only)
+            Application.runInBackground = true;
+#endif
         }
 
         void LateUpdate()
         {
-            if (head == null) return;
-            float targetY = isCrouching ? crouchingHeadY : standingHeadY;
+            if (faceVisual == null) return;
+            // 初回 LateUpdate で scene 保存値に同期 (Play 開始時の snap 防止)
+            if (!synced)
+            {
+                currentY = faceVisual.localPosition.y;
+                synced = true;
+            }
+            // Sequence からの外部制御中は lerp 停止 (ぴょんッ アニメ等)
+            if (ExternalControl)
+            {
+                currentY = faceVisual.localPosition.y; // 外部値を吸収して制御戻り時 snap しない
+                return;
+            }
+            float targetY = isCrouching ? -crouchDepth : 0f;
             currentY = Mathf.Lerp(currentY, targetY, Time.deltaTime * lerpSpeed);
-            var p = head.position;
+            var p = faceVisual.localPosition;
             p.y = currentY;
-            head.position = p;
+            faceVisual.localPosition = p;
         }
 
         public void Crouch() => isCrouching = true;

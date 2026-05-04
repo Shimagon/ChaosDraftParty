@@ -33,6 +33,11 @@ namespace ChaosDraftParty.Core
         [Tooltip("Inspector toggle でテスト。Play 中に切替可。")]
         [SerializeField] public bool isOpen;
 
+        public Transform UpperLid => upperLid;
+        public Quaternion GetClosedLocalRot() => closedLocalRot;
+        public float GetOpenTiltX() => openTiltX;
+        public bool ExternalControl { get; set; }
+
         Vector3 closedLocalPos;
         Quaternion closedLocalRot;
         bool initialized;
@@ -52,6 +57,7 @@ namespace ChaosDraftParty.Core
         void LateUpdate()
         {
             if (!initialized) return;
+            if (ExternalControl) return; // Sequence による直接制御中は lerp 停止
 
             // 目標 transform
             var openLocalPos = closedLocalPos + new Vector3(0f, openLiftY, 0f);
