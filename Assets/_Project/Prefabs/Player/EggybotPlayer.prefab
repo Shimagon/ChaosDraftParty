@@ -393,6 +393,20 @@ MonoBehaviour:
   crouchDepth: 0.53
   lerpSpeed: 8
   isCrouching: 0
+  crouchHeightRatio: 0.6
+  checkCeilingOnStandUp: 1
+  ceilingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  enableBonkReaction: 1
+  bonkDuration: 0.35
+  bonkOpenAngle: 35
+  bonkCooldown: 0.3
+  bonkSfx: {fileID: 0}
+  cameraTarget: {fileID: 90904926265835013}
+  cameraTargetStandY: 0.5
+  cameraTargetCrouchY: 0.25
+  cameraTargetDampTime: 0.12
 --- !u!114 &3871351774353654909
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -511,6 +525,7 @@ MonoBehaviour:
   cameraMinWorldY: 0.3
   animator: {fileID: 119474661979155032}
   speedDampTime: 0.1
+  koThresholdY: -5
   lockCursor: 1
 --- !u!114 &8274296243520548542
 MonoBehaviour:

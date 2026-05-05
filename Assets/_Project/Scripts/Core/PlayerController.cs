@@ -82,6 +82,10 @@ namespace ChaosDraftParty.Core
         [Tooltip("Animator.Speed の damp time (秒)。0.1 で滑らか開始/停止。")]
         [SerializeField] float speedDampTime = 0.1f;
 
+        [Header("Network State")]
+        [Tooltip("KO 判定用 Y 閾値。world Y がこれ未満で host が isAlive=false にする。地面 Y=0 + 余裕。-5 推奨。")]
+        [SerializeField] float koThresholdY = -5f;
+
         [Header("Debug")]
         [SerializeField] bool lockCursor = true;
 
@@ -102,6 +106,21 @@ namespace ChaosDraftParty.Core
         bool jumpQueued;
         static readonly int SpeedHash = Animator.StringToHash("Speed");
         static readonly int JumpHash = Animator.StringToHash("Jump");
+
+        // Network: 生存状態。host が write 権限、全 client read。
+        // 縮む島で Y < koThresholdY になったら host が false に → 全 client で操作不能 + visual 落下継続
+        public readonly Unity.Netcode.NetworkVariable<bool> IsAlive = new(
+            true,
+            Unity.Netcode.NetworkVariableReadPermission.Everyone,
+            Unity.Netcode.NetworkVariableWritePermission.Server);
+
+        // Network: しゃがみ state (truth)。Owner が write、全 client read。
+        // OnValueChanged で各 client が PlayCrouchLocal を起動 → coroutine sequence + CC リサイズ同期。
+        // 後から join した client も初期値で正しい状態に snap される (catch-up)。
+        public readonly Unity.Netcode.NetworkVariable<bool> NetIsCrouching = new(
+            false,
+            Unity.Netcode.NetworkVariableReadPermission.Everyone,
+            Unity.Netcode.NetworkVariableWritePermission.Owner);
 
         void Awake()
         {
@@ -162,6 +181,12 @@ namespace ChaosDraftParty.Core
 
         public override void OnNetworkSpawn()
         {
+            // 全 client が NetIsCrouching を購読 (host / 他人問わず)
+            NetIsCrouching.OnValueChanged += HandleNetCrouchChanged;
+            // 後 join での catch-up: 既に crouch 中なら即 snap
+            if (NetIsCrouching.Value && cachedCrouch != null)
+                cachedCrouch.Crouch();
+
             if (!IsOwner)
             {
                 // Non-owner (他クライアントから見た他人キャラ): 入力 / Update を止める。
@@ -172,6 +197,16 @@ namespace ChaosDraftParty.Core
             }
             // Owner: scene の CinemachineCamera を見つけて自分の CameraTarget に bind する
             SetupOwnerCamera();
+        }
+
+        public override void OnNetworkDespawn()
+        {
+            NetIsCrouching.OnValueChanged -= HandleNetCrouchChanged;
+        }
+
+        void HandleNetCrouchChanged(bool oldVal, bool newVal)
+        {
+            PlayCrouchLocal(newVal);
         }
 
         /// <summary>Owner のみ: scene の CinemachineCamera を find して、自分の CameraTarget child に Follow/LookAt 設定。</summary>
@@ -228,8 +263,27 @@ namespace ChaosDraftParty.Core
 
         void Update()
         {
+            // KO されたら入力 / camera 駆動を止める (落下 visual は継続)
+            if (IsSpawned && !IsAlive.Value)
+            {
+                // CC は持ち主の重力に任せて落とす (Move は呼ばない、または gravity だけ適用)
+                if (characterController != null && characterController.enabled)
+                {
+                    verticalVel += (config != null ? config.GravityAcceleration : -9.81f) * Time.deltaTime;
+                    characterController.Move(Vector3.up * verticalVel * Time.deltaTime);
+                }
+                return;
+            }
+
             ApplyLook();
             ApplyMovement();
+
+            // host のみ: Y < threshold で KO 確定 (NetworkVariable で全 client 同期)
+            if (IsSpawned && IsServer && IsAlive.Value && transform.position.y < koThresholdY)
+            {
+                IsAlive.Value = false;
+                Debug.Log($"[PlayerController] KO clientId={(IsOwner ? "self" : "remote")} pos={transform.position}");
+            }
 
             // Editor DX: Escape で cursor 一時 unlock
             if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
@@ -340,30 +394,26 @@ namespace ChaosDraftParty.Core
 
             bool wantCrouch = !cachedCrouch.IsCrouching;
 
+            // 立ち上がり要求時は先に天井チェック。塞がれてたら Bonk 演出して crouch 維持。
+            // (Owner-side で先に判定。NetworkVariable に false を書いても他 client では立ち上がるが、
+            //  この block は physics 局所判定なので owner-only でよい。網羅性は M2 で改善予定。)
+            if (!wantCrouch && !cachedCrouch.CanStandUp())
+            {
+                cachedCrouch.PlayBonk();
+                return;
+            }
+
             if (IsSpawned)
             {
-                // Network mode: Owner が ServerRpc で送る → Server が ClientRpc で全 client にブロードキャスト
-                // CLAUDE.md 同期表: スキル系は C→S→C パターン
-                RequestCrouchServerRpc(wantCrouch);
+                // Network mode: Owner 権限の NetworkVariable を更新するだけ。
+                // OnValueChanged で全 client (自分含む) が HandleNetCrouchChanged → PlayCrouchLocal 実行。
+                NetIsCrouching.Value = wantCrouch;
             }
             else
             {
                 // Single-player (Sandbox_v19 単独再生等): 直接ローカル実行
                 PlayCrouchLocal(wantCrouch);
             }
-        }
-
-        [Unity.Netcode.ServerRpc(RequireOwnership = true)]
-        void RequestCrouchServerRpc(bool wantCrouch)
-        {
-            // Server (host) が全 client (owner 含む) に broadcast
-            PlayCrouchClientRpc(wantCrouch);
-        }
-
-        [Unity.Netcode.ClientRpc]
-        void PlayCrouchClientRpc(bool wantCrouch)
-        {
-            PlayCrouchLocal(wantCrouch);
         }
 
         void PlayCrouchLocal(bool wantCrouch)

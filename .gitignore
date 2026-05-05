@@ -78,3 +78,7 @@ Meshy_API_Key*
 
 # Office temp lock files
 ~$*
+
+# Unity 自動バックアップ（コミット不要）
+Assets/_Recovery/
+Assets/_Recovery.meta
