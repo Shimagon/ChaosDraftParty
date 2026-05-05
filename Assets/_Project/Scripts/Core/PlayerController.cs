@@ -1,14 +1,15 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Unity.Cinemachine;
+using Unity.Netcode;
 using ChaosDraftParty.Core.Configs;
 
 namespace ChaosDraftParty.Core
 {
     /// <summary>
-    /// EGGYBOT 用 3rd person PlayerController (M1 single-player、M2 で NetworkBehaviour 化想定)。
+    /// EGGYBOT 用 3rd person PlayerController (NetworkBehaviour、Owner 権威)。
     ///
-    /// 設計 (v2、2026-05-04):
+    /// 設計 (v3、2026-05-05 NGO 化):
     /// - CharacterController で移動 (Rigidbody は爆弾のみ)
     /// - **OrbitalFollow** で自由視点カメラ (ThirdPersonFollow は target.rotation 読まないため使えない)
     /// - 視点入力 (Look) を直接 OrbitalFollow.HorizontalAxis/VerticalAxis に流す (InputAxisController 不要、code 制御)
@@ -17,13 +18,17 @@ namespace ChaosDraftParty.Core
     /// - 重力は自前累積、CharacterController.Move 1 回呼びで水平+垂直まとめ
     /// - しゃがみ: Shift で EggybotCrouchSequence.PlayEnter/Exit を toggle (中は移動禁止)
     ///
-    /// M2 移行時:
-    /// - Apply* 関数分離なので IsOwner ガード追加だけで NetworkBehaviour 化可能
-    /// - 入力は client local、位置は ClientNetworkTransform で同期
+    /// Network 設計 (CLAUDE.md 同期表準拠):
+    /// - **位置 = Owner 権威**: prefab に NetworkTransform (AuthorityMode=Owner) を付ける。
+    ///   PlayerController.Update は Owner のみで動き、CharacterController.Move でローカル移動。
+    ///   NetworkTransform が他クライアントへ補間配信。
+    /// - HP / Score / RoundState 等は別途 NetworkVariable<T> で server→all 同期 (M2)
+    /// - Animator 同期は NetworkAnimator を prefab に追加して owner→all で broadcast 推奨
+    /// - 単独再生 (Sandbox_v19 等、NetworkManager 無し) でも従来通り動作する (IsSpawned=false で gate しない)
     /// </summary>
     [DefaultExecutionOrder(50)] // PoseLock(0) → 自分(50) → Crouch(100) → Capsule(110)
     [RequireComponent(typeof(CharacterController))]
-    public class PlayerController : MonoBehaviour
+    public class PlayerController : NetworkBehaviour
     {
         [Header("Config")]
         [SerializeField] GameConfig config;
@@ -153,6 +158,42 @@ namespace ChaosDraftParty.Core
             jumpAction?.Disable();
             crouchAction?.Disable();
             dashAction?.Disable();
+        }
+
+        public override void OnNetworkSpawn()
+        {
+            if (!IsOwner)
+            {
+                // Non-owner (他クライアントから見た他人キャラ): 入力 / Update を止める。
+                // 位置は NetworkTransform が補間配信、Animator は NetworkAnimator が同期する想定。
+                // enabled=false で OnDisable が走り inputs も Disable される。
+                enabled = false;
+                return;
+            }
+            // Owner: scene の CinemachineCamera を見つけて自分の CameraTarget に bind する
+            SetupOwnerCamera();
+        }
+
+        /// <summary>Owner のみ: scene の CinemachineCamera を find して、自分の CameraTarget child に Follow/LookAt 設定。</summary>
+        void SetupOwnerCamera()
+        {
+            if (cinemachineCamera == null)
+                cinemachineCamera = FindFirstObjectByType<CinemachineCamera>();
+            if (cinemachineCamera == null)
+            {
+                Debug.LogWarning("[PlayerController] CinemachineCamera が scene に無い、カメラ追従なし");
+                return;
+            }
+            orbital = cinemachineCamera.GetComponent<CinemachineOrbitalFollow>();
+
+            var camTarget = transform.Find("CameraTarget");
+            var followTarget = camTarget != null ? camTarget : transform;
+            cinemachineCamera.Follow = followTarget;
+            cinemachineCamera.LookAt = followTarget;
+            cinemachineCamera.Priority = 10;
+
+            if (cameraTransform == null && Camera.main != null)
+                cameraTransform = Camera.main.transform;
         }
 
         void BuildInputActions()
@@ -296,8 +337,41 @@ namespace ChaosDraftParty.Core
         {
             if (crouchSequence == null || crouchSequence.IsRunning) return;
             if (cachedCrouch == null) return;
-            if (cachedCrouch.IsCrouching) crouchSequence.PlayExitCrouch();
-            else crouchSequence.PlayEnterCrouch();
+
+            bool wantCrouch = !cachedCrouch.IsCrouching;
+
+            if (IsSpawned)
+            {
+                // Network mode: Owner が ServerRpc で送る → Server が ClientRpc で全 client にブロードキャスト
+                // CLAUDE.md 同期表: スキル系は C→S→C パターン
+                RequestCrouchServerRpc(wantCrouch);
+            }
+            else
+            {
+                // Single-player (Sandbox_v19 単独再生等): 直接ローカル実行
+                PlayCrouchLocal(wantCrouch);
+            }
+        }
+
+        [Unity.Netcode.ServerRpc(RequireOwnership = true)]
+        void RequestCrouchServerRpc(bool wantCrouch)
+        {
+            // Server (host) が全 client (owner 含む) に broadcast
+            PlayCrouchClientRpc(wantCrouch);
+        }
+
+        [Unity.Netcode.ClientRpc]
+        void PlayCrouchClientRpc(bool wantCrouch)
+        {
+            PlayCrouchLocal(wantCrouch);
+        }
+
+        void PlayCrouchLocal(bool wantCrouch)
+        {
+            if (crouchSequence == null || crouchSequence.IsRunning) return;
+            if (cachedCrouch == null) return;
+            if (wantCrouch && !cachedCrouch.IsCrouching) crouchSequence.PlayEnterCrouch();
+            else if (!wantCrouch && cachedCrouch.IsCrouching) crouchSequence.PlayExitCrouch();
         }
     }
 }

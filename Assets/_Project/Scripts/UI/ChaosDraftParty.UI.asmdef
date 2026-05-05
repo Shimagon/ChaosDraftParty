@@ -3,6 +3,7 @@
     "rootNamespace": "ChaosDraftParty.UI",
     "references": [
         "ChaosDraftParty.Core",
+        "ChaosDraftParty.Network",
         "Unity.UI",
         "Unity.TextMeshPro",
         "Unity.InputSystem"

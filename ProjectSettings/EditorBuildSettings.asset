@@ -23,4 +23,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/ShrinkingIslandProto.unity
     guid: eb8ed8cb8086c4565a0df0960b64d6c4
+  - enabled: 1
+    path: Assets/_Project/Scenes/Sandbox_v19_player_controller_test.unity
+    guid: 059f1bcf4d3593146b62652e4f7d1b57
   m_configObjects: {}

@@ -16,19 +16,30 @@ namespace ChaosDraftParty.Core.Managers
         [SerializeField] private string nextSceneName = "MainMenu";
         [SerializeField] private bool autoAdvance = true;
 
+        [Header("Network Mode")]
+        [Tooltip("ON: UGS 初期化 + 匿名 Auth (Relay 利用時)。OFF: skip (localhost UTP テスト時)。")]
+        [SerializeField] private bool requireUGS = true;
+
         async void Start()
         {
             Debug.Log("[Boot] 開始");
 
-            try
+            if (requireUGS)
             {
-                await InitializeUnityServices();
-                Debug.Log($"[Boot] Authenticated as {AuthenticationService.Instance.PlayerId}");
+                try
+                {
+                    await InitializeUnityServices();
+                    Debug.Log($"[Boot] Authenticated as {AuthenticationService.Instance.PlayerId}");
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogError($"[Boot] UGS init failed: {e.Message}");
+                    return;
+                }
             }
-            catch (System.Exception e)
+            else
             {
-                Debug.LogError($"[Boot] UGS init failed: {e.Message}");
-                return;
+                Debug.Log("[Boot] UGS init skipped (requireUGS=false、localhost UTP モード)");
             }
 
             if (autoAdvance && GameManager.Instance != null)
