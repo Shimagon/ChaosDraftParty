@@ -722,6 +722,9 @@ MonoBehaviour:
   fadeToGoneDelay: 1
   shrinkInterval: 15
   shrinkInitialDelay: 5
+  stepDetectionDelay: 1.5
+  stepRaycastDistance: 0.4
+  stepCheckInterval: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

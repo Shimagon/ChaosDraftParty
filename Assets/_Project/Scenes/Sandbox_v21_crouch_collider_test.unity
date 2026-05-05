@@ -888,7 +888,7 @@ GameObject:
   - component: {fileID: 1154554197}
   - component: {fileID: 1154554196}
   - component: {fileID: 1154554195}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Ceiling_Crouch_1.0m
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1381,7 +1381,7 @@ GameObject:
   - component: {fileID: 1472557313}
   - component: {fileID: 1472557312}
   - component: {fileID: 1472557311}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Ceiling_Tight_0.7m
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1568,7 +1568,7 @@ GameObject:
   - component: {fileID: 1652176837}
   - component: {fileID: 1652176836}
   - component: {fileID: 1652176835}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Ceiling_Clear_1.5m
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2280,7 +2280,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineDeoccluder
   CollideAgainst:
     serializedVersion: 2
-    m_Bits: 4294967291
+    m_Bits: 4294967035
   IgnoreTag: Player
   TransparentLayers:
     serializedVersion: 2
@@ -2501,13 +2501,46 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1782495317543651654, guid: f536647bf3f4d8148a4f35e2359c2194, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2030145695}
   m_SourcePrefab: {fileID: 100100000, guid: f536647bf3f4d8148a4f35e2359c2194, type: 3}
 --- !u!4 &2030145693 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 90904926265835013, guid: f536647bf3f4d8148a4f35e2359c2194, type: 3}
   m_PrefabInstance: {fileID: 2030145692}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2030145694 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1782495317543651654, guid: f536647bf3f4d8148a4f35e2359c2194, type: 3}
+  m_PrefabInstance: {fileID: 2030145692}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2030145695
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2030145694}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3eae5ac1bd8599845bcd07a2eaa096eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ChaosDraftParty.Core::ChaosDraftParty.Core.CameraOccluderFader
+  target: {fileID: 2030145693}
+  cameraTransform: {fileID: 2037012925}
+  occlusionMask:
+    serializedVersion: 2
+    m_Bits: 256
+  sphereRadius: 0.3
+  distanceShorten: 0.5
+  maxOccluders: 8
+  ditherMaterial: {fileID: 2100000, guid: dbdf504966f89de4498c9b549d8f95d1, type: 2}
+  maxDither: 0.75
+  fadeOutTime: 0.1
+  fadeInTime: 0.25
+  holdTime: 0.1
 --- !u!1 &2037012922
 GameObject:
   m_ObjectHideFlags: 0
