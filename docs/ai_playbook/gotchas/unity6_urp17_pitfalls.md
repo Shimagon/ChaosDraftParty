@@ -158,6 +158,50 @@ Opaque ↔ Transparent 切替には keyword 5 個 + property 6 個 + render queu
 
 ---
 
+## 🚨 Unity 6.4 で Render Graph Compatibility Mode 削除 (重要)
+
+**確認バージョン**: Unity 6000.4.3f1 / URP 17.0.1 (2026-05-07 実測)
+
+Unity 6.4 で **`Project Settings > Graphics > Render Graph` の Compatibility Mode チェックボックスが削除**された。Render Graph がデフォルト・必須に。
+
+**影響**:
+- `ScriptableRendererFeature.AddRenderPasses` のみ実装の OSS は **動かない** (pass が呼ばれない)
+- `RecordRenderGraph` (Render Graph native) 実装が必須
+- 6000.0-6000.3 で動いてた OSS が 6000.4 で**動作停止**
+
+**実証された罠**:
+- **CristianQiu/Unity-URP-Outline** (Star 91、URP 17 対応謳う) → AddRenderPasses ベース → 6.4 で動かない
+- README/package.json に「6000.3+」と書いてあっても **6000.4 で動く保証なし**
+
+**回避策**:
+1. **Render Graph native (RecordRenderGraph) 実装の OSS** だけを採用
+2. **ScriptableRendererFeature 自前実装は両 method 用意** (旧 AddRenderPasses + 新 RecordRenderGraph)
+3. **OSS 採用前に source を grep**: `grep -r "RecordRenderGraph" Library/PackageCache/<package>/` で実装確認
+4. **Unity Companion License の Unity-Technologies 公式 example** は 6.4 対応確認済 → 信頼度高い
+
+**reflection で `enableRenderCompatibilityMode = true` 強制設定は機能しない** (private 仕組みで永続化されない)。
+
+## 🎯 Sobel Post-Process Outline (失敗記録、避けるべき)
+
+**罠**: Sobel ベースの screen-space outline は **threshold tuning が環境依存性極大**で AI 単独では収束不可能。
+- 値を下げると全画面 outline で塗りつぶし
+- 値を上げると outline 出ない
+- AAA defacto 値も実機で外れる
+- shader 修正 (UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX / _CameraDepthTexture_TexelSize / SampleSceneNormals 2 引数) を全部やっても threshold が合わない
+- 環境 mesh が default URP material だと depth/normal 勾配が均一 → Sobel 効きづらい
+
+**defacto**: TPS / cartoon ゲームの outline は **Inverted Hull (Splatoon / ARMS / Genshin defacto)** か **mesh duplicate 方式**を使う。Sobel post-process は **Hat in Time / TUNIC** のような環境込み 2D 寄り作品向き。
+
+**ChaosDraftParty で試行錯誤した結果**:
+- 自前 Sobel → 真っ暗 / 全画面塗りつぶし / 薄い線 で 3 反復失敗
+- Renderer Feature の Render Graph 対応 (Unity 6) で binding 不安定
+- **撤退してより安定した方式 (Inverted Hull or 別 GameObject outline) に切り替え**が正解
+
+**新規プロジェクトでの判断**:
+- Sobel post-process を採用するなら **CristianQiu/Unity-URP-Outline OSS** (Star 91、URP 17 / RenderGraph 対応、MIT) で plug & play
+- または **Flat Kit ($30)** / **Toon Shaders Pro ($16)** asset 購入で確実
+- 自前 shader は **threshold tuning に時間溶ける**ので避ける
+
 ## 🦴 Animation / Avatar
 
 ### SkinnedMR の `bounds.center` は罠
