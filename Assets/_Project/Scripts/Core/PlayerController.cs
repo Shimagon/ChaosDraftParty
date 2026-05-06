@@ -57,10 +57,10 @@ namespace ChaosDraftParty.Core
         [SerializeField] float turnSmoothness = 12f;
 
         [Header("Look")]
-        [Tooltip("マウス yaw 感度 (deg / pixel)。")]
+        [Tooltip("マウス yaw 感度 (deg / pixel)。0.18-0.22 が AAA defacto。0.20 で素直に。")]
         [SerializeField] float yawSensitivity = 0.20f;
 
-        [Tooltip("マウス pitch 感度 (deg / pixel)。")]
+        [Tooltip("マウス pitch 感度 (deg / pixel)。yaw × 0.75 が AAA defacto。")]
         [SerializeField] float pitchSensitivity = 0.15f;
 
         [Tooltip("通常時のカメラ距離 (m)。OrbitalFollow.Radius の base 値。")]
@@ -74,6 +74,39 @@ namespace ChaosDraftParty.Core
 
         [Tooltip("カメラの world Y がこれを下回らないように pitch を動的 clamp する。地面 Y=0 + 余裕 0.3 推奨。")]
         [SerializeField] float cameraMinWorldY = 0.3f;
+
+        [Header("Camera Quality (酔い対策込み — 業界 defacto 寄り)")]
+        [Tooltip("Camera Roll on Strafe の最大角度 (度)。**TPS では 0° が defacto** (Genshin/Splatoon/Mario Odyssey 全部 0°)。Quake 風を試したい時のみ 0.5-1° に。")]
+        [Range(0f, 3f)]
+        [SerializeField] float maxRollDegrees = 0f;
+
+        [Tooltip("Roll の SmoothDamp 時間 (秒)。残す場合 0.30 推奨 (急変は酔う)。")]
+        [SerializeField] float rollSmoothTime = 0.30f;
+
+        [Tooltip("Look-Ahead 最大距離 (m)。**短く**: Cinemachine 公式 default も控え目。1.2m は強すぎ。")]
+        [Range(0f, 3f)]
+        [SerializeField] float lookAheadDistance = 0.5f;
+
+        [Tooltip("Look-Ahead の SmoothDamp 時間 (秒)。**鈍く**: 0.6 推奨 (急に動くと酔う)。")]
+        [SerializeField] float lookAheadSmoothTime = 0.6f;
+
+        [Tooltip("Look-Ahead 視点入力検出のデッドゾーン (sqr magnitude)。0.0004 = ~2px 以上で「視点回し中」判定 → Look-Ahead OFF。AAA defacto。")]
+        [SerializeField] float lookInputDeadzone = 0.0004f;
+
+        [Tooltip("Look-Ahead 起動の走行閾値。speedNorm がこれ未満なら OFF。0.3 推奨 (歩行未満では発動しない)。")]
+        [Range(0f, 1f)]
+        [SerializeField] float lookAheadSpeedThreshold = 0.3f;
+
+        [Tooltip("Cinemachine Noise (Handheld) の amplitude。**走行で増やさない** (Death Stranding / Apex defacto)。0.10-0.15 が酔わない範囲。")]
+        [Range(0f, 0.5f)]
+        [SerializeField] float noiseAmplitudeIdle = 0.10f;
+
+        [Tooltip("走行時の noise amplitude。idle と近い値推奨 (走行連動を弱める)。0.12 推奨。")]
+        [Range(0f, 0.5f)]
+        [SerializeField] float noiseAmplitudeMove = 0.12f;
+
+        [Tooltip("noise の SmoothDamp 時間 (秒)。0.4 推奨。")]
+        [SerializeField] float noiseSmoothTime = 0.4f;
 
         [Header("Animation")]
         [Tooltip("Animator (Locomotion blend tree、Speed parameter で Idle/Walk/Run を駆動)。")]
@@ -107,6 +140,15 @@ namespace ChaosDraftParty.Core
         static readonly int SpeedHash = Animator.StringToHash("Speed");
         static readonly int JumpHash = Animator.StringToHash("Jump");
 
+        // Camera Quality (Roll / Look-Ahead / Noise) 用 state
+        float currentRoll;
+        float rollVelocity;
+        Vector3 currentLookAhead;
+        Vector3 lookAheadVel;
+        float currentNoiseAmp;
+        float noiseAmpVel;
+        Unity.Cinemachine.CinemachineBasicMultiChannelPerlin cachedNoise;
+
         // Network: 生存状態。host が write 権限、全 client read。
         // 縮む島で Y < koThresholdY になったら host が false に → 全 client で操作不能 + visual 落下継続
         public readonly Unity.Netcode.NetworkVariable<bool> IsAlive = new(
@@ -124,6 +166,11 @@ namespace ChaosDraftParty.Core
 
         void Awake()
         {
+            // Editor の Game view が focus 外れた時 (別ウィンドウ等) に Update / Time.deltaTime が止まる症状を防ぐ。
+            // Bootstrap.Awake で設定するが、Sandbox_v21 等 Boot scene を経由しない直接 Play でも効くようここでも設定。
+            // Build 時は PlayerSettings.runInBackground=true で別途カバー (Player 設定で永続化済)。
+            Application.runInBackground = true;
+
             characterController = GetComponent<CharacterController>();
             if (config == null)
             {
@@ -277,6 +324,7 @@ namespace ChaosDraftParty.Core
 
             ApplyLook();
             ApplyMovement();
+            ApplyCameraQuality();
 
             // host のみ: Y < threshold で KO 確定 (NetworkVariable で全 client 同期)
             if (IsSpawned && IsServer && IsAlive.Value && transform.position.y < koThresholdY)
@@ -296,6 +344,7 @@ namespace ChaosDraftParty.Core
         void ApplyLook()
         {
             // Look 入力を OrbitalFollow の axes に直接流す (Cinemachine が camera 配置)
+            // 素直な mouse 入力 (SmoothDamp や Rate Cap は不自然な「ゆっくり高感度・早く遅い」を生むため不採用)
             if (orbital == null) return;
             var lookDelta = lookAction.ReadValue<Vector2>();
 
@@ -384,6 +433,75 @@ namespace ChaosDraftParty.Core
             {
                 float targetRadius = dashing ? cameraDashRadius : cameraBaseRadius;
                 orbital.Radius = Mathf.Lerp(orbital.Radius, targetRadius, cameraRadiusLerpSpeed * Time.deltaTime);
+            }
+        }
+
+        /// <summary>
+        /// 「歩いてるだけで雰囲気底上げ」3 点セット (酔い対策込み、業界 defacto 寄り):
+        /// 1. Camera Roll on Strafe — TPS では default 0° (Genshin/Splatoon 全部 0°)。Inspector で値設定すると弱く効く。
+        /// 2. Look-Ahead — 進行方向に OrbitalFollow.TargetOffset を寄せる。**視点入力中は OFF + 走行閾値で gate** (酔い対策の core)。
+        /// 3. Cinemachine Noise — 走行で増やさない (Death Stranding / Apex defacto)、視点回し中はさらに半減。
+        /// すべて Owner ローカル演出 (NetworkVariable 同期不要)。
+        /// </summary>
+        void ApplyCameraQuality()
+        {
+            if (cinemachineCamera == null) return;
+            float dt = Time.deltaTime;
+            if (dt <= 0f) return;
+
+            // 視点回し中 / 走行不足 を検出 (rest frame 保持の core 判定)
+            // - aiming = mouse delta が deadzone 超え = 視点入力中
+            // - lookAheadActive = !aiming && 走行十分 = Look-Ahead を起動してよい状態
+            bool aiming = lookAction != null && lookAction.ReadValue<Vector2>().sqrMagnitude > lookInputDeadzone;
+            float speed = horizontalVel.magnitude;
+            float speedNorm = Mathf.Clamp01(speed / Mathf.Max(dashSpeed, 0.001f));
+            bool lookAheadActive = !aiming && speedNorm > lookAheadSpeedThreshold;
+
+            // 1. Camera Roll on Strafe (default 0°、Inspector で値設定したときのみ動く)
+            //    視点回し中は 0 に強制 lerp (rest frame 保持)
+            if (maxRollDegrees > 0.001f && cameraTransform != null)
+            {
+                Vector3 camRight = Vector3.ProjectOnPlane(cameraTransform.right, Vector3.up).normalized;
+                float strafe = Vector3.Dot(horizontalVel, camRight);
+                float maxStrafeRef = Mathf.Max(dashSpeed, 0.001f);
+                float rollFactor = aiming ? 0f : 1f;
+                float targetRoll = -Mathf.Clamp(strafe / maxStrafeRef, -1f, 1f) * maxRollDegrees * rollFactor;
+                currentRoll = Mathf.SmoothDamp(currentRoll, targetRoll, ref rollVelocity, rollSmoothTime);
+                var lens = cinemachineCamera.Lens;
+                lens.Dutch = currentRoll;
+                cinemachineCamera.Lens = lens;
+            }
+            else if (Mathf.Abs(currentRoll) > 0.0001f)
+            {
+                // maxRollDegrees=0 でも残ってる Dutch を 0 に戻す
+                currentRoll = Mathf.SmoothDamp(currentRoll, 0f, ref rollVelocity, rollSmoothTime);
+                var lens = cinemachineCamera.Lens;
+                lens.Dutch = currentRoll;
+                cinemachineCamera.Lens = lens;
+            }
+
+            // 2. Look-Ahead (視点回し中 / 走行不足時は targetOffset=0 → 元に戻る)
+            //    距離も短め (0.5m default)、SmoothDamp も鈍く (0.6s)、急変防止
+            if (orbital != null)
+            {
+                Vector3 dir = speed > 0.01f ? (horizontalVel / speed) : Vector3.zero;
+                Vector3 targetOffset = lookAheadActive
+                    ? dir * (lookAheadDistance * speedNorm)
+                    : Vector3.zero;
+                targetOffset.y = 0f; // 上下方向 lookahead は jump/段差で酔うので明示的に潰す
+                currentLookAhead = Vector3.SmoothDamp(currentLookAhead, targetOffset, ref lookAheadVel, lookAheadSmoothTime);
+                orbital.TargetOffset = currentLookAhead;
+            }
+
+            // 3. Noise: 走行連動を弱める (idle 0.10 / move 0.12 でほぼ一定)、視点回し中はさらに半減
+            if (cachedNoise == null)
+                cachedNoise = cinemachineCamera.GetComponent<Unity.Cinemachine.CinemachineBasicMultiChannelPerlin>();
+            if (cachedNoise != null)
+            {
+                float baseAmp = Mathf.Lerp(noiseAmplitudeIdle, noiseAmplitudeMove, speedNorm);
+                float targetAmp = aiming ? baseAmp * 0.5f : baseAmp;
+                currentNoiseAmp = Mathf.SmoothDamp(currentNoiseAmp, targetAmp, ref noiseAmpVel, noiseSmoothTime);
+                cachedNoise.AmplitudeGain = currentNoiseAmp;
             }
         }
 

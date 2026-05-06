@@ -2109,6 +2109,7 @@ GameObject:
   - component: {fileID: 1978621838}
   - component: {fileID: 1978621837}
   - component: {fileID: 1978621839}
+  - component: {fileID: 1978621840}
   m_Layer: 0
   m_Name: CM_Player3rdPerson
   m_TagString: Untagged
@@ -2305,6 +2306,23 @@ MonoBehaviour:
     NearLimit: 5
     FarLimit: 30
     MaxQualityBoost: 0.2
+--- !u!114 &1978621840
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1978621832}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68bb026fafb42b14791938953eaace77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineBasicMultiChannelPerlin
+  NoiseProfile: {fileID: 11400000, guid: 46965f9cbaf525742a6da4c2172a99cd, type: 2}
+  PivotOffset: {x: 0, y: 0, z: 0}
+  AmplitudeGain: 0.3
+  FrequencyGain: 0.5
+  m_NoiseOffsets: {x: 0, y: 0, z: 0}
 --- !u!1 &1985035507
 GameObject:
   m_ObjectHideFlags: 0
@@ -2534,7 +2552,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   sphereRadius: 0.3
-  distanceShorten: 0.5
+  distanceShorten: 0.2
   maxOccluders: 8
   ditherMaterial: {fileID: 2100000, guid: dbdf504966f89de4498c9b549d8f95d1, type: 2}
   maxDither: 0.75

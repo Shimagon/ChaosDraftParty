@@ -20,6 +20,14 @@ namespace ChaosDraftParty.Core.Managers
         [Tooltip("ON: UGS 初期化 + 匿名 Auth (Relay 利用時)。OFF: skip (localhost UTP テスト時)。")]
         [SerializeField] private bool requireUGS = true;
 
+        void Awake()
+        {
+            // Editor の Game view が focus 外れた時 (Inspector クリック等) に Update 停止すると、
+            // dither / camera / animation が止まって「マウス動かさないと処理されない」現象になる。
+            // build 時も同様に常時 update を保つために常時有効化。Multiplayer 開発で必須。
+            Application.runInBackground = true;
+        }
+
         async void Start()
         {
             Debug.Log("[Boot] 開始");

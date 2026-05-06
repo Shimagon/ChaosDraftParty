@@ -38,11 +38,14 @@ namespace ChaosDraftParty.Core
         [Tooltip("障害物 layer mask。OcclusionFade レイヤーのみ推奨。")]
         [SerializeField] LayerMask occlusionMask = ~0;
 
-        [Tooltip("SphereCast の半径 (m)。0.3 推奨 (CC 半径より大きく)。")]
-        [SerializeField] float sphereRadius = 0.3f;
+        [Tooltip("SphereCast の半径 (m)。0.6 推奨 (経路がギリギリ天井をかすめても安定 hit する余裕)。0.3 だと毎フレ hit/no-hit を振動して dither が出ない。")]
+        [SerializeField] float sphereRadius = 0.6f;
 
-        [Tooltip("camera→target の距離より少し短くして自分自身は当てない。0.5 推奨。")]
-        [SerializeField] float distanceShorten = 0.5f;
+        [Tooltip("camera→target の距離より少し短くして自分自身は当てない。0.2 推奨 (0.5 だと 0.7m など低い天井に届かないことがある)。")]
+        [SerializeField] float distanceShorten = 0.2f;
+
+        [Tooltip("SphereCast 終点の Y offset (m)。target が胸位置 (Y=0.5) だと camera-target 線が天井の下を通るので、+1.0 で player 頭上を通すと天井検出する。1.0 推奨。")]
+        [SerializeField] float targetUpOffset = 1.0f;
 
         [Tooltip("最大同時 fade 数。SphereCastNonAlloc バッファサイズ。8 で十分。")]
         [SerializeField] int maxOccluders = 8;
@@ -55,15 +58,19 @@ namespace ChaosDraftParty.Core
         [Range(0f, 1f)]
         [SerializeField] float maxDither = 0.75f;
 
-        [Header("Timing")]
-        [Tooltip("透過までの時間 (秒)。SmoothDamp smoothTime。0.10 推奨。")]
-        [SerializeField] float fadeOutTime = 0.10f;
+        [Header("Timing — Anticipation Tick + Smooth Tail (Genshin / Hat in Time defacto)")]
+        [Tooltip("入り瞬間の即時表示比率 (0..1)。0.3 = 即時 maxDither × 30% 表示で「精度感」、その後 SmoothDamp で maxDither まで「ぬるっと」。0 だと遅延感、1 だとパッと感。0.3 推奨。")]
+        [Range(0f, 1f)]
+        [SerializeField] float anticipationStart = 0.3f;
 
-        [Tooltip("不透明復帰までの時間 (秒)。チラつき防止で長め。0.25 推奨。")]
-        [SerializeField] float fadeInTime = 0.25f;
+        [Tooltip("透過 SmoothDamp 時間 (秒)。anticipationStart から maxDither まで滑らか上昇。0.15 推奨。")]
+        [SerializeField] float fadeOutTime = 0.15f;
 
-        [Tooltip("hit 解除後の hysteresis 保持時間 (秒)。チラつき防止。0.10 推奨。")]
-        [SerializeField] float holdTime = 0.10f;
+        [Tooltip("不透明復帰までの時間 (秒)。AAA Cinemachine Deoccluder defacto は出 = 入り × 2。0.30 推奨。")]
+        [SerializeField] float fadeInTime = 0.30f;
+
+        [Tooltip("hit 解除後の hysteresis 保持時間 (秒)。チラつき防止。0.25 推奨 (短いと SphereCast 振動で dither が消える)。")]
+        [SerializeField] float holdTime = 0.25f;
 
         // per-renderer state
         class FadeState
@@ -105,7 +112,10 @@ namespace ChaosDraftParty.Core
             if (target == null || cameraTransform == null || ditherMaterial == null) return;
             hitThisFrame.Clear();
 
-            var diff = target.position - cameraTransform.position;
+            // SphereCast 終点を player 頭上に上げる (camera-target 線が天井を通るように)
+            // target=CameraTarget は胸位置 (Y=0.5) なので、+targetUpOffset で頭上にして天井検出する
+            var aimPoint = target.position + Vector3.up * targetUpOffset;
+            var diff = aimPoint - cameraTransform.position;
             float dist = diff.magnitude - distanceShorten;
             if (dist > 0.05f)
             {
@@ -116,10 +126,16 @@ namespace ChaosDraftParty.Core
                     if (rend == null) continue;
                     hitThisFrame.Add(rend);
                     if (!states.ContainsKey(rend))
-                        states[rend] = new FadeState();
+                    {
+                        // Anticipation Tick + Smooth Tail (Hat in Time / Genshin defacto):
+                        // 入り瞬間に anticipationStart の比率で即時表示 (精度感)、
+                        // その後 SmoothDamp で maxDither まで「ぬるっと」上昇 (滑らか感)。
+                        states[rend] = new FadeState { ditherAmount = maxDither * anticipationStart };
+                    }
                     states[rend].lastHitTime = Time.time;
                 }
             }
+
 
             // 全 state を update
             removeList.Clear();
