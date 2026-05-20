@@ -44,6 +44,12 @@ ChaosDraftParty 専用の **2 役 AI レビューループ**。`unity-reviewer`�
    unity-reviewer (3 周目、判定のみ)
         │
         ▼
+   ┌─ option: codex 3rd reviewer ─┐
+   │ (ChatGPT Plus 契約時、別 LLM    │
+   │  視点で盲点探索、read-only)     │
+   └────────────────────────────────┘
+        │
+        ▼
    [ レポート + 人間判断 ]
 ```
 
@@ -109,6 +115,29 @@ git diff --name-only HEAD~1 HEAD   # 直近 commit
 ### Step 5: 3 周目レビュー（最終判定）
 
 `unity-reviewer` 再起動。3 周目は **判定のみ**、修正は走らせない。
+
+### Step 5.5: Codex 3rd reviewer (option、ChatGPT Plus 契約時)
+
+「もう一個別の視点が欲しい」時、または PASS w/ nits で commit 前に不安が残る時、
+Codex CLI を 3rd reviewer として呼ぶ:
+
+```powershell
+codex exec --sandbox read-only "@<file_paths> を review。観点: null check、boundary case、edge case、CLAUDE.md / .claude/rules/ 違反。HIGH/MEDIUM/LOW + PASS/BLOCK 判定で。"
+```
+
+**役割分担:**
+- Claude `unity-reviewer`: Unity 6 / URP / NGO の罠、本作固有規約 (CLAUDE.md / rules)
+- Claude `code-reviser`: 修正実行
+- **Codex (3rd)**: 別 LLM 視点での盲点探索、business logic / edge case / OSS パターン違反
+
+**注意:**
+- Codex は read-only 起動必須 (`--sandbox read-only`)
+- ChatGPT Plus の 5h 窓 (45-225 msg) を考慮、**毎 commit 走らせない** (大きい実装 / 不安残る時のみ)
+- Codex の出力は Claude (orchestrator) が整理して User に提示
+- 詳細: `AGENTS.md` の「Codex の役割」section
+
+### Step 6: 最終レポート
+
 人間に最終レポートを返す：
 
 ```
@@ -142,7 +171,9 @@ Final verdict: PASS / PASS w/ nits / BLOCK
 
 | 既存 | 役割 | 本 loop での扱い |
 |---|---|---|
-| `unity-reviewer` | レビュアー | **そのまま使う**、改造しない |
+| `unity-reviewer` | レビュアー (Claude) | **そのまま使う**、改造しない |
+| `code-reviser` | 修正役 (Claude) | **そのまま使う** |
+| `codex` CLI | 3rd reviewer (OpenAI、option) | Step 5.5 で `codex exec --sandbox read-only` で呼ぶ。詳細は `AGENTS.md` |
 | `unity-error-triager` | console error 修正 | loop 外で別タイミングで動く |
 | `todo-progressor` | 夜間自律実装 | 完了時に本 loop を呼んでから push（option） |
 | `claude-code-guide` | ガイド | 関与せず |

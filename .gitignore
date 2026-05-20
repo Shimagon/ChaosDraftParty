@@ -92,3 +92,7 @@ CLAUDE.md.xeldaralz-template.md
 
 # Pitch 用 動画 (パワポ埋め込み素材、user 手元管理)
 docs/pitch/videos/
+
+# OpenAI Codex CLI (~/.codex/ は home に、project local cache は除外)
+.codex/
+.codex.local/
