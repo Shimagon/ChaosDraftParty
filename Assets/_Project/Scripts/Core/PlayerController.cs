@@ -43,6 +43,15 @@ namespace ChaosDraftParty.Core
         [Tooltip("しゃがみ動作呼出用 (任意、未設定なら shift 無効)。")]
         [SerializeField] EggybotCrouchSequence crouchSequence;
 
+        [Tooltip("Squash & Stretch (着地で卵が縮む / Mario Odyssey defacto)。null で無効、設定時は着地で発火。")]
+        [SerializeField] EggybotSquashStretch squash;
+
+        [Tooltip("表情アニメ (blink + 落下口開け、Disney 'Tangled' anticipation blink)。null で無効。")]
+        [SerializeField] EggybotFaceAnimator faceAnimator;
+
+        [Tooltip("足球の接地時 squash + めり込み補正 (Mario Odyssey defacto)。null で無効。")]
+        [SerializeField] EggybotFootSquash footSquash;
+
         [Header("Movement")]
         [Tooltip("通常歩行速度 (m/s)。Walking clip の自然歩幅に合わせる。1.5 推奨。")]
         [SerializeField] float walkSpeed = 1.5f;
@@ -124,6 +133,7 @@ namespace ChaosDraftParty.Core
 
         public float CurrentPlanarSpeed => new Vector2(horizontalVel.x, horizontalVel.z).magnitude;
         public bool IsGrounded => characterController != null && characterController.isGrounded;
+        public float VerticalVelocity => verticalVel;
 
         CharacterController characterController;
         CinemachineOrbitalFollow orbital;
@@ -137,6 +147,11 @@ namespace ChaosDraftParty.Core
         Vector3 horizontalVel;
         float verticalVel;
         bool jumpQueued;
+
+        // 着地検出: 前フレ grounded 状態 + 直前 frame の verticalVel を保持。
+        // ApplyMovement の最後で「!wasGrounded && isGroundedNow」を検出し、prevVerticalVel の負値で intensity を決める。
+        bool wasGrounded;
+        float prevVerticalVel;
         static readonly int SpeedHash = Animator.StringToHash("Speed");
         static readonly int JumpHash = Animator.StringToHash("Jump");
 
@@ -238,7 +253,11 @@ namespace ChaosDraftParty.Core
             {
                 // Non-owner (他クライアントから見た他人キャラ): 入力 / Update を止める。
                 // 位置は NetworkTransform が補間配信、Animator は NetworkAnimator が同期する想定。
-                // enabled=false で OnDisable が走り inputs も Disable される。
+                // Squash/FaceAnimator も止める: CharacterController.Move が呼ばれず isGrounded が
+                // stale になるため、他人 EGGYBOT で fall 表情が常時 active になる事故を防止。
+                if (squash != null) squash.enabled = false;
+                if (faceAnimator != null) faceAnimator.enabled = false;
+                if (footSquash != null) footSquash.enabled = false;
                 enabled = false;
                 return;
             }
@@ -411,6 +430,10 @@ namespace ChaosDraftParty.Core
                 if (verticalVel < 0f) verticalVel = -1f;
                 if (jumpQueued && !moveLocked)
                 {
+                    // 踏切 anticipation: 即時 Y 圧縮 → 100ms で base 戻り (Mario Odyssey defacto、もちもち感)
+                    if (squash != null) squash.Play(EggybotSquashStretch.EventType.JumpAnticipation, 1f);
+                    // 踏切 blink (Disney "Tangled" defacto、Shawn Kelly ILM: head turn 直前 blink で人間味)
+                    if (faceAnimator != null) faceAnimator.PlayBlink();
                     verticalVel = config != null ? config.playerJumpSpeed : 7f;
                     if (animator != null) animator.SetTrigger(JumpHash);
                 }
@@ -421,6 +444,16 @@ namespace ChaosDraftParty.Core
             verticalVel += gravity * Time.deltaTime;
 
             characterController.Move((horizontalVel + Vector3.up * verticalVel) * Time.deltaTime);
+
+            // 着地検出: 前フレ not grounded → 今フレ grounded で squash 発火 (Mario Odyssey defacto)。
+            // intensity は前フレの落下速度から: 0.5..12 m/s を 0..1 にマップ (高所ほど強い「ぼちゃっ」)。
+            bool isGroundedNow = characterController.isGrounded;
+            if (!wasGrounded && isGroundedNow && squash != null)
+            {
+                squash.PlayLandingFromFallSpeed(-prevVerticalVel);
+            }
+            wasGrounded = isGroundedNow;
+            prevVerticalVel = verticalVel;
 
             // Animator: Idle / Walk / Run blend (Speed param = 実速度 m/s、BlendTree threshold 0/1.5/8 と直接対応)
             if (animator != null)

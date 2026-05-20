@@ -1,316 +1,189 @@
 {
-  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
-    "allow": [
-      "mcp__UnityMCP__apply_text_edits",
-      "mcp__UnityMCP__batch_execute",
-      "mcp__UnityMCP__create_script",
-      "mcp__UnityMCP__debug_request_context",
-      "mcp__UnityMCP__delete_script",
-      "mcp__UnityMCP__execute_code",
-      "mcp__UnityMCP__execute_custom_tool",
-      "mcp__UnityMCP__execute_menu_item",
-      "mcp__UnityMCP__find_gameobjects",
-      "mcp__UnityMCP__find_in_file",
-      "mcp__UnityMCP__get_sha",
-      "mcp__UnityMCP__get_test_job",
-      "mcp__UnityMCP__manage_animation",
-      "mcp__UnityMCP__manage_asset",
-      "mcp__UnityMCP__manage_build",
-      "mcp__UnityMCP__manage_camera",
-      "mcp__UnityMCP__manage_components",
-      "mcp__UnityMCP__manage_editor",
-      "mcp__UnityMCP__manage_gameobject",
-      "mcp__UnityMCP__manage_graphics",
-      "mcp__UnityMCP__manage_material",
-      "mcp__UnityMCP__manage_packages",
-      "mcp__UnityMCP__manage_physics",
-      "mcp__UnityMCP__manage_prefabs",
-      "mcp__UnityMCP__manage_probuilder",
-      "mcp__UnityMCP__manage_profiler",
-      "mcp__UnityMCP__manage_scene",
-      "mcp__UnityMCP__manage_script",
-      "mcp__UnityMCP__manage_script_capabilities",
-      "mcp__UnityMCP__manage_scriptable_object",
-      "mcp__UnityMCP__manage_shader",
-      "mcp__UnityMCP__manage_texture",
-      "mcp__UnityMCP__manage_tools",
-      "mcp__UnityMCP__manage_ui",
-      "mcp__UnityMCP__manage_vfx",
-      "mcp__UnityMCP__read_console",
-      "mcp__UnityMCP__refresh_unity",
-      "mcp__UnityMCP__run_tests",
-      "mcp__UnityMCP__script_apply_edits",
-      "mcp__UnityMCP__set_active_instance",
-      "mcp__UnityMCP__unity_docs",
-      "mcp__UnityMCP__unity_reflect",
-      "mcp__UnityMCP__validate_script",
-      "mcp__github__add_comment_to_pending_review",
-      "mcp__github__add_issue_comment",
-      "mcp__github__add_reply_to_pull_request_comment",
-      "mcp__github__create_branch",
-      "mcp__github__create_or_update_file",
-      "mcp__github__create_pull_request",
-      "mcp__github__create_repository",
-      "mcp__github__delete_file",
-      "mcp__github__fork_repository",
-      "mcp__github__get_commit",
-      "mcp__github__get_file_contents",
-      "mcp__github__get_label",
-      "mcp__github__get_latest_release",
-      "mcp__github__get_me",
-      "mcp__github__get_release_by_tag",
-      "mcp__github__get_tag",
-      "mcp__github__get_team_members",
-      "mcp__github__get_teams",
-      "mcp__github__issue_read",
-      "mcp__github__issue_write",
-      "mcp__github__list_branches",
-      "mcp__github__list_commits",
-      "mcp__github__list_issue_types",
-      "mcp__github__list_issues",
-      "mcp__github__list_pull_requests",
-      "mcp__github__list_releases",
-      "mcp__github__list_tags",
-      "mcp__github__merge_pull_request",
-      "mcp__github__pull_request_read",
-      "mcp__github__pull_request_review_write",
-      "mcp__github__push_files",
-      "mcp__github__request_copilot_review",
-      "mcp__github__run_secret_scanning",
-      "mcp__github__search_code",
-      "mcp__github__search_issues",
-      "mcp__github__search_pull_requests",
-      "mcp__github__search_repositories",
-      "mcp__github__search_users",
-      "mcp__github__sub_issue_write",
-      "mcp__github__update_pull_request",
-      "mcp__github__update_pull_request_branch",
-      "mcp__sentry__analyze_issue_with_seer",
-      "mcp__sentry__create_dsn",
-      "mcp__sentry__create_project",
-      "mcp__sentry__create_team",
-      "mcp__sentry__find_dsns",
-      "mcp__sentry__find_organizations",
-      "mcp__sentry__find_projects",
-      "mcp__sentry__find_releases",
-      "mcp__sentry__find_teams",
-      "mcp__sentry__get_doc",
-      "mcp__sentry__get_event_attachment",
-      "mcp__sentry__get_issue_tag_values",
-      "mcp__sentry__get_profile_details",
-      "mcp__sentry__get_replay_details",
-      "mcp__sentry__get_sentry_resource",
-      "mcp__sentry__search_docs",
-      "mcp__sentry__search_events",
-      "mcp__sentry__search_issue_events",
-      "mcp__sentry__search_issues",
-      "mcp__sentry__update_issue",
-      "mcp__sentry__update_project",
-      "mcp__sentry__whoami",
-      "mcp__playwright__browser_click",
-      "mcp__playwright__browser_close",
-      "mcp__playwright__browser_console_messages",
-      "mcp__playwright__browser_drag",
-      "mcp__playwright__browser_evaluate",
-      "mcp__playwright__browser_file_upload",
-      "mcp__playwright__browser_fill_form",
-      "mcp__playwright__browser_handle_dialog",
-      "mcp__playwright__browser_hover",
-      "mcp__playwright__browser_navigate",
-      "mcp__playwright__browser_navigate_back",
-      "mcp__playwright__browser_network_requests",
-      "mcp__playwright__browser_press_key",
-      "mcp__playwright__browser_resize",
-      "mcp__playwright__browser_run_code",
-      "mcp__playwright__browser_select_option",
-      "mcp__playwright__browser_snapshot",
-      "mcp__playwright__browser_tabs",
-      "mcp__playwright__browser_take_screenshot",
-      "mcp__playwright__browser_type",
-      "mcp__playwright__browser_wait_for",
-      "mcp__semgrep__deprecation_notice",
-      "mcp__circleci-mcp-server__analyze_diff",
-      "mcp__circleci-mcp-server__config_helper",
-      "mcp__circleci-mcp-server__find_flaky_tests",
-      "mcp__circleci-mcp-server__get_build_failure_logs",
-      "mcp__circleci-mcp-server__get_job_test_results",
-      "mcp__circleci-mcp-server__get_latest_pipeline_status",
-      "mcp__circleci-mcp-server__list_artifacts",
-      "mcp__circleci-mcp-server__list_followed_projects",
-      "mcp__circleci-mcp-server__rerun_workflow",
-      "mcp__circleci-mcp-server__run_pipeline",
-      "mcp__plugin_vercel_vercel__deploy_to_vercel",
-      "mcp__plugin_vercel_vercel__get_deployment",
-      "mcp__plugin_vercel_vercel__get_deployment_build_logs",
-      "mcp__plugin_vercel_vercel__get_project",
-      "mcp__plugin_vercel_vercel__get_runtime_logs",
-      "mcp__plugin_vercel_vercel__list_deployments",
-      "mcp__plugin_vercel_vercel__list_projects",
-      "mcp__plugin_vercel_vercel__list_teams",
-      "mcp__plugin_vercel_vercel__search_vercel_documentation",
-      "mcp__plugin_vercel_vercel__web_fetch_vercel_url",
-      "ListMcpResourcesTool",
-      "ReadMcpResourceTool",
-      "WebFetch",
-      "WebSearch",
-      "Read",
-      "Glob",
-      "Grep",
-      "ToolSearch",
-      "Skill(update-config)",
-      "Skill(find-skills)",
-      "Skill(fewer-permission-prompts)",
-      "Skill(breakdown-plan)",
-      "Skill(simplify)",
-      "Skill(requesting-code-review)",
-      "Skill(notebooklm)",
-      "Skill(unity-mcp-skill)",
-      "Skill(chaosdraftparty-gotchas)",
-      "Skill(meshy-unity-workflow)",
-      "Skill(meshy-3d-generation)",
-      "Skill(meshy-3d-agent)",
-      "Skill(meshyai)",
-      "mcp__meshy__meshy_text_to_3d",
-      "mcp__meshy__meshy_text_to_3d_refine",
-      "mcp__meshy__meshy_image_to_3d",
-      "mcp__meshy__meshy_multi_image_to_3d",
-      "mcp__meshy__meshy_retexture",
-      "mcp__meshy__meshy_remesh",
-      "mcp__meshy__meshy_rig",
-      "mcp__meshy__meshy_animate",
-      "mcp__meshy__meshy_text_to_image",
-      "mcp__meshy__meshy_image_to_image",
-      "mcp__meshy__meshy_get_task_status",
-      "mcp__meshy__meshy_list_tasks",
-      "mcp__meshy__meshy_cancel_task",
-      "mcp__meshy__meshy_download_model",
-      "mcp__meshy__meshy_list_models",
-      "mcp__meshy__meshy_check_balance",
-      "Write",
-      "Edit",
-      "MultiEdit",
-      "NotebookEdit",
-      "Skill(webapp-testing)",
-      "Skill(web-design-guidelines)",
-      "Bash(npx skills:*)",
-      "Bash(npx -y skills:*)",
-      "Bash(claude mcp:*)",
-      "Bash(claude --version)",
-      "Bash(git status:*)",
-      "Bash(git diff:*)",
-      "Bash(git log:*)",
-      "Bash(git show:*)",
-      "Bash(git branch:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(git pull:*)",
-      "Bash(git fetch:*)",
-      "Bash(git rev-parse:*)",
-      "Bash(git ls-files:*)",
-      "Bash(git lfs:*)",
-      "Bash(git stash:*)",
-      "Bash(git restore:*)",
-      "Bash(git checkout:*)",
-      "Bash(git checkout --:*)",
-      "Bash(git switch:*)",
-      "Bash(git tag:*)",
-      "Bash(git blame:*)",
-      "Bash(git reset:*)",
-      "Bash(git reset --hard:*)",
-      "Bash(git reset --soft:*)",
-      "Bash(git revert:*)",
-      "Bash(git rebase:*)",
-      "Bash(git cherry-pick:*)",
-      "Bash(git clean:*)",
-      "Bash(git clean -f:*)",
-      "Bash(git clean -fd:*)",
-      "Bash(git push --force:*)",
-      "Bash(git push -f:*)",
-      "Bash(git push --force-with-lease:*)",
-      "Bash(git branch -d:*)",
-      "Bash(git branch -D:*)",
-      "Bash(git merge:*)",
-      "Bash(git remote:*)",
-      "Bash(git config:*)",
-      "Bash(gh:*)",
-      "Bash(ls:*)",
-      "Bash(cat:*)",
-      "Bash(find:*)",
-      "Bash(pwd)",
-      "Bash(which:*)",
-      "Bash(where:*)",
-      "Bash(where.exe:*)",
-      "Bash(readlink:*)",
-      "Bash(realpath:*)",
-      "Bash(echo:*)",
-      "Bash(true)",
-      "Bash(sleep:*)",
-      "Bash(head:*)",
-      "Bash(tail:*)",
-      "Bash(wc:*)",
-      "Bash(tree:*)",
-      "Bash(du:*)",
-      "Bash(df:*)",
-      "Bash(stat:*)",
-      "Bash(file:*)",
-      "Bash(tr:*)",
-      "Bash(sort:*)",
-      "Bash(uniq:*)",
-      "Bash(xargs:*)",
-      "Bash(jq:*)",
-      "Bash(curl -s:*)",
-      "Bash(curl -I:*)",
-      "Bash(mkdir:*)",
-      "Bash(touch:*)",
-      "Bash(ln -s:*)",
-      "Bash(cp:*)",
-      "Bash(mv:*)",
-      "Bash(grep:*)",
-      "Bash(rg:*)",
-      "Bash(sed:*)",
-      "Bash(awk:*)",
-      "Bash(python3:*)",
-      "Bash(node:*)",
-      "Bash(npm:*)",
-      "Bash(npm ls:*)",
-      "Bash(pnpm:*)",
-      "Bash(bun:*)",
-      "Bash(uv:*)",
-      "Bash(uvx:*)",
-      "Bash(pip:*)",
-      "Bash(open:*)"
-    ],
-    "deny": [
-      "Bash(rm -rf:*)",
-      "Bash(sudo:*)"
-    ]
+    "defaultMode": "acceptEdits"
+  },
+  "mcpServers": {
+    "unityMCP": {
+      "url": "http://localhost:8080/mcp"
+    }
   },
   "hooks": {
-    "PostToolUse": [
+    "PreToolUse": [
       {
-        "matcher": "mcp__UnityMCP__(create_script|script_apply_edits|apply_text_edits|execute_code|refresh_unity|delete_script|manage_scriptable_object|manage_components|manage_prefabs|manage_animation|manage_shader|deploy_package)",
+        "matcher": "Edit|Write",
         "hooks": [
           {
-            "type": "agent",
-            "prompt": "Unity 操作後のエラー検出ウォッチャー。\n\nSTEP 1: mcp__UnityMCP__read_console(action='get', count=10, types=['error'], format='detailed') でエラー取得。\n\nSTEP 2: エラー 0 件なら何もせず {} のみ出力して終了。\n\nSTEP 3: エラーあれば、以下を判定：\n- 直近の Claude の操作（直前の tool 実行内容）が原因と見られるか\n- 各エラーに file:line が含まれているか\n\nSTEP 4: 出力 JSON:\n{\n  \"hookSpecificOutput\": {\n    \"hookEventName\": \"PostToolUse\",\n    \"additionalContext\": \"⚠ Unity Console Errors (N件):\\n1. <file:line> <CS####> <msg>\\n2. ...\\n\\n原因推定: <直近の tool 操作と結びつけて>\\n推奨: Claude が自動修正 or ユーザーに報告すべき\"\n  }\n}\n\n重要: 自分で修正を試みない（ReadOnly 的に振る舞う）。検知と分類のみ。修正は Claude 本体が行う。",
-            "model": "haiku",
-            "timeout": 30,
-            "statusMessage": "Unity console チェック中..."
+            "type": "command",
+            "command": ".claude/hooks/block-scene-edit.sh",
+            "timeout": 3000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/block-meta-edit.sh",
+            "timeout": 3000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/guard-editor-runtime.sh",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/gateguard.sh",
+            "timeout": 3000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/guard-project-config.sh",
+            "timeout": 3000
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/block-projectsettings.sh",
+            "timeout": 3000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/bash-gate.sh",
+            "timeout": 3000
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/track-reads.sh",
+            "timeout": 2000
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/warn-serialization.sh",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/warn-filename.sh",
+            "timeout": 3000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/warn-platform-defines.sh",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/quality-gate.sh",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/track-edits.sh",
+            "timeout": 2000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/suggest-verify.sh",
+            "timeout": 3000
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/validate-commit.sh",
+            "timeout": 15000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/build-analyze.sh",
+            "timeout": 10000
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/cost-tracker.sh",
+            "timeout": 2000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/instinct-capture.sh",
+            "timeout": 2000
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/pre-compact.sh",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/session-restore.sh",
+            "timeout": 5000
           }
         ]
       }
     ],
     "Stop": [
       {
+        "matcher": "",
         "hooks": [
           {
-            "type": "agent",
-            "prompt": "ChaosDraftParty 完了検証エージェント。Claude が停止しようとしている。完了宣言して良いか検証。\n\nSTEP 1: mcp__UnityMCP__read_console(action='get', count=15, types=['error'], format='detailed') でエラー確認。\n\nSTEP 2: エラー 0 件 & git status 問題なし → {} を出力して終了（Claude stop 許可）。\n\nSTEP 3: エラーあれば：\n\nA) 修正を試みる（最大 3 回）：\n  - file:line が明示されてれば、mcp__UnityMCP__find_in_file / Read でコンテキスト取得\n  - mcp__UnityMCP__apply_text_edits or script_apply_edits or execute_code で修正\n  - mcp__UnityMCP__refresh_unity(mode='force', compile='request', wait_for_ready=true) で再コンパイル\n  - 再度 read_console でエラー消えたか確認\n\nB) 3 回試して消えない or 明らかに Claude の守備範囲外なら、block 出力：\n{\n  \"decision\": \"block\",\n  \"reason\": \"Unity console に以下の未解決エラーあり。ユーザー報告前に対処が必要:\\n- <err1>\\n- <err2>\",\n  \"hookSpecificOutput\": {\n    \"hookEventName\": \"Stop\",\n    \"additionalContext\": \"未解決エラー詳細と試行ログ:\\n<詳細>\\n\\n次の手順提案:\\n1. ...\\n2. ...\"\n  }\n}\n\nC) 修正成功で console clean なら {} を出力（stop 許可、修正内容はコミット不要、次ターンで Claude が判断）。\n\n安全性:\n- FontAsset の m_Material missing 等の「ユーザーの前テスト残骸」は軽い cleanup のみ（必要なら削除）\n- 既存のプロジェクトコード（.cs や .prefab）を破壊する大規模変更は絶対やらない\n- 判断に迷ったら block + ユーザー報告\n- タイムアウト 300s 内に終わらせる",
-            "model": "sonnet",
-            "timeout": 300,
-            "statusMessage": "完了前検証中（エラー自動修正ループ）..."
+            "type": "command",
+            "command": ".claude/hooks/stop-validate.sh",
+            "timeout": 15000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/session-save.sh",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/auto-learn.sh",
+            "timeout": 10000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/instinct-distill.sh",
+            "timeout": 10000
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/notify.sh",
+            "timeout": 10000
           }
         ]
       }

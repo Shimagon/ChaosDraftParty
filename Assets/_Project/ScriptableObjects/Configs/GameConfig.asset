@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: GameConfig
   m_EditorClassIdentifier: ChaosDraftParty.Core::ChaosDraftParty.Core.Configs.GameConfig
   playerBaseSpeed: 6
-  playerJumpSpeed: 7
+  playerJumpSpeed: 5
   gravityMultiplier: 1
   roundsPerMatch: 4
   matchesPerSeason: 3

@@ -1,0 +1,12 @@
+C:\Users\taise\Documents\GitHub\ChaosDraftParty\docs\reports\2026-05-19.md
+C:\Users\taise\Documents\GitHub\ChaosDraftParty\Assets\_Project\Scripts\Core\EggybotSquashStretch.cs
+C:\Users\taise\Documents\GitHub\ChaosDraftParty\Assets\_Project\Scripts\Core\EggybotSquashStretch.cs
+C:\Users\taise\Documents\GitHub\ChaosDraftParty\Assets\_Project\Scripts\Core\EggybotSquashStretch.cs
+C:\Users\taise\Documents\GitHub\ChaosDraftParty\Assets\_Project\Scripts\Core\EggybotSquashStretch.cs
+C:\Users\taise\Documents\GitHub\ChaosDraftParty\Assets\_Project\Scripts\Core\EggybotSquashStretch.cs
+C:\Users\taise\Documents\GitHub\ChaosDraftParty\Assets\_Project\Scripts\Core\EggybotFootSquash.cs
+C:\Users\taise\Documents\GitHub\ChaosDraftParty\Assets\_Project\Scripts\Core\PlayerController.cs
+C:\Users\taise\Documents\GitHub\ChaosDraftParty\Assets\_Project\Scripts\Core\PlayerController.cs
+C:\Users\taise\Documents\GitHub\ChaosDraftParty\Assets\_Project\Scripts\Core\EggybotSquashStretch.cs
+C:\Users\taise\Documents\GitHub\ChaosDraftParty\Assets\_Project\Scripts\Core\EggybotSquashStretch.cs
+C:\Users\taise\Documents\GitHub\ChaosDraftParty\Assets\_Project\Scripts\Core\EggybotFootSquash.cs

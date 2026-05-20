@@ -82,3 +82,13 @@ Meshy_API_Key*
 # Unity 自動バックアップ（コミット不要）
 Assets/_Recovery/
 Assets/_Recovery.meta
+
+# .claude/ の backup (XeldarAlz install 時の自動 backup + 手動 backup)
+.claude.backup_*/
+.claude.backup.*/
+
+# XeldarAlz install で自動生成される CLAUDE.md テンプレート
+CLAUDE.md.xeldaralz-template.md
+
+# Pitch 用 動画 (パワポ埋め込み素材、user 手元管理)
+docs/pitch/videos/
