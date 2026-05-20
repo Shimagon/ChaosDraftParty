@@ -494,6 +494,7 @@ GameObject:
   - component: {fileID: 8609889380024202140}
   - component: {fileID: 2126076877863529760}
   - component: {fileID: 7033884160208102658}
+  - component: {fileID: 5888256850609320703}
   m_Layer: 0
   m_Name: EggybotPlayer
   m_TagString: Player
@@ -715,7 +716,7 @@ CharacterController:
   m_StepOffset: 0.2
   m_SkinWidth: 0.027
   m_MinMoveDistance: 0
-  m_Center: {x: 0, y: 0.55, z: 0}
+  m_Center: {x: 0, y: 0.6, z: 0}
 --- !u!114 &4558612133533938791
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -761,6 +762,7 @@ MonoBehaviour:
   squash: {fileID: 8609889380024202140}
   faceAnimator: {fileID: 2126076877863529760}
   footSquash: {fileID: 7033884160208102658}
+  bodyDip: {fileID: 5888256850609320703}
   walkSpeed: 1.5
   dashSpeed: 8
   horizontalAccel: 25
@@ -976,7 +978,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1782495317543651654}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f0913213ff00ef54fab65a92de4f5a22, type: 3}
   m_Name: 
@@ -991,6 +993,27 @@ MonoBehaviour:
   landSmoothTime: 0.08
   liftSmoothTime: 0.15
   fallSpeedForMaxSquash: 12
+--- !u!114 &5888256850609320703
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1782495317543651654}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d51747102e065da4eb17826d419b0aec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ChaosDraftParty.Core::ChaosDraftParty.Core.EggybotBodyDip
+  target: {fileID: 4443309600281126605}
+  player: {fileID: 7128789107214990815}
+  dipFrequency: 3
+  dampingRatio: 0.5
+  landingImpulseMax: -2
+  landingMaxFallSpeed: 12
+  landingMinFallSpeed: 0.5
+  dipMaxClamp: 0.1
+  dtMaxClamp: 0.033333335
 --- !u!1 &1846328597822761255
 GameObject:
   m_ObjectHideFlags: 0

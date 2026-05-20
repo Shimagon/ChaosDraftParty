@@ -52,6 +52,9 @@ namespace ChaosDraftParty.Core
         [Tooltip("足球の接地時 squash + めり込み補正 (Mario Odyssey defacto)。null で無効。")]
         [SerializeField] EggybotFootSquash footSquash;
 
+        [Tooltip("着地で体全体が一瞬下に沈む演出 (Mario / Yoshi defacto)。BodyVisual を target に指定。null で無効。")]
+        [SerializeField] EggybotBodyDip bodyDip;
+
         [Header("Movement")]
         [Tooltip("通常歩行速度 (m/s)。Walking clip の自然歩幅に合わせる。1.5 推奨。")]
         [SerializeField] float walkSpeed = 1.5f;
@@ -258,6 +261,7 @@ namespace ChaosDraftParty.Core
                 if (squash != null) squash.enabled = false;
                 if (faceAnimator != null) faceAnimator.enabled = false;
                 if (footSquash != null) footSquash.enabled = false;
+                if (bodyDip != null) bodyDip.enabled = false;
                 enabled = false;
                 return;
             }
