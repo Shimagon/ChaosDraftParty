@@ -126,6 +126,15 @@ namespace ChaosDraftParty.Core
         [Range(0f, 1f)]
         [SerializeField] float moveOpenMinHold = 0.10f;
 
+        [Header("Jump Mouth (踏切、Mario Odyssey defacto)")]
+        [Tooltip("Jump 踏切で口を Open + scale UP する持続時間 (秒)。0.30 推奨 (踏切 blink と同期)。")]
+        [Range(0.05f, 1f)]
+        [SerializeField] float jumpMouthDuration = 0.30f;
+
+        [Tooltip("Jump 踏切で mouth の scale を一時的に大きくする倍率。1.3 推奨 (歩行 Open と区別)。")]
+        [Range(1f, 2f)]
+        [SerializeField] float jumpMouthScale = 1.3f;
+
         [Header("頬 emissive (Animal Crossing defacto)")]
         [Tooltip("頬 emissive を有効化。HeadMesh の emission に加算。")]
         [SerializeField] bool cheekEmissiveEnabled = true;
@@ -152,6 +161,9 @@ namespace ChaosDraftParty.Core
         bool fallExpressionActive;
         bool moveMouthActive;
         float moveMouthEnterTime;
+        bool jumpMouthActive;
+        Coroutine jumpMouthRoutine;
+        Vector3 mouthOpenBaseScale;
         MaterialPropertyBlock mpb;
         Color baseEmissive;
         float currentEmissiveOffset;
@@ -202,6 +214,9 @@ namespace ChaosDraftParty.Core
             if (eyeR_Closed != null) eyeR_Closed.SetActive(false);
             SetMouth(MouthShape.Smile);
             currentMouth = MouthShape.Smile;
+
+            // Jump mouth scale tween 用に mouthOpen の base scale を記録
+            if (mouthOpen != null) mouthOpenBaseScale = mouthOpen.transform.localScale;
         }
 
         void OnEnable()
@@ -223,6 +238,10 @@ namespace ChaosDraftParty.Core
             fallExpressionActive = false;
             moveMouthActive = false;
             moveMouthEnterTime = 0f;
+            if (jumpMouthRoutine != null) { StopCoroutine(jumpMouthRoutine); jumpMouthRoutine = null; }
+            jumpMouthActive = false;
+            if (mouthOpen != null && mouthOpenBaseScale != Vector3.zero)
+                mouthOpen.transform.localScale = mouthOpenBaseScale;
         }
 
         void Update()
@@ -318,24 +337,46 @@ namespace ChaosDraftParty.Core
         //  Movement-driven Mouth (走行で口 Open、Mario Odyssey / Splatoon defacto)
         // =====================================================================
         /// <summary>
-        /// 外部 API: planar speed で口を Open / Smile に切替。PlayerController.Update から毎フレ呼出。
-        /// 排他制御: fall 中 (fallExpressionActive) / Hit/Happy/KO 中 (CurrentExpression != Neutral) では no-op。
-        /// hysteresis: open 閾値より高くで Open、smile 閾値より低くで Smile、間は維持。
-        /// minHold: Open 化後 moveOpenMinHold 秒は Smile に戻さない (chattering 防止)。
+        /// 外部 API: 移動状態で口を 3 段階切替。PlayerController.Update から毎フレ呼出。
+        /// - isDashing=true: Mouth_Happy (大笑い、ダッシュ専用)
+        /// - planarSpeed >= moveOpenThreshold: Mouth_Open (歩行、軽い口開き)
+        /// - planarSpeed <= moveSmileThreshold + minHold: Mouth_Smile (停止)
+        /// 排他制御: fall / Hit/Happy/KO / jumpMouth 中は no-op。
         /// </summary>
-        public void SetMouthByMovement(float planarSpeed)
+        public void SetMouthByMovement(float planarSpeed, bool isDashing)
         {
             if (!moveMouthEnabled) return;
-            if (fallExpressionActive) return; // fall が口を専有
-            if (CurrentExpression != Expression.Neutral) return; // Hit / Happy / KO が口を専有
+            if (fallExpressionActive) return;
+            if (CurrentExpression != Expression.Neutral) return;
+            if (jumpMouthActive) return; // ジャンプ中は jump mouth 優先
 
-            if (!moveMouthActive)
+            // ダッシュ中: Happy 固定 (歩行 Open と差別化)
+            if (isDashing)
+            {
+                if (currentMouth != MouthShape.Happy)
+                {
+                    SetMouth(MouthShape.Happy);
+                    moveMouthActive = true;
+                    moveMouthEnterTime = Time.time;
+                }
+                return;
+            }
+
+            // 歩行: Open / Smile を hysteresis で切替
+            if (!moveMouthActive || currentMouth == MouthShape.Happy)
             {
                 if (planarSpeed >= moveOpenThreshold)
                 {
                     moveMouthActive = true;
                     moveMouthEnterTime = Time.time;
                     SetMouth(MouthShape.Open);
+                }
+                else if (currentMouth == MouthShape.Happy)
+                {
+                    // dash 終了直後で速度がまだ高い場合、Open に切替 + state 更新で minHold を効かせる
+                    SetMouth(MouthShape.Open);
+                    moveMouthActive = true;
+                    moveMouthEnterTime = Time.time;
                 }
             }
             else
@@ -346,6 +387,37 @@ namespace ChaosDraftParty.Core
                     SetMouth(MouthShape.Smile);
                 }
             }
+        }
+
+        /// <summary>
+        /// 外部 API: ジャンプ踏切で口を Open + scale UP 表現 (踏切 blink と同期、Mario Odyssey defacto)。
+        /// jumpMouthDuration の間 SetMouthByMovement / 自動 fall expression を抑制し、Mouth_Open に scale 1.3x の tween で「びっくり大きく」感を出す。
+        /// </summary>
+        public void PlayJumpMouth()
+        {
+            if (mouthOpen == null) return;
+            if (jumpMouthRoutine != null) StopCoroutine(jumpMouthRoutine);
+            jumpMouthRoutine = StartCoroutine(JumpMouthRoutine());
+        }
+
+        IEnumerator JumpMouthRoutine()
+        {
+            jumpMouthActive = true;
+            SetMouth(MouthShape.Open);
+            if (mouthOpen != null) mouthOpen.transform.localScale = mouthOpenBaseScale * jumpMouthScale;
+
+            // fallExpressionActive で早期 break (落下中に scale 1.3x が残るのを防ぐ)
+            float elapsed = 0f;
+            while (elapsed < jumpMouthDuration && !fallExpressionActive)
+            {
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            if (mouthOpen != null) mouthOpen.transform.localScale = mouthOpenBaseScale;
+            jumpMouthActive = false;
+            jumpMouthRoutine = null;
+            // 次フレで SetMouthByMovement が呼ばれて適切な state に復帰
         }
 
         /// <summary>外部 API: 手動 blink (Jump 踏切 / Hit / Anticipation 用、Disney "Tangled" defacto)。</summary>

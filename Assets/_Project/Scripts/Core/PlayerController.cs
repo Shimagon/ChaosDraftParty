@@ -453,7 +453,12 @@ namespace ChaosDraftParty.Core
                     // 踏切 anticipation: 即時 Y 圧縮 → 100ms で base 戻り (Mario Odyssey defacto、もちもち感)
                     if (squash != null) squash.Play(EggybotSquashStretch.EventType.JumpAnticipation, 1f);
                     // 踏切 blink (Disney "Tangled" defacto、Shawn Kelly ILM: head turn 直前 blink で人間味)
-                    if (faceAnimator != null) faceAnimator.PlayBlink();
+                    // + 踏切口 (Mouth_Open + scale UP、歩行 Open / ダッシュ Happy とは別の「びっくり」感)
+                    if (faceAnimator != null)
+                    {
+                        faceAnimator.PlayBlink();
+                        faceAnimator.PlayJumpMouth();
+                    }
                     verticalVel = config != null ? config.playerJumpSpeed : 7f;
                     if (animator != null) animator.SetTrigger(JumpHash);
                 }
@@ -482,10 +487,10 @@ namespace ChaosDraftParty.Core
                 animator.SetFloat(SpeedHash, CurrentPlanarSpeed, speedDampTime, Time.deltaTime);
             }
 
-            // 動き出しで口 Open (Mario Odyssey defacto、hysteresis + minHold は FaceAnimator 側で処理)
+            // 動き出しで口 Open (歩行) / Happy (ダッシュ) 3 段階切替 (Mario Odyssey defacto)
             if (faceAnimator != null)
             {
-                faceAnimator.SetMouthByMovement(CurrentPlanarSpeed);
+                faceAnimator.SetMouthByMovement(CurrentPlanarSpeed, IsDashing);
             }
 
             // ダッシュ中はカメラ少し離す (OrbitalFollow.Radius を lerp)
