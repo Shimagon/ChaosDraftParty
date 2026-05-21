@@ -495,6 +495,7 @@ GameObject:
   - component: {fileID: 2126076877863529760}
   - component: {fileID: 7033884160208102658}
   - component: {fileID: 5888256850609320703}
+  - component: {fileID: 9189067819403470659}
   m_Layer: 0
   m_Name: EggybotPlayer
   m_TagString: Player
@@ -1014,6 +1015,24 @@ MonoBehaviour:
   landingMinFallSpeed: 0.5
   dipMaxClamp: 0.1
   dtMaxClamp: 0.033333335
+--- !u!114 &9189067819403470659
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1782495317543651654}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91f3f10be5bab0a4aa15469dd9c05333, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: ChaosDraftParty.Core::ChaosDraftParty.Core.EggybotFootGroundClamp
+  _feet:
+  - {fileID: 8073446163741571728}
+  - {fileID: 5194264367439581539}
+  _groundY: 0
+  _footRadius: 0.1
+  _maxClampDistance: 0.3
 --- !u!1 &1846328597822761255
 GameObject:
   m_ObjectHideFlags: 0
@@ -2836,7 +2855,7 @@ Transform:
   m_GameObject: {fileID: 5833062932910788386}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.04, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3695,7 +3714,7 @@ Transform:
   m_GameObject: {fileID: 8014443010333611503}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.04, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
