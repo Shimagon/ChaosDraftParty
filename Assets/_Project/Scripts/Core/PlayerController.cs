@@ -465,6 +465,12 @@ namespace ChaosDraftParty.Core
                 animator.SetFloat(SpeedHash, CurrentPlanarSpeed, speedDampTime, Time.deltaTime);
             }
 
+            // 動き出しで口 Open (Mario Odyssey defacto、hysteresis + minHold は FaceAnimator 側で処理)
+            if (faceAnimator != null)
+            {
+                faceAnimator.SetMouthByMovement(CurrentPlanarSpeed);
+            }
+
             // ダッシュ中はカメラ少し離す (OrbitalFollow.Radius を lerp)
             if (orbital != null)
             {
