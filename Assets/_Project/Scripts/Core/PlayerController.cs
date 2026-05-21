@@ -55,6 +55,12 @@ namespace ChaosDraftParty.Core
         [Tooltip("着地で体全体が一瞬下に沈む演出 (Mario / Yoshi defacto)。BodyVisual を target に指定。null で無効。")]
         [SerializeField] EggybotBodyDip bodyDip;
 
+        [Tooltip("移動 VFX (Landing Dust / Footstep / Dash Trail、Mario / Splatoon defacto)。null で無効。")]
+        [SerializeField] EggybotMovementVFX movementVFX;
+
+        [Tooltip("ダッシュ仕上げ (FOV Punch / Camera Dip / Speed Lines、Apex / Doom defacto)。null で無効。")]
+        [SerializeField] EggybotDashEffect dashEffect;
+
         [Header("Movement")]
         [Tooltip("通常歩行速度 (m/s)。Walking clip の自然歩幅に合わせる。1.5 推奨。")]
         [SerializeField] float walkSpeed = 1.5f;
@@ -137,6 +143,7 @@ namespace ChaosDraftParty.Core
         public float CurrentPlanarSpeed => new Vector2(horizontalVel.x, horizontalVel.z).magnitude;
         public bool IsGrounded => characterController != null && characterController.isGrounded;
         public float VerticalVelocity => verticalVel;
+        public bool IsDashing { get; private set; }
 
         CharacterController characterController;
         CinemachineOrbitalFollow orbital;
@@ -262,6 +269,8 @@ namespace ChaosDraftParty.Core
                 if (faceAnimator != null) faceAnimator.enabled = false;
                 if (footSquash != null) footSquash.enabled = false;
                 if (bodyDip != null) bodyDip.enabled = false;
+                if (movementVFX != null) movementVFX.enabled = false;
+                if (dashEffect != null) dashEffect.enabled = false;
                 enabled = false;
                 return;
             }
@@ -424,6 +433,13 @@ namespace ChaosDraftParty.Core
             // ダッシュ判定 (Ctrl 押下中) — 移動入力がある時だけ加速、しゃがみ中は無効
             bool dashing = !moveLocked && dir.sqrMagnitude > 0.01f
                            && dashAction != null && dashAction.IsPressed();
+            // dash state edge detection で VFX / FOV punch 発火
+            if (dashing != IsDashing)
+            {
+                IsDashing = dashing;
+                if (movementVFX != null) movementVFX.OnDashStateChanged(dashing);
+                if (dashEffect != null) { if (dashing) dashEffect.OnDashStart(); else dashEffect.OnDashEnd(); }
+            }
             float speed = dashing ? dashSpeed : walkSpeed;
             Vector3 wishVel = dir * speed;
             horizontalVel = Vector3.MoveTowards(horizontalVel, wishVel, horizontalAccel * Time.deltaTime);
@@ -452,9 +468,10 @@ namespace ChaosDraftParty.Core
             // 着地検出: 前フレ not grounded → 今フレ grounded で squash 発火 (Mario Odyssey defacto)。
             // intensity は前フレの落下速度から: 0.5..12 m/s を 0..1 にマップ (高所ほど強い「ぼちゃっ」)。
             bool isGroundedNow = characterController.isGrounded;
-            if (!wasGrounded && isGroundedNow && squash != null)
+            if (!wasGrounded && isGroundedNow)
             {
-                squash.PlayLandingFromFallSpeed(-prevVerticalVel);
+                if (squash != null) squash.PlayLandingFromFallSpeed(-prevVerticalVel);
+                if (movementVFX != null) movementVFX.PlayLanding(-prevVerticalVel);
             }
             wasGrounded = isGroundedNow;
             prevVerticalVel = verticalVel;
