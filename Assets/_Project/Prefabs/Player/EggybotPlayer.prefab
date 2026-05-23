@@ -5627,12 +5627,12 @@ MonoBehaviour:
   cameraMinWorldY: 0.3
   maxRollDegrees: 0
   rollSmoothTime: 0.3
-  lookAheadDistance: 0.5
+  lookAheadDistance: 0
   lookAheadSmoothTime: 0.6
   lookInputDeadzone: 0.0004
   lookAheadSpeedThreshold: 0.3
-  noiseAmplitudeIdle: 0.1
-  noiseAmplitudeMove: 0.12
+  noiseAmplitudeIdle: 0
+  noiseAmplitudeMove: 0
   noiseSmoothTime: 0.4
   animator: {fileID: 119474661979155032}
   speedDampTime: 0.1
