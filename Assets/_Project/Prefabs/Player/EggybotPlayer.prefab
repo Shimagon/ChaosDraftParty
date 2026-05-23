@@ -5613,7 +5613,7 @@ MonoBehaviour:
   yawSensitivity: 0.15
   pitchSensitivity: 0.12
   cameraBaseRadius: 5
-  cameraDashRadius: 6
+  cameraDashRadius: 5
   cameraRadiusLerpSpeed: 4
   cameraMinWorldY: 0.3
   maxRollDegrees: 0
@@ -5919,7 +5919,7 @@ MonoBehaviour:
   _cinemachineCamera: {fileID: 0}
   _dipImpulseSource: {fileID: 3612227026482829166}
   _baseFov: 60
-  _dashFov: 75
+  _dashFov: 65
   _fovAttack: 0.08
   _fovDecay: 0.25
   _dipImpulseVelocity: {x: 0, y: -0.5, z: 0}
