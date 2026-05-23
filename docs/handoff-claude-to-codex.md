@@ -10,15 +10,19 @@
 順番に必ず読む:
 
 1. **`RULES.md`** ← 絶対遵守 R1-R10、技術ルール、commit format、全部統合
-2. **`CLAUDE.md`** ← プロジェクト概要、Must/Must Not、月次マイルストーン
+2. **`docs/KNOWLEDGE-INDEX.md`** ← **全ナレッジ蓄積場所の index** (MCP 失敗 / 成功パターン / recipe / セッション履歴 / 日報 すべての場所と要約)
 3. **`AGENTS.md`** ← Codex 固有規約 (役割 / 制限)
-4. **`.claude/rules/*.md`** ← architecture / csharp-unity / performance / serialization / unity-specifics
-5. **`docs/RESOURCES.md`** ← Meshy / Synty / Mixamo / Kenney 運用
-6. **memory** (`C:\Users\taise\.claude\projects\C--Users-taise-Documents-GitHub-ChaosDraftParty\memory\`):
+4. **`CLAUDE.md`** ← プロジェクト概要、Must/Must Not、月次マイルストーン
+5. **`.claude/skills/chaosdraftparty-gotchas/SKILL.md`** ← **既知罠 42 件** (MCP / Unity / Material / Prefab / NGO)、必読
+6. **`.claude/rules/*.md`** ← architecture / csharp-unity / performance / serialization / unity-specifics
+7. **`docs/RESOURCES.md`** ← Meshy / Synty / Mixamo / Kenney 運用
+8. **memory** (`C:\Users\taise\.claude\projects\C--Users-taise-Documents-GitHub-ChaosDraftParty\memory\`):
    - `MEMORY.md` (index)
-   - `feedback_*.md` 全部 (User 明示ルール 11 個)
-   - `session_*.md` 最新 (引き継ぎ)
+   - `feedback_*.md` 全部 (User 明示ルール 12 個)
+   - `session_*.md` 直近 3 つ (引き継ぎ)
    - `recipe_*.md` (普遍 recipe)
+   - `project_*.md` (進行中 state)
+9. 直近 3 つの **日報** `docs/reports/YYYY-MM-DD.md` (最新の文脈)
 
 ---
 
