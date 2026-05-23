@@ -55,6 +55,12 @@ namespace ChaosDraftParty.Core
 
         void Awake()
         {
+            // scene 個別配線忘れ防止: 未配線なら scene 内 CinemachineCamera を自動取得
+            // (CDP は 1 cam 想定、Match/MainMenu でも同 pattern で動作)
+            if (_cinemachineCamera == null)
+            {
+                _cinemachineCamera = FindFirstObjectByType<CinemachineCamera>();
+            }
             _currentFov = _baseFov;
             _targetFov = _baseFov;
         }

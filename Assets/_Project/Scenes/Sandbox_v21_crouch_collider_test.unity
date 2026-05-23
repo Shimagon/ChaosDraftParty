@@ -2159,6 +2159,7 @@ GameObject:
   - component: {fileID: 1978621837}
   - component: {fileID: 1978621839}
   - component: {fileID: 1978621840}
+  - component: {fileID: 1978621841}
   m_Layer: 0
   m_Name: CM_Player3rdPerson
   m_TagString: Untagged
@@ -2372,6 +2373,30 @@ MonoBehaviour:
   AmplitudeGain: 0.3
   FrequencyGain: 0.5
   m_NoiseOffsets: {x: 0, y: 0, z: 0}
+--- !u!114 &1978621841
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1978621832}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00b2d199b96b516448144ab30fb26aed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineImpulseListener
+  ApplyAfter: 2
+  ChannelMask: 1
+  Gain: 1
+  Use2DDistance: 0
+  UseCameraSpace: 1
+  SignalCombinationMode: 0
+  ReactionSettings:
+    m_SecondaryNoise: {fileID: 0}
+    AmplitudeGain: 1
+    FrequencyGain: 1
+    Duration: 1
+    m_NoiseOffsets: {x: 0, y: 0, z: 0}
 --- !u!1 &1985035507
 GameObject:
   m_ObjectHideFlags: 0
@@ -2557,6 +2582,18 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 2528163244
       objectReference: {fileID: 0}
+    - target: {fileID: 4558612133533938791, guid: f536647bf3f4d8148a4f35e2359c2194, type: 3}
+      propertyPath: SceneMigrationSynchronization
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4558612133533938791, guid: f536647bf3f4d8148a4f35e2359c2194, type: 3}
+      propertyPath: InScenePlacedSourceGlobalObjectIdHash
+      value: 4271390097
+      objectReference: {fileID: 0}
+    - target: {fileID: 4569283263303895171, guid: f536647bf3f4d8148a4f35e2359c2194, type: 3}
+      propertyPath: _cinemachineCamera
+      value: 
+      objectReference: {fileID: 1978621835}
     - target: {fileID: 7128789107214990815, guid: f536647bf3f4d8148a4f35e2359c2194, type: 3}
       propertyPath: cameraTransform
       value: 
