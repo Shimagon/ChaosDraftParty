@@ -67,6 +67,10 @@ namespace ChaosDraftParty.Core
 
         public void OnDashStart()
         {
+            // enabled=false でも外部から呼ばれる経路があるため、guard 必須
+            // (User 「画面が一瞬動く」の真因: enabled=false でも Impulse / FOV punch が発火してた)
+            if (!enabled) return;
+
             _dashing = true;
             _targetFov = _dashFov;
             if (_dipImpulseSource != null) _dipImpulseSource.GenerateImpulseWithVelocity(_dipImpulseVelocity);
@@ -75,6 +79,8 @@ namespace ChaosDraftParty.Core
 
         public void OnDashEnd()
         {
+            if (!enabled) return;
+
             _dashing = false;
             _targetFov = _baseFov;
             if (_speedLines != null && _speedLines.isPlaying) _speedLines.Stop();

@@ -63,6 +63,7 @@ namespace ChaosDraftParty.Core
 
         public void PlayLanding(float fallSpeed)
         {
+            if (!enabled) return;
             if (_landingDust == null) return;
             if (fallSpeed < _landingMinFallSpeed) return;
             float k = Mathf.InverseLerp(_landingMinFallSpeed, _landingMaxFallSpeed, fallSpeed);
@@ -72,6 +73,7 @@ namespace ChaosDraftParty.Core
 
         public void OnDashStateChanged(bool dashing)
         {
+            if (!enabled) return;
             if (_dashTrail == null) return;
             if (dashing) { if (!_dashTrail.isPlaying) _dashTrail.Play(); }
             else { if (_dashTrail.isPlaying) _dashTrail.Stop(); }
