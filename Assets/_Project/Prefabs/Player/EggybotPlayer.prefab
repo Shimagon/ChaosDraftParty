@@ -5579,7 +5579,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 1495908384
+  GlobalObjectIdHash: 4271390097
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -5617,7 +5617,7 @@ MonoBehaviour:
   dashEffect: {fileID: 4569283263303895171}
   walkSpeed: 1.5
   dashSpeed: 8
-  horizontalAccel: 25
+  horizontalAccel: 12
   turnSmoothness: 12
   yawSensitivity: 0.15
   pitchSensitivity: 0.12
@@ -5635,7 +5635,7 @@ MonoBehaviour:
   noiseAmplitudeMove: 0
   noiseSmoothTime: 0.4
   animator: {fileID: 119474661979155032}
-  speedDampTime: 0.1
+  speedDampTime: 0.25
   koThresholdY: -5
   lockCursor: 1
 --- !u!114 &8274296243520548542

@@ -3,7 +3,9 @@
 このファイルは **OpenAI Codex CLI** が project root で自動読込するハンドオフガイド。
 Claude Code 用の `CLAUDE.md` と協調動作するための **Codex 固有規約のみ** を記載。
 
-**プロジェクト全体の規約は `CLAUDE.md` および `.claude/rules/*.md` を必ず読むこと。**
+**プロジェクト全体の規約は `RULES.md` (絶対遵守 R1-R10) + `CLAUDE.md` + `.claude/rules/*.md` を必ず読むこと。**
+
+特に `RULES.md` は User 明示ルール (visual / camera / VFX は AAA 動画解析 deep dive 必須、AI review loop 省略禁止、思い込み禁止まず実測、等) を統合した **single source**。Codex も Claude A/B と同じルールに従う。
 
 ---
 
