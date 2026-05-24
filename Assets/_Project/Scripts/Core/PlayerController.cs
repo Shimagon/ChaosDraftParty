@@ -62,10 +62,10 @@ namespace ChaosDraftParty.Core
         [SerializeField] EggybotDashEffect dashEffect;
 
         [Header("Movement")]
-        [Tooltip("通常歩行速度 (m/s)。Walking clip の自然歩幅に合わせる。1.5 推奨。")]
+        [Tooltip("Slow walk 速度 (m/s)。Walk modifier (PC=LeftShift / Gamepad=L3) 押下中。Walking clip の自然歩幅に合わせる。1.5 推奨。")]
         [SerializeField] float walkSpeed = 1.5f;
 
-        [Tooltip("ダッシュ速度 (m/s)。Ctrl 押下中。8 推奨。")]
+        [Tooltip("デフォルト走行速度 (m/s)。Always Run defacto: Fall Guys / Mario Odyssey / Gang Beasts。常時この速度で、modifier 押下時のみ walkSpeed に落ちる。8 推奨。")]
         [SerializeField] float dashSpeed = 8f;
 
         [Tooltip("水平方向加減速 (m/s²)。値大で即応。")]
@@ -193,6 +193,10 @@ namespace ChaosDraftParty.Core
         [Tooltip("Animator.Speed の damp time (秒)。0.1 で滑らか開始/停止。")]
         [SerializeField] float speedDampTime = 0.1f;
 
+        [Header("Gamepad Layout (Bumper Jumper preset)")]
+        [Tooltip("Bumper Jumper layout: ジャンプを buttonSouth (B) → rightShoulder (R) に移し、カメラリセットを RB → leftShoulder (L) に逃がす。Mirror's Edge / Tomb Raider / CoD MW preset の defacto。右親指過負荷の解消 option。【Play 開始前 (Edit Mode) に設定すること — Awake で 1 回 BuildInputActions するため Play 中の変更は再起動まで反映されない】Setting UI 化は M3 以降。")]
+        [SerializeField] bool bumperJumperLayout = false;
+
         [Header("Network State")]
         [Tooltip("KO 判定用 Y 閾値。world Y がこれ未満で host が isAlive=false にする。地面 Y=0 + 余裕。-5 推奨。")]
         [SerializeField] float koThresholdY = -5f;
@@ -212,7 +216,10 @@ namespace ChaosDraftParty.Core
         InputAction lookAction;
         InputAction jumpAction;
         InputAction crouchAction;
-        InputAction dashAction;
+        // walkModifierAction: 押下中だけ walkSpeed (slow walk) に落ちる。
+        // Always Run + modifier defacto (Hat in Time / Pikmin / 一部 RPG)。Xbox XAG 107「同時押し回避」準拠で
+        // 右人差し指 ZL を解放し、ジャンプ B + 視点右スティックの同時操作負荷を解消する。
+        InputAction walkModifierAction;
         InputAction cameraResetAction;
 
         Vector3 horizontalVel;
@@ -292,7 +299,7 @@ namespace ChaosDraftParty.Core
             lookAction?.Dispose();
             jumpAction?.Dispose();
             crouchAction?.Dispose();
-            dashAction?.Dispose();
+            walkModifierAction?.Dispose();
             cameraResetAction?.Dispose();
         }
 
@@ -302,7 +309,7 @@ namespace ChaosDraftParty.Core
             lookAction?.Enable();
             jumpAction?.Enable();
             crouchAction?.Enable();
-            dashAction?.Enable();
+            walkModifierAction?.Enable();
             cameraResetAction?.Enable();
             if (lockCursor)
             {
@@ -317,7 +324,7 @@ namespace ChaosDraftParty.Core
             lookAction?.Disable();
             jumpAction?.Disable();
             crouchAction?.Disable();
-            dashAction?.Disable();
+            walkModifierAction?.Disable();
             cameraResetAction?.Disable();
         }
 
@@ -402,7 +409,11 @@ namespace ChaosDraftParty.Core
 
             jumpAction = new InputAction("Jump", InputActionType.Button);
             jumpAction.AddBinding("<Keyboard>/space");
-            jumpAction.AddBinding("<Gamepad>/buttonSouth");
+            // Bumper Jumper preset: ジャンプを buttonSouth (B) から rightShoulder (R) に逃がす option。
+            // Mirror's Edge / Tomb Raider / CoD MW preset の defacto。右親指過負荷の解消。
+            jumpAction.AddBinding(bumperJumperLayout
+                ? "<Gamepad>/rightShoulder"
+                : "<Gamepad>/buttonSouth");
             jumpAction.performed += ctx =>
             {
                 NoteInputDevice(ctx.control.device);
@@ -415,7 +426,8 @@ namespace ChaosDraftParty.Core
             };
 
             crouchAction = new InputAction("Crouch", InputActionType.Button);
-            crouchAction.AddBinding("<Keyboard>/leftShift");
+            // PC: LeftShift は walk modifier に取られたため C に逃がす。
+            crouchAction.AddBinding("<Keyboard>/c");
             crouchAction.AddBinding("<Gamepad>/buttonEast");
             crouchAction.performed += ctx =>
             {
@@ -423,16 +435,21 @@ namespace ChaosDraftParty.Core
                 ToggleCrouch();
             };
 
-            dashAction = new InputAction("Dash", InputActionType.Button);
-            dashAction.AddBinding("<Keyboard>/leftCtrl");
-            dashAction.AddBinding("<Keyboard>/rightCtrl");
-            dashAction.AddBinding("<Gamepad>/leftTrigger");
-            dashAction.performed += ctx => NoteInputDevice(ctx.control.device);
-            dashAction.canceled += ctx => NoteInputDevice(ctx.control.device);
+            // Always Run + walk modifier: 押下中だけ walkSpeed (slow walk)、離している間は dashSpeed (常時走行)。
+            // ZL/LeftCtrl の旧 dash binding は撤廃 (User 判断 2026-05-24)。ZL は将来 Skill1 候補で空き。
+            walkModifierAction = new InputAction("WalkModifier", InputActionType.Button);
+            walkModifierAction.AddBinding("<Keyboard>/leftShift");
+            walkModifierAction.AddBinding("<Gamepad>/leftStickPress");
+            walkModifierAction.performed += ctx => NoteInputDevice(ctx.control.device);
+            walkModifierAction.canceled += ctx => NoteInputDevice(ctx.control.device);
 
             cameraResetAction = new InputAction("CameraReset", InputActionType.Button);
             cameraResetAction.AddBinding("<Keyboard>/r");
-            cameraResetAction.AddBinding("<Gamepad>/rightShoulder");
+            // Bumper Jumper layout 時は RB が Jump に取られるため、カメラリセットを LB に逃がす。
+            // 通常 layout 時は従来通り RB (User フィードバック「めちゃええやん」評価済の挙動を維持)。
+            cameraResetAction.AddBinding(bumperJumperLayout
+                ? "<Gamepad>/leftShoulder"
+                : "<Gamepad>/rightShoulder");
             cameraResetAction.performed += ctx =>
             {
                 NoteInputDevice(ctx.control.device);
@@ -558,9 +575,13 @@ namespace ChaosDraftParty.Core
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, turnSmoothness * Time.deltaTime);
             }
 
-            // ダッシュ判定 (Ctrl 押下中) — 移動入力がある時だけ加速、しゃがみ中は無効
-            bool dashing = !moveLocked && dir.sqrMagnitude > 0.01f
-                           && dashAction != null && dashAction.IsPressed();
+            // Always Run + walk modifier 判定:
+            // - 移動入力あり + しゃがみ中でない + walk modifier 押していない → dashSpeed (常時走行)
+            // - walk modifier (PC=LeftShift / Gamepad=L3) 押下中 → walkSpeed (slow walk)
+            // VFX / FOV punch / camera radius は IsDashing で発火するので、Always Run の世界観だと
+            // 走行中は常時 trail / 風切り音が出る = Mario / Splatoon defacto に合致。
+            bool walkRequested = walkModifierAction != null && walkModifierAction.IsPressed();
+            bool dashing = !moveLocked && dir.sqrMagnitude > 0.01f && !walkRequested;
             // dash state edge detection で VFX / FOV punch 発火
             if (dashing != IsDashing)
             {

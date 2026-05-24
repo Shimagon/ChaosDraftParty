@@ -116,6 +116,24 @@ User 明示 (2026-05-19): Spring 物理移行で「天才」評価
 
 memory: `feedback_research_first_then_root_solution.md`
 
+### R11. User が「調べて」と言わなくても、設計判断前は能動的に並列調査
+
+User 明示 (2026-05-24): 「あんたは俺が調べてって言わないと調べないもんな」
+
+R1 (visual deep dive) / R2 (心理学+業界) の精神を「操作系 / 設計判断 / 将来拡張」全般に拡張。Codex が並列 3 agent で構造的考察を最初から提示 → Claude の能動性不足が顕在化したのが契機 (handoff: `docs/handoffs/codex_to_claude_2026-05-24_controller_camera.md`)。
+
+調査必須トリガ (User 明示なしで自動発動):
+
+1. **操作系の変更** — 入力 mapping / ボタン配置 / 移動感 / 入力 latency
+2. **設計の根本選択** — 体の向き / カメラ追従 / damping 値 / 物理感覚
+3. **将来拡張の判断** — 「後で武器追加した時に大変か」みたいな User の不安
+4. **失敗 retrospect** — User が「これダメ」と返した時は値再調整の前に「なぜダメだったか」の構造的調査
+5. **defacto の存在しそうな領域** — TPS / FPS / アクション / カジュアル / パーティで「みんなどうしてるか」が効く話
+
+やり方: 並列 Explore agent 3 個 + WebSearch + 公式 doc。AAA タイトル名 5-10 個 + Xbox XAG / PS5 アクセシビリティ + Cinemachine/Unity 公式 doc を根拠に、最終レポート 400 字 + 推奨 1 + 代替 1 + 技術リスクで返す。
+
+memory: `feedback_research_before_user_asks.md`
+
 ---
 
 ## 🔧 技術ルール (ChaosDraftParty 特有)
@@ -311,7 +329,8 @@ ChatGPT Plus $20/月 (User 契約済、API key 不要)。
 | 2026-05-19 | 不安・不明は即 User に聞く (R6、視覚体感のみ) |
 | 2026-05-19 | 表層修正より徹底調査 → 根本解決 (R10) |
 | 2026-05-21 | AskUserQuestion / yes 確認は機械判断でやめる (R5) |
-| 2026-05-23 | visual / camera / VFX は AAA 動画解析 deep dive 無し実装禁止 (R1) ← 最新 |
+| 2026-05-23 | visual / camera / VFX は AAA 動画解析 deep dive 無し実装禁止 (R1) |
+| 2026-05-24 | User が「調べて」と言わなくても、設計判断前は能動的に並列調査 (R11) ← 最新 |
 
 ---
 
