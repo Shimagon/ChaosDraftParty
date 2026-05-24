@@ -94,6 +94,13 @@ namespace ChaosDraftParty.Core
         [Range(0.2f, 1f)]
         [SerializeField] float jumpCutVelocityFactor = 0.55f;
 
+        [Tooltip("落下中だけ重力を強める倍率。上昇は柔らかく、下降は締める。1.4-1.8 が扱いやすい。")]
+        [Range(1f, 3f)]
+        [SerializeField] float fallGravityMultiplier = 1.55f;
+
+        [Tooltip("最大落下速度 (m/s)。高所落下で CharacterController / VFX / camera が暴れないよう制限する。")]
+        [SerializeField] float maxFallSpeed = 18f;
+
         [Tooltip("キャラ進行方向追従の Slerp 速度 (1/s)。値大で即旋回。12 推奨。")]
         [SerializeField] float turnSmoothness = 12f;
 
@@ -516,7 +523,9 @@ namespace ChaosDraftParty.Core
             }
 
             float gravity = config != null ? config.GravityAcceleration : -9.81f;
-            verticalVel += gravity * Time.deltaTime;
+            float gravityScale = (!groundedBeforeMove && verticalVel < 0f) ? fallGravityMultiplier : 1f;
+            verticalVel += gravity * gravityScale * Time.deltaTime;
+            verticalVel = Mathf.Max(verticalVel, -maxFallSpeed);
 
             characterController.Move((horizontalVel + Vector3.up * verticalVel) * Time.deltaTime);
 
