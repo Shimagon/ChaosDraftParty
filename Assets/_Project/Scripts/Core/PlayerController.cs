@@ -303,6 +303,18 @@ namespace ChaosDraftParty.Core
             BuildInputActions();
         }
 
+        void Start()
+        {
+            // 単独再生 (NetworkManager 経由なし、Sandbox_v19/v21/ShrinkingIsland 等) では
+            // OnNetworkSpawn が呼ばれず SetupOwnerCamera が走らない。
+            // Start 時点で IsSpawned=false なら「単独再生」確定なので、ここで Camera fallback を起動する。
+            // SerializeField で cinemachineCamera が assign 済みでも安全 (SetupOwnerCamera 内 null check)。
+            if (!IsSpawned)
+            {
+                SetupOwnerCamera();
+            }
+        }
+
         void OnDestroy()
         {
             moveAction?.Dispose();

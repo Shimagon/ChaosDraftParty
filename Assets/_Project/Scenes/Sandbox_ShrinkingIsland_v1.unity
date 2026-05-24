@@ -250,6 +250,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &54620720
@@ -383,6 +389,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &141128744
@@ -516,6 +528,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1001 &171585558
@@ -574,6 +592,14 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 3909127764
       objectReference: {fileID: 0}
+    - target: {fileID: 7128789107214990815, guid: f536647bf3f4d8148a4f35e2359c2194, type: 3}
+      propertyPath: cameraTransform
+      value: 
+      objectReference: {fileID: 751104462}
+    - target: {fileID: 7128789107214990815, guid: f536647bf3f4d8148a4f35e2359c2194, type: 3}
+      propertyPath: cinemachineCamera
+      value: 
+      objectReference: {fileID: 206154890}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -682,7 +708,7 @@ MonoBehaviour:
     m_Value: 0
   OutputChannel: 1
   StandbyUpdate: 2
-  m_StreamingVersion: 0
+  m_StreamingVersion: 20241001
   m_LegacyPriority: 0
   Target:
     TrackingTarget: {fileID: 171585559}
@@ -854,6 +880,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &285260204
@@ -987,6 +1019,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &342736354
@@ -1120,6 +1158,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &349932606
@@ -1253,6 +1297,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &369044162
@@ -1386,6 +1436,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &380150393
@@ -1519,6 +1575,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &403692878
@@ -1652,6 +1714,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &460609365
@@ -1785,6 +1853,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &466953151
@@ -1918,6 +1992,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &500719703
@@ -2051,6 +2131,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &568342955
@@ -2184,6 +2270,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &589926336
@@ -2317,6 +2409,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &591311221
@@ -2450,6 +2548,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &744890204
@@ -2583,6 +2687,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &751104459
@@ -2666,11 +2776,11 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
-  far clip plane: 1000
-  field of view: 60
+  near clip plane: 0.1
+  far clip plane: 5000
+  field of view: 40
   orthographic: 0
-  orthographic size: 5
+  orthographic size: 10
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
@@ -2694,8 +2804,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 751104459}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.1736482, y: 0, z: 0, w: 0.9848078}
-  m_LocalPosition: {x: 0, y: 5, z: -10}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 3.503529, z: -4.7685847}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2832,6 +2942,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &761079051
@@ -2965,6 +3081,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &770774688
@@ -3193,6 +3315,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &868625000
@@ -3326,6 +3454,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &902360602
@@ -3512,6 +3646,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &943273446
@@ -3645,6 +3785,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &955688075
@@ -3778,6 +3924,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &960002001
@@ -3911,6 +4063,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &963424919
@@ -4044,6 +4202,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &968115960
@@ -4177,6 +4341,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &974251176
@@ -4310,6 +4480,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &993526654
@@ -4443,6 +4619,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1030288681
@@ -4576,6 +4758,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1032005885
@@ -4709,6 +4897,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1051961402
@@ -4842,6 +5036,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1084897113
@@ -4975,6 +5175,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1117616199
@@ -5108,6 +5314,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1146666914
@@ -5241,6 +5453,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1196362648
@@ -5374,6 +5592,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1221150310
@@ -5507,6 +5731,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1247778810
@@ -5640,6 +5870,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1254445782
@@ -5773,6 +6009,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1295423093
@@ -5906,6 +6148,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1338616169
@@ -6039,6 +6287,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1370943456
@@ -6172,6 +6426,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1431918735
@@ -6305,6 +6565,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1433308570
@@ -6438,6 +6704,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1448370194
@@ -6571,6 +6843,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1449035275
@@ -6704,6 +6982,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1466319731
@@ -6837,6 +7121,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1467574391
@@ -6970,6 +7260,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1480345192
@@ -7103,6 +7399,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1480917665
@@ -7236,6 +7538,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1552733675
@@ -7369,6 +7677,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1625671896
@@ -7502,6 +7816,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1707222635
@@ -7635,6 +7955,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1809534439
@@ -7768,6 +8094,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1815054778
@@ -7998,6 +8330,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1860385406
@@ -8131,6 +8469,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1866529858
@@ -8264,6 +8608,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1866999035
@@ -8397,6 +8747,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1875328431
@@ -8530,6 +8886,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1891999224
@@ -8663,6 +9025,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1974851092
@@ -8796,6 +9164,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &1980769012
@@ -8876,6 +9250,7 @@ MonoBehaviour:
   _warningDuration: 1
   _fadeDuration: 0.5
   _koThresholdY: -5
+  _config: {fileID: 11400000, guid: 6419af6a8c50cc548a3599964904fdb8, type: 2}
 --- !u!1 &2004300902
 GameObject:
   m_ObjectHideFlags: 0
@@ -9007,6 +9382,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &2108654013
@@ -9140,6 +9521,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1 &2140062142
@@ -9273,6 +9660,12 @@ MonoBehaviour:
   _visualRenderer: {fileID: 0}
   _standCollider: {fileID: 0}
   _warningBlinkRate: 4
+  _warningColorPingPongPeriod: 0.15
+  _warningScaleMin: 0.95
+  _warningSfx: {fileID: 0}
+  _fadeSfx: {fileID: 0}
+  _warningParticlePrefab: {fileID: 0}
+  _fadeParticlePrefab: {fileID: 0}
   _fadeParticle: {fileID: 0}
   _fadeSe: {fileID: 0}
 --- !u!1660057539 &9223372036854775807

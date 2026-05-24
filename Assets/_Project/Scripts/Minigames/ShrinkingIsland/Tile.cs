@@ -48,11 +48,30 @@ namespace ChaosDraftParty.Minigames.ShrinkingIsland
         [FormerlySerializedAs("fadingBlinkRate")]
         [SerializeField] private float _warningBlinkRate = 4f;
 
-        [Header("Effects (optional)")]
-        [Tooltip("Fading 突入時に Play する Particle (null OK)。")]
+        [Tooltip("Warning 中の color PingPong 周期 (秒)。0.15 で赤白を高速 lerp。")]
+        [SerializeField] private float _warningColorPingPongPeriod = 0.15f;
+
+        [Tooltip("Warning 中の scale 振動 最小値 (1.0 → 最小)。1.0 で振動 OFF。")]
+        [SerializeField] private float _warningScaleMin = 0.95f;
+
+        [Header("VFX/SFX (任意)")]
+        [Tooltip("Warning 開始時に 1 回再生する SE (PlayClipAtPoint)。null OK。")]
+        [SerializeField] private AudioClip _warningSfx;
+
+        [Tooltip("Fading 開始時に 1 回再生する SE (PlayClipAtPoint)。null OK。")]
+        [SerializeField] private AudioClip _fadeSfx;
+
+        [Tooltip("Warning 中継続して表示する Particle prefab。Warning 開始時 1 回 Instantiate、Fading 突入時に Destroy。null OK。")]
+        [SerializeField] private GameObject _warningParticlePrefab;
+
+        [Tooltip("Fading 開始時に 1 回 Instantiate する Particle prefab (自動 destroy 想定)。null OK。")]
+        [SerializeField] private GameObject _fadeParticlePrefab;
+
+        [Header("Effects (legacy, optional)")]
+        [Tooltip("旧 inspector 配線: Fading 突入時に Play する Particle (null OK)。後方互換のため残置。")]
         [SerializeField] private ParticleSystem _fadeParticle;
 
-        [Tooltip("Fading 突入時に Play する SE (null OK)。")]
+        [Tooltip("旧 inspector 配線: Fading 突入時に Play する SE (null OK)。後方互換のため残置。")]
         [SerializeField] private AudioSource _fadeSe;
 
         // Runtime state
@@ -63,6 +82,8 @@ namespace ChaosDraftParty.Minigames.ShrinkingIsland
         private Color _baseColor = Color.white;
         private MaterialPropertyBlock _propBlock;
         private bool _initialized;
+        private Vector3 _baseLocalScale = Vector3.one;
+        private GameObject _warningParticleInstance;
 
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
         private static readonly int ColorId = Shader.PropertyToID("_Color");
@@ -95,6 +116,11 @@ namespace ChaosDraftParty.Minigames.ShrinkingIsland
             EnsureInitialized();
         }
 
+        private void OnDestroy()
+        {
+            DestroyWarningParticle();
+        }
+
         private void EnsureInitialized()
         {
             if (_initialized)
@@ -125,6 +151,7 @@ namespace ChaosDraftParty.Minigames.ShrinkingIsland
                     }
                 }
             }
+            _baseLocalScale = transform.localScale;
             _initialized = true;
         }
 
@@ -176,6 +203,8 @@ namespace ChaosDraftParty.Minigames.ShrinkingIsland
             switch (next)
             {
                 case TileState.Healthy:
+                    DestroyWarningParticle();
+                    transform.localScale = _baseLocalScale;
                     if (_visualRenderer != null)
                     {
                         _visualRenderer.enabled = true;
@@ -192,6 +221,17 @@ namespace ChaosDraftParty.Minigames.ShrinkingIsland
                     break;
 
                 case TileState.Warning:
+                    // 新規 SFX (1 shot)
+                    if (_warningSfx != null)
+                    {
+                        AudioSource.PlayClipAtPoint(_warningSfx, transform.position);
+                    }
+                    // 新規 Particle (継続生成 → Fading で Destroy)
+                    if (_warningParticlePrefab != null && _warningParticleInstance == null)
+                    {
+                        _warningParticleInstance = Instantiate(_warningParticlePrefab, transform.position, Quaternion.identity, transform);
+                    }
+                    // 後方互換: 旧 inspector 配線
                     if (_fadeParticle != null)
                     {
                         _fadeParticle.Play(true);
@@ -207,9 +247,22 @@ namespace ChaosDraftParty.Minigames.ShrinkingIsland
                     {
                         _standCollider.enabled = false;
                     }
+                    // Warning particle を停止
+                    DestroyWarningParticle();
+                    // 新規 Fading SFX (1 shot)
+                    if (_fadeSfx != null)
+                    {
+                        AudioSource.PlayClipAtPoint(_fadeSfx, transform.position);
+                    }
+                    // 新規 Fading Particle (1 shot Instantiate、自動 destroy 想定)
+                    if (_fadeParticlePrefab != null)
+                    {
+                        Instantiate(_fadeParticlePrefab, transform.position, Quaternion.identity);
+                    }
                     break;
 
                 case TileState.Gone:
+                    DestroyWarningParticle();
                     if (_visualRenderer != null)
                     {
                         _visualRenderer.enabled = false;
@@ -220,6 +273,15 @@ namespace ChaosDraftParty.Minigames.ShrinkingIsland
                     }
                     gameObject.SetActive(false);
                     break;
+            }
+        }
+
+        private void DestroyWarningParticle()
+        {
+            if (_warningParticleInstance != null)
+            {
+                Destroy(_warningParticleInstance);
+                _warningParticleInstance = null;
             }
         }
 
@@ -234,14 +296,20 @@ namespace ChaosDraftParty.Minigames.ShrinkingIsland
 
             if (_state == TileState.Warning)
             {
-                // 赤点滅
+                // 赤点滅 (PingPong: 0.15s 周期で white ↔ red を lerp)
+                float period = Mathf.Max(0.0001f, _warningColorPingPongPeriod);
+                float k = Mathf.PingPong(_stateTime, period) / period; // 0..1..0
                 if (_visualRenderer != null)
                 {
-                    float k = 0.5f + 0.5f * Mathf.Sin(_stateTime * _warningBlinkRate * 2f * Mathf.PI);
                     ApplyColor(Color.Lerp(_baseColor, Color.red, k));
                 }
+                // Scale 振動 (1.0 ↔ _warningScaleMin、同期点滅)
+                float scale = Mathf.Lerp(1f, _warningScaleMin, k);
+                transform.localScale = _baseLocalScale * scale;
+
                 if (_stateTime >= _warningDuration)
                 {
+                    transform.localScale = _baseLocalScale;
                     EnterState(TileState.Fading);
                 }
                 return;

@@ -55,6 +55,17 @@ namespace ChaosDraftParty.Minigames.ShrinkingIsland
         [Tooltip("Y 座標 がこの値より下に落ちたら KO (参考値、実 KO は PlayerController で実施)。")]
         [SerializeField] private float _koThresholdY = -5f;
 
+        [Header("Config (優先、null なら個別 SerializeField fallback)")]
+        [Tooltip("ShrinkingIslandConfig SO。設定されている場合は SO 値を優先、null なら個別 SerializeField を使う。")]
+        [SerializeField] private ShrinkingIslandConfig _config;
+
+        // 各値の effective getter (config 優先、null なら fallback)
+        // koThresholdY は PlayerController 側持ち、Manager は読まない
+        private float EffectiveShrinkInterval => _config != null ? _config.ShrinkInterval : _shrinkInterval;
+        private float EffectiveInitialDelay => _config != null ? _config.InitialDelay : _initialDelay;
+        private float EffectiveWarningDuration => _config != null ? _config.WarningDuration : _warningDuration;
+        private float EffectiveFadeDuration => _config != null ? _config.FadeDuration : _fadeDuration;
+
         // grid: [x, z] index で Tile を保持 (x,z = 0..gridSize-1)
         private Tile[,] _grid;
         // layer 順アクセス用 (リスト化済)
@@ -197,7 +208,7 @@ namespace ChaosDraftParty.Minigames.ShrinkingIsland
 
         private IEnumerator ShrinkLoop()
         {
-            yield return new WaitForSeconds(_initialDelay);
+            yield return new WaitForSeconds(EffectiveInitialDelay);
 
             int maxLayer = _gridSize / 2;
             while (_nextLayer < maxLayer)
@@ -208,11 +219,11 @@ namespace ChaosDraftParty.Minigames.ShrinkingIsland
                 {
                     break;
                 }
-                yield return new WaitForSeconds(_shrinkInterval);
+                yield return new WaitForSeconds(EffectiveShrinkInterval);
             }
 
             // 全消失確認 (Fading + Gone まで含めて最後の tile が落ちるまで余韻待ち)
-            yield return new WaitForSeconds(_warningDuration + _fadeDuration);
+            yield return new WaitForSeconds(EffectiveWarningDuration + EffectiveFadeDuration);
             if (!_completedLogged)
             {
                 _completedLogged = true;
@@ -242,7 +253,7 @@ namespace ChaosDraftParty.Minigames.ShrinkingIsland
                     }
 
                     int linearIndex = z * _gridSize + x;
-                    StartFadeClientRpc(linearIndex, _warningDuration, _fadeDuration);
+                    StartFadeClientRpc(linearIndex, EffectiveWarningDuration, EffectiveFadeDuration);
                 }
             }
         }
