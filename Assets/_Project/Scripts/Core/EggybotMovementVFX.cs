@@ -50,6 +50,9 @@ namespace ChaosDraftParty.Core
         [SerializeField] private float _footstepIntervalDash = 0.4f;
 
         [Header("Dash Trail")]
+        [Tooltip("ダッシュ中の連続 trail。煙がドリフト状に見えるため M2 default は OFF。")]
+        [SerializeField] private bool _enableDashTrail;
+
         [Tooltip("ダッシュ中 trail ParticleSystem。null で skip。dash 開始で Play / 終了で Stop。")]
         [SerializeField] private ParticleSystem _dashTrail;
 
@@ -74,15 +77,28 @@ namespace ChaosDraftParty.Core
         public void OnDashStateChanged(bool dashing)
         {
             if (!enabled) return;
-            if (_dashTrail == null) return;
-            if (dashing) { if (!_dashTrail.isPlaying) _dashTrail.Play(); }
-            else { if (_dashTrail.isPlaying) _dashTrail.Stop(); }
+            if (dashing)
+            {
+                SyncDashTrail();
+            }
+            else
+            {
+                StopDashTrail(false);
+            }
         }
 
         void Update()
         {
             if (_player == null) return;
-            if (!_player.IsGrounded) { _footstepAccum = 0f; return; }
+            if (!_player.IsGrounded)
+            {
+                _footstepAccum = 0f;
+                StopDashTrail(true);
+                StopFootstepPuffs();
+                return;
+            }
+
+            SyncDashTrail();
 
             float speed = _player.CurrentPlanarSpeed;
             if (speed < 0.1f) { _footstepAccum = 0f; return; }
@@ -94,8 +110,57 @@ namespace ChaosDraftParty.Core
                 _footstepAccum = 0f;
                 var ps = _leftStepNext ? _footstepL : _footstepR;
                 _leftStepNext = !_leftStepNext;
-                if (ps != null) ps.Play();
+                if (ps != null) ps.Emit(1);
             }
+        }
+
+        void SyncDashTrail()
+        {
+            if (_dashTrail == null) return;
+            if (!_enableDashTrail)
+            {
+                StopDashTrail(true);
+                return;
+            }
+            if (_player == null) return;
+
+            bool shouldPlay = _player.IsGrounded && _player.IsDashing;
+            if (shouldPlay)
+            {
+                if (!_dashTrail.isPlaying)
+                {
+                    _dashTrail.Play();
+                }
+            }
+            else
+            {
+                StopDashTrail(!_player.IsGrounded);
+            }
+        }
+
+        void StopDashTrail(bool clear)
+        {
+            if (_dashTrail == null) return;
+            if (!_dashTrail.isPlaying) return;
+
+            var stopBehavior = clear
+                ? ParticleSystemStopBehavior.StopEmittingAndClear
+                : ParticleSystemStopBehavior.StopEmitting;
+            _dashTrail.Stop(true, stopBehavior);
+        }
+
+        void StopFootstepPuffs()
+        {
+            StopFootstepPuff(_footstepL);
+            StopFootstepPuff(_footstepR);
+        }
+
+        static void StopFootstepPuff(ParticleSystem particleSystem)
+        {
+            if (particleSystem == null) return;
+            if (!particleSystem.isPlaying) return;
+
+            particleSystem.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         }
     }
 }
