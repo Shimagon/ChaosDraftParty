@@ -123,7 +123,7 @@ namespace ChaosDraftParty.Core
         [SerializeField] float gamepadLookDeadzone = 0.12f;
 
         [Tooltip("ゲームパッド時、右スティック無入力なら移動方向へカメラをゆっくり寄せる。設定画面で ON/OFF 化予定。")]
-        [SerializeField] bool gamepadCameraAssist = true;
+        [SerializeField] bool gamepadCameraAssist = false;
 
         [Tooltip("右スティック入力後、自動カメラが再開するまでの待ち時間 (秒)。")]
         [SerializeField] float gamepadCameraAssistDelay = 0.45f;
@@ -134,6 +134,12 @@ namespace ChaosDraftParty.Core
         [Tooltip("自動カメラが働き始める左スティック入力量。")]
         [Range(0.05f, 1f)]
         [SerializeField] float gamepadCameraAssistMoveThreshold = 0.35f;
+
+        [Tooltip("カメラリセットの yaw 回転速度 (deg/sec)。R / gamepad RB でキャラ背後へ戻す。")]
+        [SerializeField] float cameraResetYawSpeed = 420f;
+
+        [Tooltip("カメラリセット完了とみなす yaw 誤差 (度)。")]
+        [SerializeField] float cameraResetYawEpsilon = 1.5f;
 
         [Tooltip("通常時のカメラ距離 (m)。OrbitalFollow.Radius の base 値。")]
         [SerializeField] float cameraBaseRadius = 5f;
@@ -207,6 +213,7 @@ namespace ChaosDraftParty.Core
         InputAction jumpAction;
         InputAction crouchAction;
         InputAction dashAction;
+        InputAction cameraResetAction;
 
         Vector3 horizontalVel;
         float verticalVel;
@@ -232,6 +239,7 @@ namespace ChaosDraftParty.Core
         bool lastInputWasGamepad;
         bool lastLookWasGamepad;
         float lastManualLookTime = -999f;
+        bool cameraResetActive;
 
         // Network: 生存状態。host が write 権限、全 client read。
         // 縮む島で Y < koThresholdY になったら host が false に → 全 client で操作不能 + visual 落下継続
@@ -285,6 +293,7 @@ namespace ChaosDraftParty.Core
             jumpAction?.Dispose();
             crouchAction?.Dispose();
             dashAction?.Dispose();
+            cameraResetAction?.Dispose();
         }
 
         void OnEnable()
@@ -294,6 +303,7 @@ namespace ChaosDraftParty.Core
             jumpAction?.Enable();
             crouchAction?.Enable();
             dashAction?.Enable();
+            cameraResetAction?.Enable();
             if (lockCursor)
             {
                 Cursor.lockState = CursorLockMode.Locked;
@@ -308,6 +318,7 @@ namespace ChaosDraftParty.Core
             jumpAction?.Disable();
             crouchAction?.Disable();
             dashAction?.Disable();
+            cameraResetAction?.Disable();
         }
 
         public override void OnNetworkSpawn()
@@ -418,6 +429,16 @@ namespace ChaosDraftParty.Core
             dashAction.AddBinding("<Gamepad>/leftTrigger");
             dashAction.performed += ctx => NoteInputDevice(ctx.control.device);
             dashAction.canceled += ctx => NoteInputDevice(ctx.control.device);
+
+            cameraResetAction = new InputAction("CameraReset", InputActionType.Button);
+            cameraResetAction.AddBinding("<Keyboard>/r");
+            cameraResetAction.AddBinding("<Gamepad>/rightShoulder");
+            cameraResetAction.performed += ctx =>
+            {
+                NoteInputDevice(ctx.control.device);
+                cameraResetActive = true;
+                lastManualLookTime = Time.time;
+            };
         }
 
         void Update()
@@ -471,6 +492,7 @@ namespace ChaosDraftParty.Core
             else
             {
                 lastManualLookTime = Time.time;
+                cameraResetActive = false;
             }
 
             float yawStep = gamepadLook
@@ -500,6 +522,7 @@ namespace ChaosDraftParty.Core
 
             if (!hasManualLook)
             {
+                ApplyCameraReset();
                 ApplyGamepadCameraAssist();
             }
         }
@@ -679,6 +702,28 @@ namespace ChaosDraftParty.Core
 
             float yawError = Vector3.SignedAngle(camForward.normalized, moveForward.normalized, Vector3.up);
             float maxStep = gamepadCameraAssistYawSpeed * Time.deltaTime;
+            orbital.HorizontalAxis.Value += Mathf.Clamp(yawError, -maxStep, maxStep);
+        }
+
+        void ApplyCameraReset()
+        {
+            if (!cameraResetActive) return;
+            if (cameraTransform == null && Camera.main != null)
+                cameraTransform = Camera.main.transform;
+            if (cameraTransform == null) return;
+
+            Vector3 camForward = Vector3.ProjectOnPlane(cameraTransform.forward, Vector3.up);
+            Vector3 targetForward = Vector3.ProjectOnPlane(transform.forward, Vector3.up);
+            if (camForward.sqrMagnitude < 0.001f || targetForward.sqrMagnitude < 0.001f) return;
+
+            float yawError = Vector3.SignedAngle(camForward.normalized, targetForward.normalized, Vector3.up);
+            if (Mathf.Abs(yawError) <= cameraResetYawEpsilon)
+            {
+                cameraResetActive = false;
+                return;
+            }
+
+            float maxStep = cameraResetYawSpeed * Time.deltaTime;
             orbital.HorizontalAxis.Value += Mathf.Clamp(yawError, -maxStep, maxStep);
         }
 

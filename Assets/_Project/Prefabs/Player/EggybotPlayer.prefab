@@ -5625,9 +5625,18 @@ MonoBehaviour:
   coyoteTime: 0.08
   jumpBufferTime: 0.1
   jumpCutVelocityFactor: 0.55
+  fallGravityMultiplier: 1.55
+  maxFallSpeed: 18
   turnSmoothness: 12
   yawSensitivity: 0.15
   pitchSensitivity: 0.12
+  gamepadYawSpeed: 180
+  gamepadPitchSpeed: 120
+  gamepadLookDeadzone: 0.12
+  gamepadCameraAssist: 0
+  gamepadCameraAssistDelay: 0.45
+  gamepadCameraAssistYawSpeed: 90
+  gamepadCameraAssistMoveThreshold: 0.35
   cameraBaseRadius: 5
   cameraDashRadius: 5
   cameraRadiusLerpSpeed: 0
