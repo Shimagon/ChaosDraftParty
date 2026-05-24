@@ -197,6 +197,13 @@ namespace ChaosDraftParty.Core
         [Tooltip("Bumper Jumper layout: ジャンプを buttonSouth (B) → rightShoulder (R) に移し、カメラリセットを RB → leftShoulder (L) に逃がす。Mirror's Edge / Tomb Raider / CoD MW preset の defacto。右親指過負荷の解消 option。【Play 開始前 (Edit Mode) に設定すること — Awake で 1 回 BuildInputActions するため Play 中の変更は再起動まで反映されない】Setting UI 化は M3 以降。")]
         [SerializeField] bool bumperJumperLayout = false;
 
+        // Skill hooks: 一時的な speed/jump 倍率 runtime 状態。
+        // serialization.md ルール準拠で [SerializeField] は付けない (Inspector 誤設定で初期値残るバグ予防)。
+        // 書き換えは ApplyTemporarySpeedBoost / ApplyTemporaryJumpMultiplier (Owner only) でのみ。
+        float speedBoostMultiplier = 1f;
+        float jumpBoostMultiplier = 1f;
+        int jumpBoostCharges = 0;
+
         [Header("Network State")]
         [Tooltip("KO 判定用 Y 閾値。world Y がこれ未満で host が isAlive=false にする。地面 Y=0 + 余裕。-5 推奨。")]
         [SerializeField] float koThresholdY = -5f;
@@ -232,6 +239,9 @@ namespace ChaosDraftParty.Core
         // ApplyMovement の最後で「!wasGrounded && isGroundedNow」を検出し、prevVerticalVel の負値で intensity を決める。
         bool wasGrounded;
         float prevVerticalVel;
+
+        // Skill hook 残り秒数。0 になったら speedBoostMultiplier を 1.0 に戻す。
+        float speedBoostRemainSec;
         static readonly int SpeedHash = Animator.StringToHash("Speed");
         static readonly int JumpHash = Animator.StringToHash("Jump");
 
@@ -590,7 +600,19 @@ namespace ChaosDraftParty.Core
                 if (dashEffect != null) { if (dashing) dashEffect.OnDashStart(); else dashEffect.OnDashEnd(); }
             }
             bool groundedBeforeMove = characterController.isGrounded;
-            float speed = dashing ? dashSpeed : walkSpeed;
+
+            // Skill: 一時 speed boost (Dash 等) を tick。0 を切ったら 1.0 にリセット。
+            if (speedBoostRemainSec > 0f)
+            {
+                speedBoostRemainSec -= Time.deltaTime;
+                if (speedBoostRemainSec <= 0f)
+                {
+                    speedBoostRemainSec = 0f;
+                    speedBoostMultiplier = 1f;
+                }
+            }
+
+            float speed = (dashing ? dashSpeed : walkSpeed) * speedBoostMultiplier;
             float targetSpeed = groundedBeforeMove ? speed : speed * airSpeedFactor;
             Vector3 wishVel = dir * targetSpeed;
             float accel = GetHorizontalAcceleration(dir, wishVel, groundedBeforeMove);
@@ -623,7 +645,19 @@ namespace ChaosDraftParty.Core
                     faceAnimator.PlayBlink();
                     faceAnimator.PlayJumpMouth();
                 }
-                verticalVel = config != null ? config.playerJumpSpeed : 7f;
+                float jumpSpeed = config != null ? config.playerJumpSpeed : 7f;
+                // Skill: JumpBoost charges 消費。1 回分だけ jumpSpeed に倍率乗算。
+                if (jumpBoostCharges > 0 && jumpBoostMultiplier > 1f)
+                {
+                    jumpSpeed *= jumpBoostMultiplier;
+                    jumpBoostCharges--;
+                    if (jumpBoostCharges <= 0)
+                    {
+                        jumpBoostCharges = 0;
+                        jumpBoostMultiplier = 1f;
+                    }
+                }
+                verticalVel = jumpSpeed;
                 if (animator != null) animator.SetTrigger(JumpHash);
                 jumpBufferTimer = 0f;
                 coyoteTimer = 0f;
@@ -852,6 +886,47 @@ namespace ChaosDraftParty.Core
             if (cachedCrouch == null) return;
             if (wantCrouch && !cachedCrouch.IsCrouching) crouchSequence.PlayEnterCrouch();
             else if (!wantCrouch && cachedCrouch.IsCrouching) crouchSequence.PlayExitCrouch();
+        }
+
+        /// <summary>
+        /// スキル系から呼ぶ一時 speed boost。dashSpeed / walkSpeed に乗算する倍率を duration 秒間だけ書換える。
+        /// 既存 boost が残っていても上書き (最後の Apply が勝つ、AAA defacto)。
+        /// 1.0 以下を渡したら無効化扱い (即解除)。
+        /// </summary>
+        public void ApplyTemporarySpeedBoost(float multiplier, float duration)
+        {
+            // NGO Owner 権威: spawn 後は Owner のみが書換可。non-Owner は Update が止まってて
+            // タイマーがデクリメントされず multiplier 永続化する罠 (feedback_enabled_false_does_not_block_method_call.md)。
+            // sandbox 単独再生 (IsSpawned=false) は許可 (既存 PlayerController 慣習: 単独再生対応)。
+            if (IsSpawned && !IsOwner) return;
+
+            if (multiplier <= 1.0001f || duration <= 0f)
+            {
+                speedBoostMultiplier = 1f;
+                speedBoostRemainSec = 0f;
+                return;
+            }
+            speedBoostMultiplier = multiplier;
+            speedBoostRemainSec = duration;
+        }
+
+        /// <summary>
+        /// スキル系から呼ぶ次回ジャンプ強化。charges 回分だけ jumpSpeed に倍率乗算する。
+        /// 既存 charges が残っていても上書き (累積しない、AAA defacto)。
+        /// </summary>
+        public void ApplyTemporaryJumpMultiplier(float multiplier, int charges)
+        {
+            // NGO Owner 権威 (理由: ApplyTemporarySpeedBoost 同様)。
+            if (IsSpawned && !IsOwner) return;
+
+            if (multiplier <= 1.0001f || charges <= 0)
+            {
+                jumpBoostMultiplier = 1f;
+                jumpBoostCharges = 0;
+                return;
+            }
+            jumpBoostMultiplier = multiplier;
+            jumpBoostCharges = charges;
         }
     }
 }
