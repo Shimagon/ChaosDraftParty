@@ -5615,14 +5615,21 @@ MonoBehaviour:
   bodyDip: {fileID: 5888256850609320703}
   movementVFX: {fileID: 5586873326295789008}
   dashEffect: {fileID: 4569283263303895171}
-  walkSpeed: 1.5
-  dashSpeed: 8
-  horizontalAccel: 12
+  walkSpeed: 2.4
+  dashSpeed: 5.4
+  horizontalAccel: 28
+  groundDecel: 42
+  groundTurnAccel: 56
+  airAccel: 10
+  airSpeedFactor: 0.7
+  coyoteTime: 0.08
+  jumpBufferTime: 0.1
+  jumpCutVelocityFactor: 0.55
   turnSmoothness: 12
   yawSensitivity: 0.15
   pitchSensitivity: 0.12
   cameraBaseRadius: 5
-  cameraDashRadius: 5
+  cameraDashRadius: 5.35
   cameraRadiusLerpSpeed: 4
   cameraMinWorldY: 0.3
   maxRollDegrees: 0
@@ -5635,7 +5642,7 @@ MonoBehaviour:
   noiseAmplitudeMove: 0
   noiseSmoothTime: 0.4
   animator: {fileID: 119474661979155032}
-  speedDampTime: 0.25
+  speedDampTime: 0.16
   koThresholdY: -5
   lockCursor: 1
 --- !u!114 &8274296243520548542

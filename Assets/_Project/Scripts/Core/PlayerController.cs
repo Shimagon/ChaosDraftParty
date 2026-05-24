@@ -71,6 +71,29 @@ namespace ChaosDraftParty.Core
         [Tooltip("水平方向加減速 (m/s²)。値大で即応。")]
         [SerializeField] float horizontalAccel = 25f;
 
+        [Tooltip("地上で入力を離した時の減速 (m/s²)。値大で滑りにくい。")]
+        [SerializeField] float groundDecel = 36f;
+
+        [Tooltip("地上で逆方向へ切り返す時の加速 (m/s²)。通常加速より高めでドリフト感を抑える。")]
+        [SerializeField] float groundTurnAccel = 42f;
+
+        [Tooltip("空中で方向修正する加速 (m/s²)。地上より弱くして、でも操作意図は通す。")]
+        [SerializeField] float airAccel = 9f;
+
+        [Tooltip("空中で横速度を保つ割合。1 に近いほど地上と同じ、低いほど慣性が強い。")]
+        [Range(0.3f, 1f)]
+        [SerializeField] float airSpeedFactor = 0.65f;
+
+        [Tooltip("足場を離れた直後もジャンプを受け付ける猶予 (秒)。Celeste / Mario 系の操作補助。")]
+        [SerializeField] float coyoteTime = 0.08f;
+
+        [Tooltip("着地直前のジャンプ入力を保存する猶予 (秒)。早押しを救う。")]
+        [SerializeField] float jumpBufferTime = 0.10f;
+
+        [Tooltip("ジャンプボタンを短く離した時、上昇速度を残す割合。低いほど低ジャンプしやすい。")]
+        [Range(0.2f, 1f)]
+        [SerializeField] float jumpCutVelocityFactor = 0.55f;
+
         [Tooltip("キャラ進行方向追従の Slerp 速度 (1/s)。値大で即旋回。12 推奨。")]
         [SerializeField] float turnSmoothness = 12f;
 
@@ -156,7 +179,9 @@ namespace ChaosDraftParty.Core
 
         Vector3 horizontalVel;
         float verticalVel;
-        bool jumpQueued;
+        float jumpBufferTimer;
+        float coyoteTimer;
+        bool jumpCutQueued;
 
         // 着地検出: 前フレ grounded 状態 + 直前 frame の verticalVel を保持。
         // ApplyMovement の最後で「!wasGrounded && isGroundedNow」を検出し、prevVerticalVel の負値で intensity を決める。
@@ -327,7 +352,8 @@ namespace ChaosDraftParty.Core
             jumpAction = new InputAction("Jump", InputActionType.Button);
             jumpAction.AddBinding("<Keyboard>/space");
             jumpAction.AddBinding("<Gamepad>/buttonSouth");
-            jumpAction.performed += _ => jumpQueued = true;
+            jumpAction.performed += _ => jumpBufferTimer = jumpBufferTime;
+            jumpAction.canceled += _ => jumpCutQueued = true;
 
             crouchAction = new InputAction("Crouch", InputActionType.Button);
             crouchAction.AddBinding("<Keyboard>/leftShift");
@@ -440,30 +466,54 @@ namespace ChaosDraftParty.Core
                 if (movementVFX != null) movementVFX.OnDashStateChanged(dashing);
                 if (dashEffect != null) { if (dashing) dashEffect.OnDashStart(); else dashEffect.OnDashEnd(); }
             }
+            bool groundedBeforeMove = characterController.isGrounded;
             float speed = dashing ? dashSpeed : walkSpeed;
-            Vector3 wishVel = dir * speed;
-            horizontalVel = Vector3.MoveTowards(horizontalVel, wishVel, horizontalAccel * Time.deltaTime);
+            float targetSpeed = groundedBeforeMove ? speed : speed * airSpeedFactor;
+            Vector3 wishVel = dir * targetSpeed;
+            float accel = GetHorizontalAcceleration(dir, wishVel, groundedBeforeMove);
+            horizontalVel = Vector3.MoveTowards(horizontalVel, wishVel, accel * Time.deltaTime);
 
             // 重力 + ジャンプ (jump trigger は実際にジャンプ実行時のみ発火)
-            if (characterController.isGrounded)
+            if (groundedBeforeMove)
             {
+                coyoteTimer = coyoteTime;
                 if (verticalVel < 0f) verticalVel = -1f;
-                if (jumpQueued && !moveLocked)
-                {
-                    // 踏切 anticipation: 即時 Y 圧縮 → 100ms で base 戻り (Mario Odyssey defacto、もちもち感)
-                    if (squash != null) squash.Play(EggybotSquashStretch.EventType.JumpAnticipation, 1f);
-                    // 踏切 blink (Disney "Tangled" defacto、Shawn Kelly ILM: head turn 直前 blink で人間味)
-                    // + 踏切口 (Mouth_Open + scale UP、歩行 Open / ダッシュ Happy とは別の「びっくり」感)
-                    if (faceAnimator != null)
-                    {
-                        faceAnimator.PlayBlink();
-                        faceAnimator.PlayJumpMouth();
-                    }
-                    verticalVel = config != null ? config.playerJumpSpeed : 7f;
-                    if (animator != null) animator.SetTrigger(JumpHash);
-                }
             }
-            jumpQueued = false;
+            else
+            {
+                coyoteTimer -= Time.deltaTime;
+            }
+
+            if (jumpBufferTimer > 0f)
+            {
+                jumpBufferTimer -= Time.deltaTime;
+            }
+
+            if (jumpBufferTimer > 0f && coyoteTimer > 0f && !moveLocked)
+            {
+                // 踏切 anticipation: 即時 Y 圧縮 → 100ms で base 戻り (Mario Odyssey defacto、もちもち感)
+                if (squash != null) squash.Play(EggybotSquashStretch.EventType.JumpAnticipation, 1f);
+                // 踏切 blink (Disney "Tangled" defacto、Shawn Kelly ILM: head turn 直前 blink で人間味)
+                // + 踏切口 (Mouth_Open + scale UP、歩行 Open / ダッシュ Happy とは別の「びっくり」感)
+                if (faceAnimator != null)
+                {
+                    faceAnimator.PlayBlink();
+                    faceAnimator.PlayJumpMouth();
+                }
+                verticalVel = config != null ? config.playerJumpSpeed : 7f;
+                if (animator != null) animator.SetTrigger(JumpHash);
+                jumpBufferTimer = 0f;
+                coyoteTimer = 0f;
+            }
+
+            if (jumpCutQueued)
+            {
+                if (verticalVel > 0f)
+                {
+                    verticalVel *= jumpCutVelocityFactor;
+                }
+                jumpCutQueued = false;
+            }
 
             float gravity = config != null ? config.GravityAcceleration : -9.81f;
             verticalVel += gravity * Time.deltaTime;
@@ -499,6 +549,26 @@ namespace ChaosDraftParty.Core
                 float targetRadius = dashing ? cameraDashRadius : cameraBaseRadius;
                 orbital.Radius = Mathf.Lerp(orbital.Radius, targetRadius, cameraRadiusLerpSpeed * Time.deltaTime);
             }
+        }
+
+        float GetHorizontalAcceleration(Vector3 inputDirection, Vector3 wishVelocity, bool grounded)
+        {
+            if (!grounded)
+            {
+                return airAccel;
+            }
+
+            if (inputDirection.sqrMagnitude < 0.01f)
+            {
+                return groundDecel;
+            }
+
+            if (horizontalVel.sqrMagnitude > 0.01f && Vector3.Dot(horizontalVel, wishVelocity) < 0f)
+            {
+                return groundTurnAccel;
+            }
+
+            return horizontalAccel;
         }
 
         /// <summary>
