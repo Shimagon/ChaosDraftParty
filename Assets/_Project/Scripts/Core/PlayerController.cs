@@ -111,6 +111,30 @@ namespace ChaosDraftParty.Core
         [Tooltip("マウス pitch 感度 (deg / pixel)。yaw × 0.75 が AAA defacto。")]
         [SerializeField] float pitchSensitivity = 0.15f;
 
+        [Header("Gamepad Look")]
+        [Tooltip("ゲームパッド右スティック yaw 速度 (deg/sec)。マウス delta と単位が違うため分離。")]
+        [SerializeField] float gamepadYawSpeed = 180f;
+
+        [Tooltip("ゲームパッド右スティック pitch 速度 (deg/sec)。yaw より少し低めが扱いやすい。")]
+        [SerializeField] float gamepadPitchSpeed = 120f;
+
+        [Tooltip("右スティック入力の deadzone。Proコンの微小入力で camera assist が切れないようにする。")]
+        [Range(0.01f, 0.5f)]
+        [SerializeField] float gamepadLookDeadzone = 0.12f;
+
+        [Tooltip("ゲームパッド時、右スティック無入力なら移動方向へカメラをゆっくり寄せる。設定画面で ON/OFF 化予定。")]
+        [SerializeField] bool gamepadCameraAssist = true;
+
+        [Tooltip("右スティック入力後、自動カメラが再開するまでの待ち時間 (秒)。")]
+        [SerializeField] float gamepadCameraAssistDelay = 0.45f;
+
+        [Tooltip("自動カメラの yaw 回転速度 (deg/sec)。強すぎると酔うので低め。")]
+        [SerializeField] float gamepadCameraAssistYawSpeed = 90f;
+
+        [Tooltip("自動カメラが働き始める左スティック入力量。")]
+        [Range(0.05f, 1f)]
+        [SerializeField] float gamepadCameraAssistMoveThreshold = 0.35f;
+
         [Tooltip("通常時のカメラ距離 (m)。OrbitalFollow.Radius の base 値。")]
         [SerializeField] float cameraBaseRadius = 5f;
 
@@ -205,6 +229,9 @@ namespace ChaosDraftParty.Core
         float currentNoiseAmp;
         float noiseAmpVel;
         Unity.Cinemachine.CinemachineBasicMultiChannelPerlin cachedNoise;
+        bool lastInputWasGamepad;
+        bool lastLookWasGamepad;
+        float lastManualLookTime = -999f;
 
         // Network: 生存状態。host が write 権限、全 client read。
         // 縮む島で Y < koThresholdY になったら host が false に → 全 client で操作不能 + visual 落下継続
@@ -351,26 +378,46 @@ namespace ChaosDraftParty.Core
                 .With("Left", "<Keyboard>/a")
                 .With("Right", "<Keyboard>/d");
             moveAction.AddBinding("<Gamepad>/leftStick");
+            moveAction.performed += ctx => NoteInputDevice(ctx.control.device);
 
             lookAction = new InputAction("Look", InputActionType.Value, expectedControlType: "Vector2");
             lookAction.AddBinding("<Mouse>/delta");
             lookAction.AddBinding("<Gamepad>/rightStick");
+            lookAction.performed += ctx =>
+            {
+                NoteInputDevice(ctx.control.device);
+                lastLookWasGamepad = ctx.control.device is Gamepad;
+            };
 
             jumpAction = new InputAction("Jump", InputActionType.Button);
             jumpAction.AddBinding("<Keyboard>/space");
             jumpAction.AddBinding("<Gamepad>/buttonSouth");
-            jumpAction.performed += _ => jumpBufferTimer = jumpBufferTime;
-            jumpAction.canceled += _ => jumpCutQueued = true;
+            jumpAction.performed += ctx =>
+            {
+                NoteInputDevice(ctx.control.device);
+                jumpBufferTimer = jumpBufferTime;
+            };
+            jumpAction.canceled += ctx =>
+            {
+                NoteInputDevice(ctx.control.device);
+                jumpCutQueued = true;
+            };
 
             crouchAction = new InputAction("Crouch", InputActionType.Button);
             crouchAction.AddBinding("<Keyboard>/leftShift");
             crouchAction.AddBinding("<Gamepad>/buttonEast");
-            crouchAction.performed += _ => ToggleCrouch();
+            crouchAction.performed += ctx =>
+            {
+                NoteInputDevice(ctx.control.device);
+                ToggleCrouch();
+            };
 
             dashAction = new InputAction("Dash", InputActionType.Button);
             dashAction.AddBinding("<Keyboard>/leftCtrl");
             dashAction.AddBinding("<Keyboard>/rightCtrl");
             dashAction.AddBinding("<Gamepad>/leftTrigger");
+            dashAction.performed += ctx => NoteInputDevice(ctx.control.device);
+            dashAction.canceled += ctx => NoteInputDevice(ctx.control.device);
         }
 
         void Update()
@@ -412,9 +459,29 @@ namespace ChaosDraftParty.Core
             // 素直な mouse 入力 (SmoothDamp や Rate Cap は不自然な「ゆっくり高感度・早く遅い」を生むため不採用)
             if (orbital == null) return;
             var lookDelta = lookAction.ReadValue<Vector2>();
+            bool gamepadLook = lastLookWasGamepad;
+            float lookDeadzoneSqr = gamepadLook
+                ? gamepadLookDeadzone * gamepadLookDeadzone
+                : lookInputDeadzone;
+            bool hasManualLook = lookDelta.sqrMagnitude > lookDeadzoneSqr;
+            if (!hasManualLook)
+            {
+                lookDelta = Vector2.zero;
+            }
+            else
+            {
+                lastManualLookTime = Time.time;
+            }
+
+            float yawStep = gamepadLook
+                ? lookDelta.x * gamepadYawSpeed * Time.deltaTime
+                : lookDelta.x * yawSensitivity;
+            float pitchStep = gamepadLook
+                ? lookDelta.y * gamepadPitchSpeed * Time.deltaTime
+                : lookDelta.y * pitchSensitivity;
 
             // Horizontal: Wrap=true 時は wraparound、code 直書きは clamp 不要
-            orbital.HorizontalAxis.Value += lookDelta.x * yawSensitivity;
+            orbital.HorizontalAxis.Value += yawStep;
 
             // Vertical: 動的 minPitch で hard clamp。
             // camera.Y = target.Y + radius * sin(pitch) で、camera.Y >= cameraMinWorldY を保つ角度を逆算。
@@ -428,8 +495,13 @@ namespace ChaosDraftParty.Core
             float dynamicMinPitch = Mathf.Asin(sinMin) * Mathf.Rad2Deg;
             // Inspector Range.x も尊重 (より厳しい方を採用 = 大きい方の負値)
             float clampMin = Mathf.Max(v.Range.x, dynamicMinPitch);
-            v.Value = Mathf.Clamp(v.Value - lookDelta.y * pitchSensitivity, clampMin, v.Range.y);
+            v.Value = Mathf.Clamp(v.Value - pitchStep, clampMin, v.Range.y);
             orbital.VerticalAxis = v;
+
+            if (!hasManualLook)
+            {
+                ApplyGamepadCameraAssist();
+            }
         }
 
         void ApplyMovement()
@@ -578,6 +650,36 @@ namespace ChaosDraftParty.Core
             }
 
             return horizontalAccel;
+        }
+
+        void NoteInputDevice(InputDevice device)
+        {
+            if (device == null) return;
+            lastInputWasGamepad = device is Gamepad;
+            if (device is Mouse || device is Keyboard)
+            {
+                lastLookWasGamepad = false;
+            }
+        }
+
+        void ApplyGamepadCameraAssist()
+        {
+            if (!gamepadCameraAssist) return;
+            if (!lastInputWasGamepad) return;
+            if (Time.time - lastManualLookTime < gamepadCameraAssistDelay) return;
+            if (cameraTransform == null && Camera.main != null)
+                cameraTransform = Camera.main.transform;
+            if (cameraTransform == null) return;
+            if (moveAction == null || moveAction.ReadValue<Vector2>().magnitude < gamepadCameraAssistMoveThreshold) return;
+            if (horizontalVel.sqrMagnitude < 0.01f) return;
+
+            Vector3 camForward = Vector3.ProjectOnPlane(cameraTransform.forward, Vector3.up);
+            Vector3 moveForward = Vector3.ProjectOnPlane(horizontalVel, Vector3.up);
+            if (camForward.sqrMagnitude < 0.001f || moveForward.sqrMagnitude < 0.001f) return;
+
+            float yawError = Vector3.SignedAngle(camForward.normalized, moveForward.normalized, Vector3.up);
+            float maxStep = gamepadCameraAssistYawSpeed * Time.deltaTime;
+            orbital.HorizontalAxis.Value += Mathf.Clamp(yawError, -maxStep, maxStep);
         }
 
         /// <summary>
