@@ -166,4 +166,5 @@ start "" "C:\Program Files\Unity Hub\Unity Hub.exe"
 
 ## ライセンス
 
-非公開・卒業制作用途。外部アセット（Synty Studios / Mixamo / Meshy AI）はそれぞれのライセンスに従う。
+本人作成コードは **MIT License**（[LICENSE](LICENSE) 参照）。  
+外部アセット（Synty Studios / Mixamo / Meshy AI / Asset Store 各種）はそれぞれのライセンスに従う。再配布せず、購入またはダウンロード元から各自取得すること。
