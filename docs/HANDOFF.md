@@ -19,7 +19,7 @@
 | プロジェクト | ChaosDraftParty（卒業制作、東海大学 情報理工学部 小坂研究室） |
 | 期間 | 2026-04 〜 2026-09 / M1–M6 |
 | 現フェーズ | **M1（2026-04）** |
-| リポジトリ | **`Shimagon/ChaosDraftParty`**（GitHub private、HTTPS origin） |
+| リポジトリ | **`Shimagon/ChaosDraftParty`**（GitHub public、HTTPS origin） |
 | ローカルパス | macOS: `~/Documents/Dev/ChaosDraftParty/`（旧パス `~/Documents/課題/やりたいこと/卒業制作/` は symlink）／ Windows: `C:\Dev\ChaosDraftParty\` 推奨（ASCII 英字、日本語・空白厳禁） |
 | Unity | **6.4.3f1**（Apple Silicon / Windows x64 両対応） |
 | 対応 OS | macOS（MacBook）＋ Windows（デスクトップ PC）両開発 |
@@ -81,15 +81,15 @@ Unity 6.0 テンプレの `com.unity.inputsystem@1.12.0` は Unity 6.4 では `B
 ## 4. 登録済みツール / リソース
 
 ### GitHub
-- Repo: https://github.com/Shimagon/ChaosDraftParty (private)
+- Repo: https://github.com/Shimagon/ChaosDraftParty (public)
 - HTTPS origin 経由で push、gh CLI は `Shimagon` アカウント認証済み（scope: `gist`, `read:org`, `repo`）
 
 ### NotebookLM 開発支援ノートブック
 - 名前: `ChaosDraftParty - 開発支援`
-- ID: `528f0394-38e2-4650-b3ed-8660b5c8cc08`
-- URL: https://notebooklm.google.com/notebook/528f0394-38e2-4650-b3ed-8660b5c8cc08
+- ID: `[redacted — 個人 NotebookLM]`
+- URL: `[redacted]`
 - 登録済ソース: CLAUDE.md / Spec v9.5.docx / TechSpec v1.docx
-- 使い方: `notebooklm ask "..." --notebook 528f0394-38e2-4650-b3ed-8660b5c8cc08`
+- 使い方: `notebooklm ask "..." --notebook <YOUR_NOTEBOOK_ID>`
 - 追加予定ソース: Unity 6 LTS 公式 docs、NGO 2.x docs、Unity Relay+Lobby Boss Room、Synty/Mixamo リターゲット
 
 ### Unity MCP Bridge
