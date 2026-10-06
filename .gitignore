@@ -13,6 +13,12 @@ tools/**/__pycache__/
 [Mm]emoryCaptures/
 [Rr]ecordings/
 
+# Unreal generated
+[Uu]nreal/**/[Bb]inaries/
+[Uu]nreal/**/[Dd]erived[Dd]ata[Cc]ache/
+[Uu]nreal/**/[Ii]ntermediate/
+[Uu]nreal/**/[Ss]aved/
+
 # Asset / Asset meta-data from plugins
 [Aa]ssets/AssetStoreTools*
 [Aa]ssets/Plugins/Editor/JetBrains*

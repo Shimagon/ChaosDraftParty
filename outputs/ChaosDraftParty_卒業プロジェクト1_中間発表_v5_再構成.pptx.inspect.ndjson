@@ -1,0 +1,471 @@
+{"kind":"deck","id":"pr/kpuebo","name":"Deck"}
+{"kind":"layout","layoutId":"616156fb-9028-4d0a-992a-7df5439ec08b","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"ceafc282-41ab-44b3-8f02-5e2a2d0581aa","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/hu703s","slide":1,"title":"卒業プロジェクト1 / 中間発表","textShapes":6}
+{"kind":"shape","id":"sh/7u5cb2xk","slide":1,"name":"shape-0002","bbox":[0,0,770,720]}
+{"kind":"shape","id":"sh/6twb2xwz","slide":1,"name":"rule-0003","bbox":[0,0,20,720]}
+{"kind":"textbox","id":"sh/h07uhcvm","slide":1,"name":"text-0004","text":"卒業プロジェクト1 / 中間発表","textPreview":"卒業プロジェクト1 / 中間発表","textChars":16,"textLines":1,"bbox":[64,72,620,28]}
+{"kind":"textbox","id":"sh/gzyt8re1","slide":1,"name":"text-0005","text":"ChaosDraftParty","textPreview":"ChaosDraftParty","textChars":15,"textLines":1,"bbox":[64,126,650,86]}
+{"kind":"textbox","id":"sh/fy5cfmdg","slide":1,"name":"text-0006","text":"複数AIと進める\n2.5D対戦ゲームの個人制作","textPreview":"複数AIと進める | 2.5D対戦ゲームの個人制作","textChars":23,"textLines":2,"bbox":[68,238,610,126]}
+{"kind":"shape","id":"sh/uxwb6hwv","slide":1,"name":"rule-0007","bbox":[68,398,144,6]}
+{"kind":"textbox","id":"sh/p47u5wvi","slide":1,"name":"text-0008","text":"スキルを選ぶ → 走る → ぶつかる → 生き残る","textPreview":"スキルを選ぶ → 走る → ぶつかる → 生き残る","textChars":25,"textLines":1,"bbox":[68,430,600,38]}
+{"kind":"textbox","id":"sh/43ydcrex","slide":1,"name":"text-0009","text":"島田 泰成  /  東海大学 情報メディア学科 小坂研究室","textPreview":"島田 泰成  /  東海大学 情報メディア学科 小坂研究室","textChars":29,"textLines":1,"bbox":[68,614,640,26]}
+{"kind":"textbox","id":"sh/udsri58j","slide":1,"name":"text-0010","text":"2026.07.14","textPreview":"2026.07.14","textChars":10,"textLines":1,"bbox":[68,648,180,22]}
+{"kind":"image","id":"im/5k3i58bu","slide":1,"name":"","geometry":"rect","alt":"EGGYBOT character","bbox":[742,0,538,720]}
+{"kind":"notes","id":"nt/hu703s","slide":1,"text":""}
+{"kind":"slide","id":"sl/v32y85","slide":2,"title":"研究テーマ","textShapes":8}
+{"kind":"shape","id":"sh/9g7mxkvi","slide":2,"name":"rule-0011","bbox":[56,42,12,96]}
+{"kind":"textbox","id":"sh/mtg325wr","slide":2,"name":"text-0012","text":"研究テーマ","textPreview":"研究テーマ","textChars":5,"textLines":1,"bbox":[88,38,1128,112]}
+{"kind":"shape","id":"sh/7up4vadc","slide":2,"name":"rule-0013","bbox":[56,679,1168,1]}
+{"kind":"textbox","id":"sh/wjyl8fe9","slide":2,"name":"text-0014","text":"ChaosDraftParty / 島田 泰成","textPreview":"ChaosDraftParty / 島田 泰成","textChars":23,"textLines":1,"bbox":[56,689,460,18]}
+{"kind":"textbox","id":"sh/hk7m1kve","slide":2,"name":"text-0015","text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1176,687,48,20]}
+{"kind":"textbox","id":"sh/uhg36pw3","slide":2,"name":"text-0016","text":"複数のAIを役割分担させ、\n一人で2.5D対戦ゲームを完成させる。","textPreview":"複数のAIを役割分担させ、 | 一人で2.5D対戦ゲームを完成させる。","textChars":33,"textLines":2,"bbox":[64,168,1120,136]}
+{"kind":"shape","id":"sh/vip4zudo","slide":2,"name":"rule-0017","bbox":[64,338,1150,2]}
+{"kind":"shape","id":"sh/4nilcze5","slide":2,"name":"rule-0018","bbox":[64,382,12,104]}
+{"kind":"textbox","id":"sh/5orm54vq","slide":2,"name":"text-0019","text":"ゲームの問い","textPreview":"ゲームの問い","textChars":6,"textLines":1,"bbox":[96,380,260,34]}
+{"kind":"textbox","id":"sh/p0jahsru","slide":2,"name":"text-0020","text":"横から見ただけで目的が伝わり、\n自然にプレイヤー同士がぶつかるか。","textPreview":"横から見ただけで目的が伝わり、 | 自然にプレイヤー同士がぶつかるか。","textChars":33,"textLines":2,"bbox":[96,420,1040,72]}
+{"kind":"shape","id":"sh/4za98na9","slide":2,"name":"rule-0021","bbox":[64,524,12,104]}
+{"kind":"textbox","id":"sh/3e1sfi94","slide":2,"name":"text-0022","text":"制作方法の問い","textPreview":"制作方法の問い","textChars":7,"textLines":1,"bbox":[96,522,300,34]}
+{"kind":"textbox","id":"sh/idsr6dsj","slide":2,"name":"text-0023","text":"AIに「作る・確かめる・記録する」を分けると、\n一人開発の手戻りを減らせるか。","textPreview":"AIに「作る・確かめる・記録する」を分けると、 | 一人開発の手戻りを減らせるか。","textChars":39,"textLines":2,"bbox":[96,562,1040,72]}
+{"kind":"notes","id":"nt/v32y85","slide":2,"text":""}
+{"kind":"slide","id":"sl/eo8rea","slide":3,"title":"どんなゲームか","textShapes":11}
+{"kind":"shape","id":"sh/29gzudkr","slide":3,"name":"rule-0024","bbox":[56,42,12,96]}
+{"kind":"textbox","id":"sh/pw7i5s32","slide":3,"name":"text-0025","text":"どんなゲームか","textPreview":"どんなゲームか","textChars":7,"textLines":1,"bbox":[88,38,1128,112]}
+{"kind":"shape","id":"sh/ovyhwn2h","slide":3,"name":"rule-0026","bbox":[56,679,1168,1]}
+{"kind":"textbox","id":"sh/by9072l8","slide":3,"name":"text-0027","text":"ChaosDraftParty / 島田 泰成","textPreview":"ChaosDraftParty / 島田 泰成","textChars":23,"textLines":1,"bbox":[56,689,460,18]}
+{"kind":"textbox","id":"sh/ax0zyxkn","slide":3,"name":"text-0028","text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1176,687,48,20]}
+{"kind":"shape","id":"sh/czih0n2t","slide":3,"name":"image-border-0030","bbox":[56,170,724,425]}
+{"kind":"textbox","id":"sh/z290b2l4","slide":3,"name":"text-0031","text":"Unity版「縮む島」試作 / 2026年6月","textPreview":"Unity版「縮む島」試作 / 2026年6月","textChars":23,"textLines":1,"bbox":[56,604,724,34]}
+{"kind":"textbox","id":"sh/y10z2xkz","slide":3,"name":"text-0032","text":"スキルを選んで、\n短いミニゲームで\n生き残る。","textPreview":"スキルを選んで、 | 短いミニゲームで | 生き残る。","textChars":23,"textLines":3,"bbox":[824,172,360,132]}
+{"kind":"shape","id":"sh/s32xwb6h","slide":3,"name":"rule-0033","bbox":[824,336,360,1]}
+{"kind":"textbox","id":"sh/t4ve5g72","slide":3,"name":"text-0034","text":"2〜4人","textPreview":"2〜4人","textChars":4,"textLines":1,"bbox":[824,348,132,28]}
+{"kind":"textbox","id":"sh/61kfu1ob","slide":3,"name":"text-0035","text":"友達とオンライン対戦","textPreview":"友達とオンライン対戦","textChars":10,"textLines":1,"bbox":[964,346,220,48]}
+{"kind":"shape","id":"sh/r2tw36pw","slide":3,"name":"rule-0036","bbox":[824,420,360,1]}
+{"kind":"textbox","id":"sh/g7mx0v6t","slide":3,"name":"text-0037","text":"約8分","textPreview":"約8分","textChars":3,"textLines":1,"bbox":[824,432,132,28]}
+{"kind":"textbox","id":"sh/18vy9g7e","slide":3,"name":"text-0038","text":"1試合を短く遊べる","textPreview":"1試合を短く遊べる","textChars":9,"textLines":1,"bbox":[964,430,220,48]}
+{"kind":"shape","id":"sh/e54fylon","slide":3,"name":"rule-0039","bbox":[824,504,360,1]}
+{"kind":"textbox","id":"sh/f6dw7qp8","slide":3,"name":"text-0040","text":"毎ラウンド","textPreview":"毎ラウンド","textChars":5,"textLines":1,"bbox":[824,516,132,28]}
+{"kind":"textbox","id":"sh/ovmx4v6p","slide":3,"name":"text-0041","text":"次に使うスキルを1つ選ぶ","textPreview":"次に使うスキルを1つ選ぶ","textChars":12,"textLines":1,"bbox":[964,514,220,48]}
+{"kind":"image","id":"im/w76t0ne1","slide":3,"name":"","geometry":"rect","alt":"Unity prototype of Shrinking Island with multiple players","bbox":[56,170,724,425]}
+{"kind":"notes","id":"nt/eo8rea","slide":3,"text":""}
+{"kind":"slide","id":"sl/hs9sxa","slide":4,"title":"遊び方は5つ","textShapes":23}
+{"kind":"shape","id":"sh/wn2h0bml","slide":4,"name":"rule-0042","bbox":[56,42,12,96]}
+{"kind":"textbox","id":"sh/vmtg76l0","slide":4,"name":"text-0043","text":"遊び方は5つ","textPreview":"遊び方は5つ","textChars":6,"textLines":1,"bbox":[88,38,1128,112]}
+{"kind":"shape","id":"sh/ulkzy14f","slide":4,"name":"rule-0044","bbox":[56,679,1168,1]}
+{"kind":"textbox","id":"sh/5svydg32","slide":4,"name":"text-0045","text":"ChaosDraftParty / 島田 泰成","textPreview":"ChaosDraftParty / 島田 泰成","textChars":23,"textLines":1,"bbox":[56,689,460,18]}
+{"kind":"textbox","id":"sh/4r2h4bmh","slide":4,"name":"text-0046","text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1176,687,48,20]}
+{"kind":"shape","id":"sh/jqtgb6lw","slide":4,"name":"shape-0047","bbox":[58,202,54,54]}
+{"kind":"textbox","id":"sh/ipkz214b","slide":4,"name":"text-0048","text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[58,202,54,54]}
+{"kind":"textbox","id":"sh/tgvyh03e","slide":4,"name":"text-0049","text":"選ぶ","textPreview":"選ぶ","textChars":2,"textLines":1,"bbox":[58,282,178,44]}
+{"kind":"textbox","id":"sh/svmh8vmt","slide":4,"name":"text-0050","text":"3つの候補から\nスキルを1つ","textPreview":"3つの候補から | スキルを1つ","textChars":14,"textLines":2,"bbox":[58,342,178,82]}
+{"kind":"textbox","id":"sh/2lg329gv","slide":4,"name":"text-0051","text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[242,275,42,42]}
+{"kind":"shape","id":"sh/nmpkvexg","slide":4,"name":"shape-0052","bbox":[296,202,54,54]}
+{"kind":"textbox","id":"sh/onyl4je1","slide":4,"name":"text-0053","text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[296,202,54,54]}
+{"kind":"textbox","id":"sh/pormxofm","slide":4,"name":"text-0054","text":"走る","textPreview":"走る","textChars":2,"textLines":1,"bbox":[296,282,178,44]}
+{"kind":"textbox","id":"sh/ap0369w7","slide":4,"name":"text-0055","text":"横移動・ジャンプで\n安全地帯へ","textPreview":"横移動・ジャンプで | 安全地帯へ","textChars":15,"textLines":2,"bbox":[296,342,178,82]}
+{"kind":"textbox","id":"sh/bq94zexc","slide":4,"name":"text-0056","text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[480,275,42,42]}
+{"kind":"shape","id":"sh/cril8jex","slide":4,"name":"shape-0057","bbox":[534,202,54,54]}
+{"kind":"textbox","id":"sh/xsrm1ofi","slide":4,"name":"text-0058","text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[534,202,54,54]}
+{"kind":"textbox","id":"sh/qtw3upgn","slide":4,"name":"text-0059","text":"消える","textPreview":"消える","textChars":3,"textLines":1,"bbox":[534,282,178,44]}
+{"kind":"textbox","id":"sh/ru5k3ux8","slide":4,"name":"text-0060","text":"警告の後に\n足場が落ちる","textPreview":"警告の後に | 足場が落ちる","textChars":12,"textLines":2,"bbox":[534,342,178,82]}
+{"kind":"textbox","id":"sh/vyl0vqd0","slide":4,"name":"text-0061","text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[718,275,42,42]}
+{"kind":"shape","id":"sh/uxcz2lwf","slide":4,"name":"shape-0062","bbox":[772,202,54,54]}
+{"kind":"textbox","id":"sh/h03ix0v6","slide":4,"name":"text-0063","text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[772,202,54,54]}
+{"kind":"textbox","id":"sh/gzuh4vel","slide":4,"name":"text-0064","text":"ぶつかる","textPreview":"ぶつかる","textChars":4,"textLines":1,"bbox":[772,282,178,44]}
+{"kind":"textbox","id":"sh/7a10r6d4","slide":4,"name":"text-0065","text":"押す・避ける・\nスキルで返す","textPreview":"押す・避ける・ | スキルで返す","textChars":14,"textLines":2,"bbox":[772,342,178,82]}
+{"kind":"textbox","id":"sh/69szy1wj","slide":4,"name":"text-0066","text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[956,275,42,42]}
+{"kind":"shape","id":"sh/twjitgvu","slide":4,"name":"shape-0067","bbox":[1010,202,54,54]}
+{"kind":"textbox","id":"sh/8bah0bep","slide":4,"name":"text-0068","text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[1010,202,54,54]}
+{"kind":"textbox","id":"sh/r6503ad8","slide":4,"name":"text-0069","text":"生き残る","textPreview":"生き残る","textChars":4,"textLines":1,"bbox":[1010,282,178,44]}
+{"kind":"textbox","id":"sh/q5wja5cn","slide":4,"name":"text-0070","text":"最後まで残れば\nポイント","textPreview":"最後まで残れば | ポイント","textChars":12,"textLines":2,"bbox":[1010,342,178,82]}
+{"kind":"shape","id":"sh/ozm583qt","slide":4,"name":"shape-0071","bbox":[56,500,1168,104]}
+{"kind":"textbox","id":"sh/p0f6h87e","slide":4,"name":"text-0072","text":"スキル選択と操作の上手さの両方が、生存率に影響する。","textPreview":"スキル選択と操作の上手さの両方が、生存率に影響する。","textChars":26,"textLines":1,"bbox":[88,524,1104,56]}
+{"kind":"notes","id":"nt/hs9sxa","slide":4,"text":""}
+{"kind":"slide","id":"sl/pk0lkk","slide":5,"title":"例: 縮む島","textShapes":11}
+{"kind":"shape","id":"sh/ony10ze5","slide":5,"name":"shape-0074","bbox":[0,0,492,720]}
+{"kind":"textbox","id":"sh/po72t4fq","slide":5,"name":"text-0075","text":"例: 縮む島","textPreview":"例: 縮む島","textChars":6,"textLines":1,"bbox":[56,64,360,60]}
+{"kind":"textbox","id":"sh/exwjupw3","slide":5,"name":"text-0076","text":"床が順番に消える。\n安全な中央へ逃げるほど、\n他のプレイヤーと会う。","textPreview":"床が順番に消える。 | 安全な中央へ逃げるほど、 | 他のプレイヤーと会う。","textChars":34,"textLines":3,"bbox":[56,152,376,118]}
+{"kind":"shape","id":"sh/fy5knuxo","slide":5,"name":"shape-0077","bbox":[56,324,20,20]}
+{"kind":"textbox","id":"sh/0ze1wze9","slide":5,"name":"text-0078","text":"オレンジ","textPreview":"オレンジ","textChars":4,"textLines":1,"bbox":[92,318,92,30]}
+{"kind":"textbox","id":"sh/1kn2pkfu","slide":5,"name":"text-0079","text":"まもなく消える床","textPreview":"まもなく消える床","textChars":8,"textLines":1,"bbox":[184,318,244,42]}
+{"kind":"shape","id":"sh/qtcjq5w7","slide":5,"name":"shape-0080","bbox":[56,398,20,20]}
+{"kind":"textbox","id":"sh/ru50jaxs","slide":5,"name":"text-0081","text":"緑","textPreview":"緑","textChars":1,"textLines":1,"bbox":[92,392,92,30]}
+{"kind":"textbox","id":"sh/3yt4fyho","slide":5,"name":"text-0082","text":"今は安全な床","textPreview":"今は安全な床","textChars":6,"textLines":1,"bbox":[184,392,244,42]}
+{"kind":"shape","id":"sh/2xk3mt03","slide":5,"name":"shape-0083","bbox":[56,472,20,20]}
+{"kind":"textbox","id":"sh/p0bmh8zu","slide":5,"name":"text-0084","text":"水色","textPreview":"水色","textChars":2,"textLines":1,"bbox":[92,466,92,30]}
+{"kind":"textbox","id":"sh/4z2lo3i9","slide":5,"name":"text-0085","text":"ショートカットや復帰地点","textPreview":"ショートカットや復帰地点","textChars":12,"textLines":1,"bbox":[184,466,244,42]}
+{"kind":"shape","id":"sh/rmd4jihk","slide":5,"name":"rule-0086","bbox":[56,554,340,2]}
+{"kind":"textbox","id":"sh/q1k3qd0z","slide":5,"name":"text-0087","text":"安全に逃げるほど、\n他のプレイヤーと会う。","textPreview":"安全に逃げるほど、 | 他のプレイヤーと会う。","textChars":21,"textLines":2,"bbox":[56,574,356,70]}
+{"kind":"shape","id":"sh/dovml8zq","slide":5,"name":"rule-0088","bbox":[56,679,1168,1]}
+{"kind":"textbox","id":"sh/cnmlsni5","slide":5,"name":"text-0089","text":"ChaosDraftParty / 島田 泰成","textPreview":"ChaosDraftParty / 島田 泰成","textChars":23,"textLines":1,"bbox":[56,689,460,18]}
+{"kind":"textbox","id":"sh/7q9k7ehg","slide":5,"name":"text-0090","text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1176,687,48,20]}
+{"kind":"image","id":"im/6xcv2pc3","slide":5,"name":"","geometry":"rect","alt":"Shrinking Island warning phase","bbox":[410,0,870,720]}
+{"kind":"notes","id":"nt/pk0lkk","slide":5,"text":""}
+{"kind":"slide","id":"sl/03a7ik","slide":6,"title":"プレイテストで見えた問題","textShapes":13}
+{"kind":"shape","id":"sh/lojmtsjq","slide":6,"name":"rule-0091","bbox":[56,42,12,92]}
+{"kind":"textbox","id":"sh/y1s3ydkf","slide":6,"name":"text-0092","text":"プレイテストで見えた問題","textPreview":"プレイテストで見えた問題","textChars":12,"textLines":1,"bbox":[88,38,1128,108]}
+{"kind":"shape","id":"sh/z214ri1k","slide":6,"name":"rule-0093","bbox":[56,679,1168,1]}
+{"kind":"textbox","id":"sh/8ra54n2h","slide":6,"name":"text-0094","text":"ChaosDraftParty / 島田 泰成","textPreview":"ChaosDraftParty / 島田 泰成","textChars":23,"textLines":1,"bbox":[56,689,460,18]}
+{"kind":"textbox","id":"sh/9s3mxsj2","slide":6,"name":"text-0095","text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[1176,687,48,20]}
+{"kind":"textbox","id":"sh/mpsn2xkb","slide":6,"name":"text-0096","text":"「これ、","textPreview":"「これ、","textChars":4,"textLines":1,"bbox":[64,164,280,64]}
+{"kind":"textbox","id":"sh/7q14vi1w","slide":6,"name":"text-0097","text":"何のゲーム？","textPreview":"何のゲーム？","textChars":6,"textLines":1,"bbox":[316,164,390,64]}
+{"kind":"textbox","id":"sh/ovqls32x","slide":6,"name":"text-0098","text":"」","textPreview":"」","textChars":1,"textLines":1,"bbox":[688,164,42,64]}
+{"kind":"textbox","id":"sh/pwzml8ji","slide":6,"name":"text-0099","text":"2026年6月の中間発表・プレイテスト","textPreview":"2026年6月の中間発表・プレイテスト","textChars":19,"textLines":1,"bbox":[66,240,520,26]}
+{"kind":"shape","id":"sh/9ofahcrq","slide":6,"name":"rule-0100","bbox":[632,304,2,294]}
+{"kind":"textbox","id":"sh/on69o7q5","slide":6,"name":"text-0101","text":"3D TPSでは","textPreview":"3D TPSでは","textChars":8,"textLines":1,"bbox":[70,310,300,40]}
+{"kind":"textbox","id":"sh/nmxsf29k","slide":6,"name":"text-0102","text":"プレイヤーが広がり、\nカメラ外の出来事が見えにくい。","textPreview":"プレイヤーが広がり、 | カメラ外の出来事が見えにくい。","textChars":26,"textLines":2,"bbox":[70,356,440,62]}
+{"kind":"shape","id":"sh/mlormx8z","slide":6,"name":"shape-0103","bbox":[92,470,180,30]}
+{"kind":"shape","id":"sh/xczalcrm","slide":6,"name":"shape-0104","bbox":[350,440,180,30]}
+{"kind":"shape","id":"sh/wrq9s7q1","slide":6,"name":"shape-0105","bbox":[118.72,420,23.52,23.52]}
+{"kind":"shape","id":"sh/bqhsj29g","slide":6,"name":"shape-0106","bbox":[112,439.04,36.96,29.12]}
+{"kind":"shape","id":"sh/ap8rqx8b","slide":6,"name":"shape-0107","bbox":[444.72,388,23.52,23.52]}
+{"kind":"shape","id":"sh/5gzapwry","slide":6,"name":"shape-0108","bbox":[438,407.04,36.96,29.12]}
+{"kind":"textbox","id":"sh/kfq9wrqd","slide":6,"name":"text-0109","text":"離れる","textPreview":"離れる","textChars":3,"textLines":1,"bbox":[240,528,128,28]}
+{"kind":"textbox","id":"sh/4jytsvy9","slide":6,"name":"text-0110","text":"2.5Dでは","textPreview":"2.5Dでは","textChars":6,"textLines":1,"bbox":[682,310,300,40]}
+{"kind":"textbox","id":"sh/5k7ul0fu","slide":6,"name":"text-0111","text":"全員が同じ画面に入り、\n舞台の形で中央へ集められる。","textPreview":"全員が同じ画面に入り、 | 舞台の形で中央へ集められる。","textChars":26,"textLines":2,"bbox":[682,356,460,62]}
+{"kind":"shape","id":"sh/ixgbqlgj","slide":6,"name":"shape-0112","bbox":[714,490,430,34]}
+{"kind":"shape","id":"sh/3ypcjqx4","slide":6,"name":"shape-0113","bbox":[787.68,422,26.88,26.88]}
+{"kind":"shape","id":"sh/snitwfyl","slide":6,"name":"shape-0114","bbox":[780,443.76,42.24,33.28]}
+{"kind":"shape","id":"sh/dorup0f6","slide":6,"name":"shape-0115","bbox":[861.68,422,26.88,26.88]}
+{"kind":"shape","id":"sh/ql0bu5gf","slide":6,"name":"shape-0116","bbox":[854,443.76,42.24,33.28]}
+{"kind":"shape","id":"sh/rm9cnax0","slide":6,"name":"shape-0117","bbox":[935.68,422,26.88,26.88]}
+{"kind":"shape","id":"sh/8retkbyh","slide":6,"name":"shape-0118","bbox":[928,443.76,42.24,33.28]}
+{"kind":"shape","id":"sh/tsnudgfm","slide":6,"name":"shape-0119","bbox":[1009.68,422,26.88,26.88]}
+{"kind":"shape","id":"sh/byxofilg","slide":6,"name":"shape-0120","bbox":[1002,443.76,42.24,33.28]}
+{"kind":"textbox","id":"sh/axon6d4v","slide":6,"name":"text-0121","text":"集まる → ぶつかる","textPreview":"集まる → ぶつかる","textChars":10,"textLines":1,"bbox":[784,548,300,28]}
+{"kind":"notes","id":"nt/03a7ik","slide":6,"text":""}
+{"kind":"slide","id":"sl/8sb7ih","slide":7,"title":"2.5Dとは？","textShapes":12}
+{"kind":"shape","id":"sh/f29s3upc","slide":7,"name":"rule-0122","bbox":[56,42,12,96]}
+{"kind":"textbox","id":"sh/03i9wzqx","slide":7,"name":"text-0123","text":"2.5Dとは？","textPreview":"2.5Dとは？","textChars":7,"textLines":1,"bbox":[88,38,1128,112]}
+{"kind":"shape","id":"sh/14ba547i","slide":7,"name":"rule-0124","bbox":[56,679,1168,1]}
+{"kind":"textbox","id":"sh/qd0rqp8v","slide":7,"name":"text-0125","text":"ChaosDraftParty / 島田 泰成","textPreview":"ChaosDraftParty / 島田 泰成","textChars":23,"textLines":1,"bbox":[56,689,460,18]}
+{"kind":"textbox","id":"sh/re9szupg","slide":7,"name":"text-0126","text":"07","textPreview":"07","textChars":2,"textLines":1,"bbox":[1176,687,48,20]}
+{"kind":"textbox","id":"sh/sfi9szq1","slide":7,"name":"text-0127","text":"見た目は3D。移動は左右と上下。","textPreview":"見た目は3D。移動は左右と上下。","textChars":16,"textLines":1,"bbox":[64,164,1120,58]}
+{"kind":"shape","id":"sh/d0ra1476","slide":7,"name":"shape-0128","bbox":[64,250,720,330]}
+{"kind":"textbox","id":"sh/a9kb2t8z","slide":7,"name":"text-0129","text":"共有カメラの範囲","textPreview":"共有カメラの範囲","textChars":8,"textLines":1,"bbox":[84,268,250,28]}
+{"kind":"shape","id":"sh/batsbepk","slide":7,"name":"shape-0130","bbox":[112,492,624,40]}
+{"kind":"shape","id":"sh/nelgza58","slide":7,"name":"shape-0131","bbox":[318,430,212,64]}
+{"kind":"shape","id":"sh/mtsz65on","slide":7,"name":"shape-0132","bbox":[166.64,414,30.24,30.24]}
+{"kind":"shape","id":"sh/9g3y1kne","slide":7,"name":"shape-0133","bbox":[158,438.48,47.52,37.44]}
+{"kind":"shape","id":"sh/ofuh8f6t","slide":7,"name":"shape-0134","bbox":[312.64,356,30.24,30.24]}
+{"kind":"shape","id":"sh/bil03u5k","slide":7,"name":"shape-0135","bbox":[304,380.48,47.52,37.44]}
+{"kind":"shape","id":"sh/ahczapoz","slide":7,"name":"shape-0136","bbox":[482.64,356,30.24,30.24]}
+{"kind":"shape","id":"sh/xk3i54na","slide":7,"name":"shape-0137","bbox":[474,380.48,47.52,37.44]}
+{"kind":"shape","id":"sh/wjuhcz6p","slide":7,"name":"shape-0138","bbox":[638.64,414,30.24,30.24]}
+{"kind":"shape","id":"sh/jm507u5g","slide":7,"name":"shape-0139","bbox":[630,438.48,47.52,37.44]}
+{"kind":"textbox","id":"sh/ylczepov","slide":7,"name":"text-0140","text":"左右の線上で戦う","textPreview":"左右の線上で戦う","textChars":8,"textLines":1,"bbox":[250,548,350,26]}
+{"kind":"shape","id":"sh/ut0bmxcf","slide":7,"name":"rule-0141","bbox":[842,276,12,82]}
+{"kind":"textbox","id":"sh/fu9sv2t0","slide":7,"name":"text-0142","text":"全員が見える","textPreview":"全員が見える","textChars":6,"textLines":1,"bbox":[880,276,300,34]}
+{"kind":"textbox","id":"sh/gfito7ul","slide":7,"name":"text-0143","text":"誰がどこにいるか一目で分かる","textPreview":"誰がどこにいるか一目で分かる","textChars":14,"textLines":1,"bbox":[880,318,300,52]}
+{"kind":"shape","id":"sh/hgraxsb6","slide":7,"name":"rule-0144","bbox":[842,384,12,82]}
+{"kind":"textbox","id":"sh/6pgbidcj","slide":7,"name":"text-0145","text":"出会いやすい","textPreview":"出会いやすい","textChars":6,"textLines":1,"bbox":[880,384,300,34]}
+{"kind":"textbox","id":"sh/7qpsrito","slide":7,"name":"text-0146","text":"安全地帯と通路を同じ線上に置ける","textPreview":"安全地帯と通路を同じ線上に置ける","textChars":16,"textLines":1,"bbox":[880,426,300,52]}
+{"kind":"shape","id":"sh/sritknu9","slide":7,"name":"rule-0147","bbox":[842,492,12,82]}
+{"kind":"textbox","id":"sh/tsratsbu","slide":7,"name":"text-0148","text":"操作を磨ける","textPreview":"操作を磨ける","textChars":6,"textLines":1,"bbox":[880,492,300,34]}
+{"kind":"textbox","id":"sh/qlkbuhcn","slide":7,"name":"text-0149","text":"移動の軸を絞り、ジャンプや衝突に集中","textPreview":"移動の軸を絞り、ジャンプや衝突に集中","textChars":18,"textLines":1,"bbox":[880,534,300,52]}
+{"kind":"notes","id":"nt/8sb7ih","slide":7,"text":""}
+{"kind":"slide","id":"sl/mfe175","slide":8,"title":"Unityで作ったものは、Unrealでも生かす","textShapes":10}
+{"kind":"shape","id":"sh/dgz65gva","slide":8,"name":"rule-0150","bbox":[56,42,12,96]}
+{"kind":"textbox","id":"sh/qd8nu1cj","slide":8,"name":"text-0151","text":"Unityで作ったものは、Unrealでも生かす","textPreview":"Unityで作ったものは、Unrealでも生かす","textChars":24,"textLines":1,"bbox":[88,38,1128,112]}
+{"kind":"shape","id":"sh/reho36d4","slide":8,"name":"rule-0152","bbox":[56,679,1168,1]}
+{"kind":"textbox","id":"sh/0jap0bul","slide":8,"name":"text-0153","text":"ChaosDraftParty / 島田 泰成","textPreview":"ChaosDraftParty / 島田 泰成","textChars":23,"textLines":1,"bbox":[56,689,460,18]}
+{"kind":"textbox","id":"sh/1kj69gb6","slide":8,"name":"text-0154","text":"08","textPreview":"08","textChars":2,"textLines":1,"bbox":[1176,687,48,20]}
+{"kind":"shape","id":"sh/fi1o76t0","slide":8,"name":"image-border-0156","bbox":[56,170,350,252]}
+{"kind":"shape","id":"sh/p8j6d0b2","slide":8,"name":"image-border-0158","bbox":[466,170,350,252]}
+{"kind":"shape","id":"sh/s76xwzm9","slide":8,"name":"image-border-0160","bbox":[876,170,348,252]}
+{"kind":"shape","id":"sh/r6xgnulo","slide":8,"name":"rule-0161","bbox":[56,452,350,6]}
+{"kind":"textbox","id":"sh/q5ofu943","slide":8,"name":"text-0162","text":"キャラクター","textPreview":"キャラクター","textChars":6,"textLines":1,"bbox":[56,476,350,38]}
+{"kind":"textbox","id":"sh/1wfyto3q","slide":8,"name":"text-0163","text":"EGGYBOTの形、動き、\nカメラ近くでの見え方","textPreview":"EGGYBOTの形、動き、 | カメラ近くでの見え方","textChars":24,"textLines":2,"bbox":[56,524,350,78]}
+{"kind":"shape","id":"sh/0v6x0jml","slide":8,"name":"rule-0164","bbox":[466,452,350,6]}
+{"kind":"textbox","id":"sh/zaxgrel0","slide":8,"name":"text-0165","text":"遊びの検証","textPreview":"遊びの検証","textChars":5,"textLines":1,"bbox":[466,476,350,38]}
+{"kind":"textbox","id":"sh/e9ofy94f","slide":8,"name":"text-0166","text":"広すぎると会えない、\n中央へ集めると事故が起きる","textPreview":"広すぎると会えない、 | 中央へ集めると事故が起きる","textChars":24,"textLines":2,"bbox":[466,524,350,78]}
+{"kind":"shape","id":"sh/h0vehk3m","slide":8,"name":"rule-0167","bbox":[876,452,350,6]}
+{"kind":"textbox","id":"sh/gzmxofm1","slide":8,"name":"text-0168","text":"Unrealへ移行","textPreview":"Unrealへ移行","textChars":9,"textLines":1,"bbox":[876,476,350,38]}
+{"kind":"textbox","id":"sh/8vqpkjy9","slide":8,"name":"text-0169","text":"ファイルを移すだけでなく、\n得た設計判断を作り直す","textPreview":"ファイルを移すだけでなく、 | 得た設計判断を作り直す","textChars":25,"textLines":2,"bbox":[876,524,350,78]}
+{"kind":"textbox","id":"sh/twj6tofu","slide":8,"name":"text-0170","text":"移行で引き継ぐのは、ゲームのデータと「なぜそう作ったか」の記録。","textPreview":"移行で引き継ぐのは、ゲームのデータと「なぜそう作ったか」の記録。","textChars":32,"textLines":1,"bbox":[56,626,1168,28]}
+{"kind":"image","id":"im/3mtwjmhs","slide":8,"name":"","geometry":"rect","alt":"EGGYBOT character prototype","bbox":[56,170,350,252]}
+{"kind":"image","id":"im/5s7u9cze","slide":8,"name":"","geometry":"rect","alt":"Unity stage prototype","bbox":[466,170,350,252]}
+{"kind":"image","id":"im/y5orqhgj","slide":8,"name":"","geometry":"rect","alt":"Unreal Engine 2.5D arena in editor","bbox":[876,170,348,252]}
+{"kind":"notes","id":"nt/mfe175","slide":8,"text":""}
+{"kind":"slide","id":"sl/crk0wp","slide":9,"title":"Unreal Engineでの現在地","textShapes":9}
+{"kind":"shape","id":"sh/p432lkvm","slide":9,"name":"rule-0171","bbox":[56,42,12,92]}
+{"kind":"textbox","id":"sh/21s3a5wb","slide":9,"name":"text-0172","text":"Unreal Engineでの現在地","textPreview":"Unreal Engineでの現在地","textChars":18,"textLines":1,"bbox":[88,38,1128,108]}
+{"kind":"shape","id":"sh/321kjaxg","slide":9,"name":"rule-0173","bbox":[56,679,1168,1]}
+{"kind":"textbox","id":"sh/c7ulgzed","slide":9,"name":"text-0174","text":"ChaosDraftParty / 島田 泰成","textPreview":"ChaosDraftParty / 島田 泰成","textChars":23,"textLines":1,"bbox":[56,689,460,18]}
+{"kind":"textbox","id":"sh/d83mpkvy","slide":9,"name":"text-0175","text":"09","textPreview":"09","textChars":2,"textLines":1,"bbox":[1176,687,48,20]}
+{"kind":"shape","id":"sh/r6lknuds","slide":9,"name":"image-border-0177","bbox":[56,170,760,430]}
+{"kind":"textbox","id":"sh/8bal4vet","slide":9,"name":"text-0178","text":"Unreal Engine 5.8 / 2.5D用仮アリーナ","textPreview":"Unreal Engine 5.8 / 2.5D用仮アリーナ","textChars":30,"textLines":1,"bbox":[56,610,760,34]}
+{"kind":"textbox","id":"sh/tcj2d0fe","slide":9,"name":"text-0179","text":"できた","textPreview":"できた","textChars":3,"textLines":1,"bbox":[858,174,280,34]}
+{"kind":"textbox","id":"sh/983uhsni","slide":9,"name":"text-0180","text":"・UnrealプロジェクトとAI操作の接続\n・EGGYBOTの取り込み\n・左右移動・ジャンプ・ダッシュの骨組み\n・2.5D用の仮ステージ","textPreview":"・UnrealプロジェクトとAI操作の接続 | ・EGGYBOTの取り込み | ・左右移動・ジャンプ・ダッシュの骨組み | ・2.5D用の仮ステージ","textChars":68,"textLines":4,"bbox":[858,220,338,138]}
+{"kind":"shape","id":"sh/87ad8nmd","slide":9,"name":"rule-0181","bbox":[858,384,338,1]}
+{"kind":"textbox","id":"sh/761cfi5s","slide":9,"name":"text-0182","text":"検証中","textPreview":"検証中","textChars":3,"textLines":1,"bbox":[858,410,280,34]}
+{"kind":"textbox","id":"sh/m5sv6x47","slide":9,"name":"text-0183","text":"・実際のキー入力での操作\n・全員を入れる共有カメラ\n・2人対戦とラウンド完走","textPreview":"・実際のキー入力での操作 | ・全員を入れる共有カメラ | ・2人対戦とラウンド完走","textChars":38,"textLines":3,"bbox":[858,456,338,96]}
+{"kind":"textbox","id":"sh/hw3elc3u","slide":9,"name":"text-0184","text":"「動くはず」ではなく、画面とログで確認して完了にする。","textPreview":"「動くはず」ではなく、画面とログで確認して完了にする。","textChars":27,"textLines":1,"bbox":[858,580,338,56]}
+{"kind":"image","id":"im/zi5sbi1k","slide":9,"name":"","geometry":"rect","alt":"Current Unreal Engine 2.5D arena","bbox":[56,170,760,430]}
+{"kind":"notes","id":"nt/crk0wp","slide":9,"text":""}
+{"kind":"slide","id":"sl/8952yj","slide":10,"title":"AIは「質問相手」ではなく、制作チームとして使う","textShapes":14}
+{"kind":"shape","id":"sh/b61wv61o","slide":10,"name":"rule-0185","bbox":[56,42,12,96]}
+{"kind":"textbox","id":"sh/w7axobi9","slide":10,"name":"text-0186","text":"AIは「質問相手」ではなく、制作チームとして使う","textPreview":"AIは「質問相手」ではなく、制作チームとして使う","textChars":24,"textLines":1,"bbox":[88,38,1128,112]}
+{"kind":"shape","id":"sh/x83exgju","slide":10,"name":"rule-0187","bbox":[56,679,1168,1]}
+{"kind":"textbox","id":"sh/mhsvi107","slide":10,"name":"text-0188","text":"ChaosDraftParty / 島田 泰成","textPreview":"ChaosDraftParty / 島田 泰成","textChars":23,"textLines":1,"bbox":[56,689,460,18]}
+{"kind":"textbox","id":"sh/ni1wr61s","slide":10,"name":"text-0189","text":"10","textPreview":"10","textChars":2,"textLines":1,"bbox":[1176,687,48,20]}
+{"kind":"textbox","id":"sh/ojadkbid","slide":10,"name":"text-0190","text":"エージェント = 担当を持って作業するAI","textPreview":"エージェント = 担当を持って作業するAI","textChars":21,"textLines":1,"bbox":[66,152,600,30]}
+{"kind":"shape","id":"sh/9kjetwji","slide":10,"name":"shape-0191","bbox":[66,224,250,250]}
+{"kind":"textbox","id":"sh/6dcful0b","slide":10,"name":"text-0192","text":"島田","textPreview":"島田","textChars":2,"textLines":1,"bbox":[96,282,190,58]}
+{"kind":"textbox","id":"sh/7elw3q1w","slide":10,"name":"text-0193","text":"目的を決める\nプレイする\n最終判断する","textPreview":"目的を決める | プレイする | 最終判断する","textChars":19,"textLines":3,"bbox":[96,352,190,88]}
+{"kind":"textbox","id":"sh/rmlgvit0","slide":10,"name":"text-0194","text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[336,324,70,42]}
+{"kind":"shape","id":"sh/qlcz2dsf","slide":10,"name":"rule-0195","bbox":[426,210,14,86]}
+{"kind":"textbox","id":"sh/donixsb6","slide":10,"name":"text-0196","text":"Claude","textPreview":"Claude","textChars":6,"textLines":1,"bbox":[468,210,240,36]}
+{"kind":"textbox","id":"sh/snuh4nal","slide":10,"name":"text-0197","text":"主担当: 実装案、コード、Editor操作","textPreview":"主担当: 実装案、コード、Editor操作","textChars":21,"textLines":1,"bbox":[468,252,692,44]}
+{"kind":"shape","id":"sh/fq50z2tc","slide":10,"name":"rule-0198","bbox":[426,314,760,1]}
+{"kind":"shape","id":"sh/epwz6xsr","slide":10,"name":"rule-0199","bbox":[426,326,14,86]}
+{"kind":"textbox","id":"sh/1sni1sb2","slide":10,"name":"text-0200","text":"Codex","textPreview":"Codex","textChars":5,"textLines":1,"bbox":[468,326,240,36]}
+{"kind":"textbox","id":"sh/0reh87ax","slide":10,"name":"text-0201","text":"別担当: 独立確認、記録整理、発表資料","textPreview":"別担当: 独立確認、記録整理、発表資料","textChars":19,"textLines":1,"bbox":[468,368,692,44]}
+{"kind":"shape","id":"sh/nu5032t8","slide":10,"name":"rule-0202","bbox":[426,430,760,1]}
+{"kind":"shape","id":"sh/2twzaxsn","slide":10,"name":"rule-0203","bbox":[426,442,14,86]}
+{"kind":"textbox","id":"sh/yp0j21cv","slide":10,"name":"text-0204","text":"外部サービス","textPreview":"外部サービス","textChars":6,"textLines":1,"bbox":[468,442,240,36]}
+{"kind":"textbox","id":"sh/zq9kv6dg","slide":10,"name":"text-0205","text":"API経由で3D小物生成、調査、アイデアのたたき台","textPreview":"API経由で3D小物生成、調査、アイデアのたたき台","textChars":25,"textLines":1,"bbox":[468,484,692,44]}
+{"kind":"shape","id":"sh/kbil4bu1","slide":10,"name":"shape-0206","bbox":[66,568,1120,72]}
+{"kind":"textbox","id":"sh/lcr2xgvm","slide":10,"name":"text-0207","text":"AIは提案と作業を担当する。面白いか、完了とするかは人が決める。","textPreview":"AIは提案と作業を担当する。面白いか、完了とするかは人が決める。","textChars":32,"textLines":1,"bbox":[92,584,1068,40]}
+{"kind":"notes","id":"nt/8952yj","slide":10,"text":""}
+{"kind":"slide","id":"sl/pu03wf","slide":11,"title":"制作の流れ 1 / まず「作る」","textShapes":23}
+{"kind":"shape","id":"sh/3u18fip4","slide":11,"name":"rule-0208","bbox":[56,42,12,96]}
+{"kind":"textbox","id":"sh/4va9on6p","slide":11,"name":"text-0209","text":"制作の流れ 1 / まず「作る」","textPreview":"制作の流れ 1 / まず「作る」","textChars":16,"textLines":1,"bbox":[88,38,1128,112]}
+{"kind":"shape","id":"sh/pwjqhs7u","slide":11,"name":"rule-0210","bbox":[56,679,1168,1]}
+{"kind":"textbox","id":"sh/up8rido7","slide":11,"name":"text-0211","text":"ChaosDraftParty / 島田 泰成","textPreview":"ChaosDraftParty / 島田 泰成","textChars":23,"textLines":1,"bbox":[56,689,460,18]}
+{"kind":"textbox","id":"sh/fqh8byps","slide":11,"name":"text-0212","text":"11","textPreview":"11","textChars":2,"textLines":1,"bbox":[1176,687,48,20]}
+{"kind":"shape","id":"sh/grq9k36d","slide":11,"name":"shape-0213","bbox":[56,220,190,188]}
+{"kind":"shape","id":"sh/hsjqd87y","slide":11,"name":"rule-0214","bbox":[56,220,190,8]}
+{"kind":"textbox","id":"sh/elcruxor","slide":11,"name":"text-0215","text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[74,244,42,32]}
+{"kind":"textbox","id":"sh/zmlsn2pc","slide":11,"name":"text-0216","text":"島田","textPreview":"島田","textChars":2,"textLines":1,"bbox":[74,282,154,42]}
+{"kind":"textbox","id":"sh/3ad0f2t8","slide":11,"name":"text-0217","text":"作りたい動きと\n優先順位を決める","textPreview":"作りたい動きと | 優先順位を決める","textChars":16,"textLines":2,"bbox":[74,332,154,62]}
+{"kind":"textbox","id":"sh/294z6hsn","slide":11,"name":"text-0218","text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[248,290,42,42]}
+{"kind":"shape","id":"sh/pcvihcbe","slide":11,"name":"shape-0219","bbox":[292,220,190,188]}
+{"kind":"shape","id":"sh/obmh87at","slide":11,"name":"rule-0220","bbox":[292,220,190,8]}
+{"kind":"textbox","id":"sh/bed0jmtk","slide":11,"name":"text-0221","text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[310,244,42,32]}
+{"kind":"textbox","id":"sh/qd4zahsz","slide":11,"name":"text-0222","text":"実装AI","textPreview":"実装AI","textChars":4,"textLines":1,"bbox":[310,282,154,42]}
+{"kind":"textbox","id":"sh/dgfilwba","slide":11,"name":"text-0223","text":"コードと設定の\n案を作る","textPreview":"コードと設定の | 案を作る","textChars":12,"textLines":2,"bbox":[310,332,154,62]}
+{"kind":"textbox","id":"sh/cfm1cra5","slide":11,"name":"text-0224","text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[484,290,42,42]}
+{"kind":"shape","id":"sh/zix0nmtg","slide":11,"name":"shape-0225","bbox":[528,220,190,188]}
+{"kind":"shape","id":"sh/yhoje1sv","slide":11,"name":"rule-0226","bbox":[528,220,190,8]}
+{"kind":"textbox","id":"sh/ux83mlc3","slide":11,"name":"text-0227","text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[546,244,42,32]}
+{"kind":"textbox","id":"sh/vyhkfqdo","slide":11,"name":"text-0228","text":"MCP","textPreview":"MCP","textChars":3,"textLines":1,"bbox":[546,282,154,42]}
+{"kind":"textbox","id":"sh/wzqlovu9","slide":11,"name":"text-0229","text":"AIとUnrealを\nつなぐ入り口","textPreview":"AIとUnrealを | つなぐ入り口","textChars":17,"textLines":2,"bbox":[546,332,154,62]}
+{"kind":"textbox","id":"sh/h0j2h0vu","slide":11,"name":"text-0230","text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[720,290,42,42]}
+{"kind":"shape","id":"sh/m983ilc7","slide":11,"name":"shape-0231","bbox":[764,220,190,188]}
+{"kind":"shape","id":"sh/nahkbqds","slide":11,"name":"rule-0232","bbox":[764,220,190,8]}
+{"kind":"textbox","id":"sh/8bqlkvud","slide":11,"name":"text-0233","text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[782,244,42,32]}
+{"kind":"textbox","id":"sh/9cz2d0vi","slide":11,"name":"text-0234","text":"Unreal","textPreview":"Unreal","textChars":6,"textLines":1,"bbox":[782,282,154,42]}
+{"kind":"textbox","id":"sh/65s3u5cb","slide":11,"name":"text-0235","text":"配置・設定・実行を\nEditor上で行う","textPreview":"配置・設定・実行を | Editor上で行う","textChars":20,"textLines":2,"bbox":[782,332,154,62]}
+{"kind":"textbox","id":"sh/r614nadw","slide":11,"name":"text-0236","text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[956,290,42,42]}
+{"kind":"shape","id":"sh/10n6dofy","slide":11,"name":"shape-0237","bbox":[1000,220,190,188]}
+{"kind":"shape","id":"sh/gze5kjed","slide":11,"name":"rule-0238","bbox":[1000,220,190,8]}
+{"kind":"textbox","id":"sh/fylobex8","slide":11,"name":"text-0239","text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1018,244,42,32]}
+{"kind":"textbox","id":"sh/excni9wn","slide":11,"name":"text-0240","text":"島田","textPreview":"島田","textChars":2,"textLines":1,"bbox":[1018,282,154,42]}
+{"kind":"textbox","id":"sh/tw3694f2","slide":11,"name":"text-0241","text":"プレイして\n掋用・修正を決める","textPreview":"プレイして | 掋用・修正を決める","textChars":15,"textLines":2,"bbox":[1018,332,154,62]}
+{"kind":"shape","id":"sh/svu5gzeh","slide":11,"name":"shape-0242","bbox":[56,486,1168,118]}
+{"kind":"textbox","id":"sh/rulo7uxw","slide":11,"name":"text-0243","text":"MCPがあるため、AIは説明だけで終わらず、\nUnreal Editorを操作し、結果を画面で確認できる。","textPreview":"MCPがあるため、AIは説明だけで終わらず、 | Unreal Editorを操作し、結果を画面で確認できる。","textChars":53,"textLines":2,"bbox":[92,510,1096,72]}
+{"kind":"notes","id":"nt/pu03wf","slide":11,"text":""}
+{"kind":"slide","id":"sl/s56zvj","slide":12,"title":"制作の流れ 2 / 確かめて残す","textShapes":35}
+{"kind":"shape","id":"sh/698v6x8r","slide":12,"name":"rule-0244","bbox":[56,42,12,96]}
+{"kind":"textbox","id":"sh/tczu1sri","slide":12,"name":"text-0245","text":"制作の流れ 2 / 確かめて残す","textPreview":"制作の流れ 2 / 確かめて残す","textChars":16,"textLines":1,"bbox":[88,38,1128,112]}
+{"kind":"shape","id":"sh/sbqd87qx","slide":12,"name":"rule-0246","bbox":[56,679,1168,1]}
+{"kind":"textbox","id":"sh/j6hcvi9g","slide":12,"name":"text-0247","text":"ChaosDraftParty / 島田 泰成","textPreview":"ChaosDraftParty / 島田 泰成","textChars":23,"textLines":1,"bbox":[56,689,460,18]}
+{"kind":"textbox","id":"sh/i5ob2d8v","slide":12,"name":"text-0248","text":"12","textPreview":"12","textChars":2,"textLines":1,"bbox":[1176,687,48,20]}
+{"kind":"shape","id":"sh/58zuxsrm","slide":12,"name":"shape-0249","bbox":[56,178,190,82]}
+{"kind":"shape","id":"sh/47qt4nq1","slide":12,"name":"rule-0250","bbox":[56,178,190,7]}
+{"kind":"textbox","id":"sh/vixcri94","slide":12,"name":"text-0251","text":"目的","textPreview":"目的","textChars":2,"textLines":1,"bbox":[68,202,166,34]}
+{"kind":"textbox","id":"sh/uhobyd8z","slide":12,"name":"text-0252","text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[248,198,42,42]}
+{"kind":"shape","id":"sh/03a10v6t","slide":12,"name":"shape-0253","bbox":[292,178,190,82]}
+{"kind":"shape","id":"sh/l4jitgne","slide":12,"name":"rule-0254","bbox":[292,178,190,7]}
+{"kind":"textbox","id":"sh/y1sjylo3","slide":12,"name":"text-0255","text":"実装AI","textPreview":"実装AI","textChars":4,"textLines":1,"bbox":[304,202,166,34]}
+{"kind":"textbox","id":"sh/z210rq5o","slide":12,"name":"text-0256","text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[484,198,42,42]}
+{"kind":"shape","id":"sh/czq1wb6x","slide":12,"name":"shape-0257","bbox":[528,178,190,82]}
+{"kind":"shape","id":"sh/d0jipgni","slide":12,"name":"rule-0258","bbox":[528,178,190,7]}
+{"kind":"textbox","id":"sh/qd8ju1or","slide":12,"name":"text-0259","text":"MCP","textPreview":"MCP","textChars":3,"textLines":1,"bbox":[540,202,166,34]}
+{"kind":"textbox","id":"sh/beh0n65c","slide":12,"name":"text-0260","text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[720,198,42,42]}
+{"kind":"shape","id":"sh/wvu18fm1","slide":12,"name":"shape-0261","bbox":[764,178,190,82]}
+{"kind":"shape","id":"sh/xw3210nm","slide":12,"name":"rule-0262","bbox":[764,178,190,7]}
+{"kind":"textbox","id":"sh/5gza5gbe","slide":12,"name":"text-0263","text":"Unreal","textPreview":"Unreal","textChars":6,"textLines":1,"bbox":[776,202,166,34]}
+{"kind":"textbox","id":"sh/kf69wba9","slide":12,"name":"text-0264","text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[956,198,42,42]}
+{"kind":"shape","id":"sh/jexs36to","slide":12,"name":"shape-0265","bbox":[1000,178,190,82]}
+{"kind":"shape","id":"sh/idoru1s3","slide":12,"name":"rule-0266","bbox":[1000,178,190,7]}
+{"kind":"textbox","id":"sh/xcfa1wbi","slide":12,"name":"text-0267","text":"プレイ判断","textPreview":"プレイ判断","textChars":5,"textLines":1,"bbox":[1012,202,166,34]}
+{"kind":"textbox","id":"sh/wb69srax","slide":12,"name":"text-0268","text":"判断後、結果をもう一周させる","textPreview":"判断後、結果をもう一周させる","textChars":14,"textLines":1,"bbox":[56,292,500,30]}
+{"kind":"shape","id":"sh/vaxszmtc","slide":12,"name":"shape-0269","bbox":[56,340,246,142]}
+{"kind":"shape","id":"sh/a9orq1sr","slide":12,"name":"rule-0270","bbox":[56,340,246,8]}
+{"kind":"textbox","id":"sh/98vaxwbm","slide":12,"name":"text-0271","text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[74,364,42,32]}
+{"kind":"textbox","id":"sh/8nm9ora1","slide":12,"name":"text-0272","text":"別のAIが確認","textPreview":"別のAIが確認","textChars":7,"textLines":1,"bbox":[74,402,210,42]}
+{"kind":"textbox","id":"sh/ytk7yx8j","slide":12,"name":"text-0273","text":"思い込みや抜けを探す","textPreview":"思い込みや抜けを探す","textChars":10,"textLines":1,"bbox":[74,452,210,16]}
+{"kind":"textbox","id":"sh/zutori94","slide":12,"name":"text-0274","text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[304,388,44,42]}
+{"kind":"shape","id":"sh/0f2p0nqp","slide":12,"name":"shape-0275","bbox":[350,340,246,142]}
+{"kind":"shape","id":"sh/lgbqtsra","slide":12,"name":"rule-0276","bbox":[350,340,246,8]}
+{"kind":"textbox","id":"sh/qp07ud8n","slide":12,"name":"text-0277","text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[368,364,42,32]}
+{"kind":"textbox","id":"sh/bqtoni98","slide":12,"name":"text-0278","text":"テストとログ","textPreview":"テストとログ","textChars":6,"textLines":1,"bbox":[368,402,210,42]}
+{"kind":"textbox","id":"sh/cr2pwnqt","slide":12,"name":"text-0279","text":"実行結果を数字で残す","textPreview":"実行結果を数字で残す","textChars":10,"textLines":1,"bbox":[368,452,210,16]}
+{"kind":"textbox","id":"sh/dsb6psre","slide":12,"name":"text-0280","text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[598,388,44,42]}
+{"kind":"shape","id":"sh/2l07qdsr","slide":12,"name":"shape-0281","bbox":[644,340,246,142]}
+{"kind":"shape","id":"sh/3m9ojy9w","slide":12,"name":"rule-0282","bbox":[644,340,246,8]}
+{"kind":"textbox","id":"sh/fet4veds","slide":12,"name":"text-0283","text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[662,364,42,32]}
+{"kind":"textbox","id":"sh/udk329c7","slide":12,"name":"text-0284","text":"Skillにする","textPreview":"Skillにする","textChars":8,"textLines":1,"bbox":[662,402,210,42]}
+{"kind":"textbox","id":"sh/hgbmxovy","slide":12,"name":"text-0285","text":"うまくいった手順を再利用","textPreview":"うまくいった手順を再利用","textChars":12,"textLines":1,"bbox":[662,452,210,16]}
+{"kind":"textbox","id":"sh/gf2l4jud","slide":12,"name":"text-0286","text":"→","textPreview":"→","textChars":1,"textLines":1,"bbox":[892,388,44,42]}
+{"kind":"shape","id":"sh/7a9krudw","slide":12,"name":"shape-0287","bbox":[938,340,246,142]}
+{"kind":"shape","id":"sh/6903y9cb","slide":12,"name":"rule-0288","bbox":[938,340,246,8]}
+{"kind":"textbox","id":"sh/tcbmt4vm","slide":12,"name":"text-0289","text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[956,364,42,32]}
+{"kind":"textbox","id":"sh/sb2l0zu1","slide":12,"name":"text-0290","text":"次の作業へ","textPreview":"次の作業へ","textChars":5,"textLines":1,"bbox":[956,402,210,42]}
+{"kind":"textbox","id":"sh/j69knudk","slide":12,"name":"text-0291","text":"別のAIでも続きから開始","textPreview":"別のAIでも続きから開始","textChars":12,"textLines":1,"bbox":[956,452,210,16]}
+{"kind":"textbox","id":"sh/yl03upcz","slide":12,"name":"text-0292","text":"↖","textPreview":"↖","textChars":1,"textLines":1,"bbox":[1150,270,54,54]}
+{"kind":"shape","id":"sh/ore14vax","slide":12,"name":"rule-0293","bbox":[56,526,1168,1]}
+{"kind":"textbox","id":"sh/9c7ix0bi","slide":12,"name":"text-0294","text":"MCP","textPreview":"MCP","textChars":3,"textLines":1,"bbox":[56,552,88,32]}
+{"kind":"textbox","id":"sh/mpwj2lsr","slide":12,"name":"text-0295","text":"AIとEditorをつなぐ入り口","textPreview":"AIとEditorをつなぐ入り口","textChars":16,"textLines":1,"bbox":[148,550,286,46]}
+{"kind":"textbox","id":"sh/nq50vqtc","slide":12,"name":"text-0296","text":"API","textPreview":"API","textChars":3,"textLines":1,"bbox":[446,552,88,32]}
+{"kind":"textbox","id":"sh/wfy18vat","slide":12,"name":"text-0297","text":"外部サービスに自動で依頼する窓口","textPreview":"外部サービスに自動で依頼する窓口","textChars":16,"textLines":1,"bbox":[538,550,286,46]}
+{"kind":"textbox","id":"sh/xg7i10be","slide":12,"name":"text-0298","text":"Skill","textPreview":"Skill","textChars":5,"textLines":1,"bbox":[836,552,88,32]}
+{"kind":"textbox","id":"sh/adgj65s3","slide":12,"name":"text-0299","text":"成功手順を再利用する作業マニュアル","textPreview":"成功手順を再利用する作業マニュアル","textChars":17,"textLines":1,"bbox":[928,550,286,46]}
+{"kind":"notes","id":"nt/s56zvj","slide":12,"text":""}
+{"kind":"slide","id":"sl/6c8gxi","slide":13,"title":"一度きりの生成で終わらせない","textShapes":17}
+{"kind":"shape","id":"sh/lkve1cbi","slide":13,"name":"rule-0300","bbox":[56,42,12,96]}
+{"kind":"textbox","id":"sh/yxkf6hcr","slide":13,"name":"text-0301","text":"一度きりの生成で終わらせない","textPreview":"一度きりの生成で終わらせない","textChars":14,"textLines":1,"bbox":[88,38,1128,112]}
+{"kind":"shape","id":"sh/zytwzmtc","slide":13,"name":"rule-0302","bbox":[56,679,1168,1]}
+{"kind":"textbox","id":"sh/8nmxcrat","slide":13,"name":"text-0303","text":"ChaosDraftParty / 島田 泰成","textPreview":"ChaosDraftParty / 島田 泰成","textChars":23,"textLines":1,"bbox":[56,689,460,18]}
+{"kind":"textbox","id":"sh/tovy5wbe","slide":13,"name":"text-0304","text":"13","textPreview":"13","textChars":2,"textLines":1,"bbox":[1176,687,48,20]}
+{"kind":"textbox","id":"sh/6l4fahc3","slide":13,"name":"text-0305","text":"よくある使い方","textPreview":"よくある使い方","textChars":7,"textLines":1,"bbox":[64,178,440,38]}
+{"kind":"textbox","id":"sh/7mdg3mt8","slide":13,"name":"text-0306","text":"質問  →  回答  →  貼る  →  忘れる","textPreview":"質問  →  回答  →  貼る  →  忘れる","textChars":24,"textLines":1,"bbox":[64,242,500,54]}
+{"kind":"textbox","id":"sh/gr6xgba5","slide":13,"name":"text-0307","text":"次回はまたゼロから説明する。\n誤りを他の視点で確認しにくい。","textPreview":"次回はまたゼロから説明する。 | 誤りを他の視点で確認しにくい。","textChars":30,"textLines":2,"bbox":[64,312,500,72]}
+{"kind":"shape","id":"sh/hsfy9gbq","slide":13,"name":"rule-0308","bbox":[620,174,2,320]}
+{"kind":"textbox","id":"sh/lwfat0zm","slide":13,"name":"text-0309","text":"この制作での使い方","textPreview":"この制作での使い方","textChars":9,"textLines":1,"bbox":[674,178,500,38]}
+{"kind":"shape","id":"sh/kb690vy1","slide":13,"name":"shape-0310","bbox":[674,236,18,18]}
+{"kind":"textbox","id":"sh/jaxsrqhg","slide":13,"name":"text-0311","text":"担当を決める","textPreview":"担当を決める","textChars":6,"textLines":1,"bbox":[710,231,380,32]}
+{"kind":"textbox","id":"sh/y9orylgv","slide":13,"name":"text-0312","text":"↓","textPreview":"↓","textChars":1,"textLines":1,"bbox":[676,258,16,32]}
+{"kind":"shape","id":"sh/t0zaxkzi","slide":13,"name":"shape-0313","bbox":[674,294,18,18]}
+{"kind":"textbox","id":"sh/8zq94fyx","slide":13,"name":"text-0314","text":"Editorで実行","textPreview":"Editorで実行","textChars":9,"textLines":1,"bbox":[710,289,380,32]}
+{"kind":"textbox","id":"sh/7yhsvahc","slide":13,"name":"text-0315","text":"↓","textPreview":"↓","textChars":1,"textLines":1,"bbox":[676,316,16,32]}
+{"kind":"shape","id":"sh/6x8r25gr","slide":13,"name":"shape-0316","bbox":[674,352,18,18]}
+{"kind":"textbox","id":"sh/94vqlgze","slide":13,"name":"text-0317","text":"別AIが確認","textPreview":"別AIが確認","textChars":6,"textLines":1,"bbox":[710,347,380,32]}
+{"kind":"textbox","id":"sh/o3m9sbyt","slide":13,"name":"text-0318","text":"↓","textPreview":"↓","textChars":1,"textLines":1,"bbox":[676,374,16,32]}
+{"kind":"shape","id":"sh/0nq98b6p","slide":13,"name":"shape-0319","bbox":[674,410,18,18]}
+{"kind":"textbox","id":"sh/1oza1g7u","slide":13,"name":"text-0320","text":"手順を記録","textPreview":"手順を記録","textChars":5,"textLines":1,"bbox":[710,405,380,32]}
+{"kind":"textbox","id":"sh/el8r6l8j","slide":13,"name":"text-0321","text":"↓","textPreview":"↓","textChars":1,"textLines":1,"bbox":[676,432,16,32]}
+{"kind":"shape","id":"sh/fmhsz6p4","slide":13,"name":"shape-0322","bbox":[674,468,18,18]}
+{"kind":"textbox","id":"sh/ora9cv6l","slide":13,"name":"text-0323","text":"次回再利用","textPreview":"次回再利用","textChars":5,"textLines":1,"bbox":[710,463,380,32]}
+{"kind":"shape","id":"sh/pcja5076","slide":13,"name":"shape-0324","bbox":[64,536,1110,84]}
+{"kind":"textbox","id":"sh/2p8ralof","slide":13,"name":"text-0325","text":"実例: キャラクター移植 / ステージ制作 / 入力の原因調査 / パワポ作成","textPreview":"実例: キャラクター移植 / ステージ制作 / 入力の原因調査 / パワポ作成","textChars":39,"textLines":1,"bbox":[88,556,1060,44]}
+{"kind":"notes","id":"nt/6c8gxi","slide":13,"text":""}
+{"kind":"slide","id":"sl/74yyyj","slide":14,"title":"何をもって「成功」とするか","textShapes":22}
+{"kind":"shape","id":"sh/0761c7uh","slide":14,"name":"rule-0326","bbox":[56,42,12,96]}
+{"kind":"textbox","id":"sh/z6d0j2dw","slide":14,"name":"text-0327","text":"何をもって「成功」とするか","textPreview":"何をもって「成功」とするか","textChars":13,"textLines":1,"bbox":[88,38,1128,112]}
+{"kind":"shape","id":"sh/y54jahcb","slide":14,"name":"rule-0328","bbox":[56,679,1168,1]}
+{"kind":"textbox","id":"sh/d4vihcvq","slide":14,"name":"text-0329","text":"ChaosDraftParty / 島田 泰成","textPreview":"ChaosDraftParty / 島田 泰成","textChars":23,"textLines":1,"bbox":[56,689,460,18]}
+{"kind":"textbox","id":"sh/c3m187u5","slide":14,"name":"text-0330","text":"14","textPreview":"14","textChars":2,"textLines":1,"bbox":[1176,687,48,20]}
+{"kind":"textbox","id":"sh/b2d0f2dk","slide":14,"name":"text-0331","text":"ゲームの評価","textPreview":"ゲームの評価","textChars":6,"textLines":1,"bbox":[66,180,440,42]}
+{"kind":"textbox","id":"sh/q14j6xcf","slide":14,"name":"text-0332","text":"制作方法の評価","textPreview":"制作方法の評価","textChars":7,"textLines":1,"bbox":[686,180,440,42]}
+{"kind":"shape","id":"sh/x0z2twva","slide":14,"name":"rule-0333","bbox":[620,172,2,374]}
+{"kind":"textbox","id":"sh/wzq1krup","slide":14,"name":"text-0334","text":"10秒","textPreview":"10秒","textChars":3,"textLines":1,"bbox":[66,248,132,34]}
+{"kind":"textbox","id":"sh/e5oj2psj","slide":14,"name":"text-0335","text":"初見で目的を説明できる","textPreview":"初見で目的を説明できる","textChars":11,"textLines":1,"bbox":[208,246,392,46]}
+{"kind":"shape","id":"sh/f6xkbut4","slide":14,"name":"rule-0336","bbox":[66,302,534,1]}
+{"kind":"textbox","id":"sh/0r614za9","slide":14,"name":"text-0337","text":"2回以上","textPreview":"2回以上","textChars":4,"textLines":1,"bbox":[66,324,132,34]}
+{"kind":"textbox","id":"sh/1sf2d4bu","slide":14,"name":"text-0338","text":"30秒中に他プレイヤーと接触する","textPreview":"30秒中に他プレイヤーと接触する","textChars":16,"textLines":1,"bbox":[208,322,392,46]}
+{"kind":"shape","id":"sh/q14jyps7","slide":14,"name":"rule-0339","bbox":[66,378,534,1]}
+{"kind":"textbox","id":"sh/r2d07uts","slide":14,"name":"text-0340","text":"理由","textPreview":"理由","textChars":2,"textLines":1,"bbox":[66,400,132,34]}
+{"kind":"textbox","id":"sh/s3m10zad","slide":14,"name":"text-0341","text":"負けた原因を本人が説明できる","textPreview":"負けた原因を本人が説明できる","textChars":14,"textLines":1,"bbox":[208,398,392,46]}
+{"kind":"shape","id":"sh/d4f29kby","slide":14,"name":"rule-0342","bbox":[66,454,534,1]}
+{"kind":"textbox","id":"sh/ax8ja9sr","slide":14,"name":"text-0343","text":"5段階","textPreview":"5段階","textChars":3,"textLines":1,"bbox":[66,476,132,34]}
+{"kind":"textbox","id":"sh/byhkjetw","slide":14,"name":"text-0344","text":"操作が意図通りと感じたか","textPreview":"操作が意図通りと感じたか","textChars":12,"textLines":1,"bbox":[208,474,392,46]}
+{"kind":"shape","id":"sh/729gv69o","slide":14,"name":"rule-0345","bbox":[66,530,534,1]}
+{"kind":"textbox","id":"sh/6h0z2183","slide":14,"name":"text-0346","text":"時間","textPreview":"時間","textChars":2,"textLines":1,"bbox":[686,248,132,34]}
+{"kind":"textbox","id":"sh/t4ryxgre","slide":14,"name":"text-0347","text":"1つの作業を完了するまで","textPreview":"1つの作業を完了するまで","textChars":12,"textLines":1,"bbox":[828,246,392,46]}
+{"kind":"shape","id":"sh/83ih4bq9","slide":14,"name":"rule-0348","bbox":[686,302,534,1]}
+{"kind":"textbox","id":"sh/v6tgzq9k","slide":14,"name":"text-0349","text":"手戻り","textPreview":"手戻り","textChars":3,"textLines":1,"bbox":[686,324,132,34]}
+{"kind":"textbox","id":"sh/u5kz6l8z","slide":14,"name":"text-0350","text":"修正ややり直しが何回発生したか","textPreview":"修正ややり直しが何回発生したか","textChars":15,"textLines":1,"bbox":[828,322,392,46]}
+{"kind":"shape","id":"sh/h8by10rq","slide":14,"name":"rule-0351","bbox":[686,378,534,1]}
+{"kind":"textbox","id":"sh/g72h8vq5","slide":14,"name":"text-0352","text":"再現","textPreview":"再現","textChars":2,"textLines":1,"bbox":[686,400,132,34]}
+{"kind":"textbox","id":"sh/3atg3q9w","slide":14,"name":"text-0353","text":"記録から別のAIが同じ作業を続行できるか","textPreview":"記録から別のAIが同じ作業を続行できるか","textChars":20,"textLines":1,"bbox":[828,398,392,46]}
+{"kind":"shape","id":"sh/i9kzal8b","slide":14,"name":"rule-0354","bbox":[686,454,534,1]}
+{"kind":"textbox","id":"sh/0zmx0v69","slide":14,"name":"text-0355","text":"判断","textPreview":"判断","textChars":2,"textLines":1,"bbox":[686,476,132,34]}
+{"kind":"textbox","id":"sh/10vyt0nu","slide":14,"name":"text-0356","text":"AIの提案を採用・却下した理由を残す","textPreview":"AIの提案を採用・却下した理由を残す","textChars":18,"textLines":1,"bbox":[828,474,392,46]}
+{"kind":"shape","id":"sh/ed4fy5o3","slide":14,"name":"rule-0357","bbox":[686,530,534,1]}
+{"kind":"shape","id":"sh/fedgrq5o","slide":14,"name":"shape-0358","bbox":[66,584,1120,52]}
+{"kind":"textbox","id":"sh/sb2xwv6d","slide":14,"name":"text-0359","text":"面白さと開発効率を混ぜず、それぞれ別の指標で測る。","textPreview":"面白さと開発効率を混ぜず、それぞれ別の指標で測る。","textChars":25,"textLines":1,"bbox":[92,594,1068,32]}
+{"kind":"notes","id":"nt/74yyyj","slide":14,"text":""}
+{"kind":"slide","id":"sl/0z4gx6","slide":15,"title":"中間時点で分かったこと","textShapes":12}
+{"kind":"shape","id":"sh/5wrudozu","slide":15,"name":"rule-0360","bbox":[56,42,12,92]}
+{"kind":"textbox","id":"sh/it0bitg3","slide":15,"name":"text-0361","text":"中間時点で分かったこと","textPreview":"中間時点で分かったこと","textChars":11,"textLines":1,"bbox":[88,38,1128,108]}
+{"kind":"shape","id":"sh/3u9cbyho","slide":15,"name":"rule-0362","bbox":[56,679,1168,1]}
+{"kind":"textbox","id":"sh/sz2to3y5","slide":15,"name":"text-0363","text":"ChaosDraftParty / 島田 泰成","textPreview":"ChaosDraftParty / 島田 泰成","textChars":23,"textLines":1,"bbox":[56,689,460,18]}
+{"kind":"textbox","id":"sh/d0buh8zq","slide":15,"name":"text-0364","text":"15","textPreview":"15","textChars":2,"textLines":1,"bbox":[1176,687,48,20]}
+{"kind":"textbox","id":"sh/qx0bmtgf","slide":15,"name":"text-0365","text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[66,178,74,58]}
+{"kind":"textbox","id":"sh/ry9cfyhk","slide":15,"name":"text-0366","text":"広さより、出会う理由","textPreview":"広さより、出会う理由","textChars":10,"textLines":1,"bbox":[170,178,1000,42]}
+{"kind":"textbox","id":"sh/0n2ts3yh","slide":15,"name":"text-0367","text":"ステージを大きくするだけでは事故は起きない。安全路に全員を集める。","textPreview":"ステージを大きくするだけでは事故は起きない。安全路に全員を集める。","textChars":33,"textLines":1,"bbox":[170,230,1000,54]}
+{"kind":"shape","id":"sh/1obul8z2","slide":15,"name":"rule-0368","bbox":[66,302,1100,1]}
+{"kind":"textbox","id":"sh/p03m5gry","slide":15,"name":"text-0369","text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[66,326,74,58]}
+{"kind":"textbox","id":"sh/ozu5cbqd","slide":15,"name":"text-0370","text":"AIの「できた」は、実機で確認","textPreview":"AIの「できた」は、実機で確認","textChars":15,"textLines":1,"bbox":[170,326,1000,42]}
+{"kind":"textbox","id":"sh/nel4369s","slide":15,"name":"text-0371","text":"コードがあっても入力やカメラが動かない。Editorとログの実測が必要。","textPreview":"コードがあっても入力やカメラが動かない。Editorとログの実測が必要。","textChars":36,"textLines":1,"bbox":[170,378,1000,54]}
+{"kind":"shape","id":"sh/2dc3a187","slide":15,"name":"rule-0372","bbox":[66,450,1100,1]}
+{"kind":"textbox","id":"sh/x4nm90ru","slide":15,"name":"text-0373","text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[66,474,74,58]}
+{"kind":"textbox","id":"sh/c3e5gvqp","slide":15,"name":"text-0374","text":"記録があると、別のAIが続けられる","textPreview":"記録があると、別のAIが続けられる","textChars":17,"textLines":1,"bbox":[170,474,1000,42]}
+{"kind":"textbox","id":"sh/b2547q94","slide":15,"name":"text-0375","text":"設計理由、失敗、検証手順を残すと、担当が変わっても同じ判断から再開できる。","textPreview":"設計理由、失敗、検証手順を残すと、担当が変わっても同じ判断から再開できる。","textChars":37,"textLines":1,"bbox":[170,526,1000,54]}
+{"kind":"notes","id":"nt/0z4gx6","slide":15,"text":""}
+{"kind":"slide","id":"sl/zaq9vd","slide":16,"title":"後半の開発スケジュール","textShapes":25}
+{"kind":"shape","id":"sh/hgfmpona","slide":16,"name":"rule-0376","bbox":[56,42,12,96]}
+{"kind":"textbox","id":"sh/uto3utoj","slide":16,"name":"text-0377","text":"後半の開発スケジュール","textPreview":"後半の開発スケジュール","textChars":11,"textLines":1,"bbox":[88,38,1128,112]}
+{"kind":"shape","id":"sh/fux4ny54","slide":16,"name":"rule-0378","bbox":[56,679,1168,1]}
+{"kind":"textbox","id":"sh/4j65036l","slide":16,"name":"text-0379","text":"ChaosDraftParty / 島田 泰成","textPreview":"ChaosDraftParty / 島田 泰成","textChars":23,"textLines":1,"bbox":[56,689,460,18]}
+{"kind":"textbox","id":"sh/pkfmt8n6","slide":16,"name":"text-0380","text":"16","textPreview":"16","textChars":2,"textLines":1,"bbox":[1176,687,48,20]}
+{"kind":"textbox","id":"sh/2honytov","slide":16,"name":"text-0381","text":"現在 7月14日","textPreview":"現在 7月14日","textChars":8,"textLines":1,"bbox":[66,154,220,30]}
+{"kind":"shape","id":"sh/3ix4ry5g","slide":16,"name":"rule-0382","bbox":[92,238,1070,6]}
+{"kind":"shape","id":"sh/cnq543mx","slide":16,"name":"shape-0383","bbox":[86,216,44,44]}
+{"kind":"textbox","id":"sh/dozmx8ni","slide":16,"name":"text-0384","text":"07","textPreview":"07","textChars":2,"textLines":1,"bbox":[66,278,94,60]}
+{"kind":"textbox","id":"sh/tsze98ba","slide":16,"name":"text-0385","text":"7月","textPreview":"7月","textChars":2,"textLines":1,"bbox":[166,292,100,32]}
+{"kind":"textbox","id":"sh/srqdg3up","slide":16,"name":"text-0386","text":"1人で遊べる核","textPreview":"1人で遊べる核","textChars":7,"textLines":1,"bbox":[66,354,330,42]}
+{"kind":"shape","id":"sh/7qhw7yd4","slide":16,"name":"shape-0387","bbox":[66,425,8,8]}
+{"kind":"textbox","id":"sh/6povetcz","slide":16,"name":"text-0388","text":"左右移動・ジャンプ・ダッシュ","textPreview":"左右移動・ジャンプ・ダッシュ","textChars":14,"textLines":1,"bbox":[90,414,306,34]}
+{"kind":"shape","id":"sh/hwzed8bm","slide":16,"name":"shape-0389","bbox":[66,473,8,8]}
+{"kind":"textbox","id":"sh/gvqdknu1","slide":16,"name":"text-0390","text":"共有カメラ","textPreview":"共有カメラ","textChars":5,"textLines":1,"bbox":[90,462,306,34]}
+{"kind":"shape","id":"sh/fuhwbitg","slide":16,"name":"shape-0391","bbox":[66,521,8,8]}
+{"kind":"textbox","id":"sh/ut8vidcv","slide":16,"name":"text-0392","text":"KO・復帰・1ラウンド完走","textPreview":"KO・復帰・1ラウンド完走","textChars":13,"textLines":1,"bbox":[90,510,306,34]}
+{"kind":"shape","id":"sh/x0fu1ov2","slide":16,"name":"rule-0393","bbox":[66,566,330,2]}
+{"kind":"textbox","id":"sh/wz6d8juh","slide":16,"name":"text-0394","text":"7/31  1P完走","textPreview":"7/31  1P完走","textChars":10,"textLines":1,"bbox":[66,584,330,30]}
+{"kind":"shape","id":"sh/ojadoj2d","slide":16,"name":"shape-0395","bbox":[472,216,44,44]}
+{"kind":"textbox","id":"sh/p4jeho3y","slide":16,"name":"text-0396","text":"08","textPreview":"08","textChars":2,"textLines":1,"bbox":[452,278,94,60]}
+{"kind":"textbox","id":"sh/2h8vm9kn","slide":16,"name":"text-0397","text":"8月","textPreview":"8月","textChars":2,"textLines":1,"bbox":[552,292,100,32]}
+{"kind":"textbox","id":"sh/nihwfels","slide":16,"name":"text-0398","text":"2人対戦を成立","textPreview":"2人対戦を成立","textChars":7,"textLines":1,"bbox":[452,354,330,42]}
+{"kind":"shape","id":"sh/c7ads32p","slide":16,"name":"shape-0399","bbox":[452,425,8,8]}
+{"kind":"textbox","id":"sh/x8jel83a","slide":16,"name":"text-0400","text":"オンライン同期","textPreview":"オンライン同期","textChars":7,"textLines":1,"bbox":[476,414,306,34]}
+{"kind":"shape","id":"sh/a5svqtkj","slide":16,"name":"shape-0401","bbox":[452,473,8,8]}
+{"kind":"textbox","id":"sh/b61wjyl4","slide":16,"name":"text-0402","text":"縮む島をUnrealで再構成","textPreview":"縮む島をUnrealで再構成","textChars":14,"textLines":1,"bbox":[476,462,306,34]}
+{"kind":"shape","id":"sh/kbudw32l","slide":16,"name":"shape-0403","bbox":[452,521,8,8]}
+{"kind":"textbox","id":"sh/lc3ep836","slide":16,"name":"text-0404","text":"3スキル + 第1回テスト","textPreview":"3スキル + 第1回テスト","textChars":13,"textLines":1,"bbox":[476,510,306,34]}
+{"kind":"shape","id":"sh/v65gv258","slide":16,"name":"rule-0405","bbox":[452,566,330,2]}
+{"kind":"textbox","id":"sh/u5wzmx4n","slide":16,"name":"text-0406","text":"8/31  2P対戦","textPreview":"8/31  2P対戦","textChars":10,"textLines":1,"bbox":[452,584,330,30]}
+{"kind":"shape","id":"sh/h8nyxcne","slide":16,"name":"shape-0407","bbox":[858,216,44,44]}
+{"kind":"textbox","id":"sh/g7eho7mt","slide":16,"name":"text-0408","text":"09","textPreview":"09","textChars":2,"textLines":1,"bbox":[838,278,94,60]}
+{"kind":"textbox","id":"sh/72lgr25c","slide":16,"name":"text-0409","text":"9月","textPreview":"9月","textChars":2,"textLines":1,"bbox":[938,292,100,32]}
+{"kind":"textbox","id":"sh/61cfix4r","slide":16,"name":"text-0410","text":"完成・評価","textPreview":"完成・評価","textChars":5,"textLines":1,"bbox":[838,354,330,42]}
+{"kind":"shape","id":"sh/t4nytsni","slide":16,"name":"shape-0411","bbox":[838,425,8,8]}
+{"kind":"textbox","id":"sh/83ehk7mx","slide":16,"name":"text-0412","text":"UI・VFX・効果音","textPreview":"UI・VFX・効果音","textChars":10,"textLines":1,"bbox":[862,414,306,34]}
+{"kind":"shape","id":"sh/rypg3mlg","slide":16,"name":"shape-0413","bbox":[838,473,8,8]}
+{"kind":"textbox","id":"sh/qxgzuh4v","slide":16,"name":"text-0414","text":"初見プレイテスト","textPreview":"初見プレイテスト","textChars":8,"textLines":1,"bbox":[862,462,306,34]}
+{"kind":"shape","id":"sh/elwjil0f","slide":16,"name":"shape-0415","bbox":[838,521,8,8]}
+{"kind":"textbox","id":"sh/z65krq10","slide":16,"name":"text-0416","text":"分析・報告書・最終発表","textPreview":"分析・報告書・最終発表","textChars":11,"textLines":1,"bbox":[862,510,306,34]}
+{"kind":"shape","id":"sh/07elkvi5","slide":16,"name":"rule-0417","bbox":[838,566,330,2]}
+{"kind":"textbox","id":"sh/1872t0jq","slide":16,"name":"text-0418","text":"9/15  評価版","textPreview":"9/15  評価版","textChars":9,"textLines":1,"bbox":[838,584,330,30]}
+{"kind":"notes","id":"nt/zaq9vd","slide":16,"text":""}
+{"kind":"slide","id":"sl/8qm5hz","slide":17,"title":"9月に見せるもの","textShapes":8}
+{"kind":"shape","id":"sh/kjy9s3ip","slide":17,"name":"shape-0420","bbox":[0,0,900,720]}
+{"kind":"textbox","id":"sh/5k7a18ja","slide":17,"name":"text-0421","text":"9月に見せるもの","textPreview":"9月に見せるもの","textChars":8,"textLines":1,"bbox":[64,68,690,72]}
+{"kind":"shape","id":"sh/6lgrud0f","slide":17,"name":"shape-0422","bbox":[68,197,20,20]}
+{"kind":"textbox","id":"sh/7mps3i10","slide":17,"name":"text-0423","text":"2人オンラインで1試合を完走","textPreview":"2人オンラインで1試合を完走","textChars":14,"textLines":1,"bbox":[112,190,660,42]}
+{"kind":"shape","id":"sh/sny9wnil","slide":17,"name":"shape-0424","bbox":[68,275,20,20]}
+{"kind":"textbox","id":"sh/to7a5sj6","slide":17,"name":"text-0425","text":"縮む島 + 3スキル","textPreview":"縮む島 + 3スキル","textChars":10,"textLines":1,"bbox":[112,268,660,42]}
+{"kind":"shape","id":"sh/mpcritkb","slide":17,"name":"shape-0426","bbox":[68,353,20,20]}
+{"kind":"textbox","id":"sh/nq58ry1w","slide":17,"name":"text-0427","text":"プレイテストの数値と改善履歴","textPreview":"プレイテストの数値と改善履歴","textChars":14,"textLines":1,"bbox":[112,346,660,42]}
+{"kind":"shape","id":"sh/3il0721g","slide":17,"name":"shape-0428","bbox":[68,431,20,20]}
+{"kind":"textbox","id":"sh/ihcjyxkv","slide":17,"name":"text-0429","text":"AIと人の役割分担を追える制作記録","textPreview":"AIと人の役割分担を追える制作記録","textChars":17,"textLines":1,"bbox":[112,424,660,42]}
+{"kind":"shape","id":"sh/5k3i9cj6","slide":17,"name":"rule-0430","bbox":[68,520,690,2]}
+{"kind":"textbox","id":"sh/4ju1072l","slide":17,"name":"text-0431","text":"遊びと制作方法の両方を、\n実物と数字で示す。","textPreview":"遊びと制作方法の両方を、 | 実物と数字で示す。","textChars":22,"textLines":2,"bbox":[68,552,690,78]}
+{"kind":"shape","id":"sh/vel03i14","slide":17,"name":"rule-0432","bbox":[56,679,1168,1]}
+{"kind":"textbox","id":"sh/udczuxkj","slide":17,"name":"text-0433","text":"ChaosDraftParty / 島田 泰成","textPreview":"ChaosDraftParty / 島田 泰成","textChars":23,"textLines":1,"bbox":[56,689,460,18]}
+{"kind":"textbox","id":"sh/hg3i5sja","slide":17,"name":"text-0434","text":"17","textPreview":"17","textChars":2,"textLines":1,"bbox":[1176,687,48,20]}
+{"kind":"image","id":"im/2hwnqpov","slide":17,"name":"","geometry":"rect","alt":"EGGYBOT final target character","bbox":[850,0,430,720]}
+{"kind":"notes","id":"nt/8qm5hz","slide":17,"text":""}

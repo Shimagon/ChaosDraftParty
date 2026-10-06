@@ -26,19 +26,19 @@ Material:
     m_Ints: []
     m_Floats:
     - _Cull: 0
-    - _InteriorShadow: 0.55
-    - _RimIntensity: 0.55
+    - _InteriorShadow: 0.22
+    - _RimIntensity: 0.8
     - _RimPower: 5
     - _SSSDistortion: 0.3
     - _SSSPower: 2.2
     - _SSSScale: 1.05
-    - _Smoothness: 0.82
-    - _SpecularIntensity: 1.1
+    - _Smoothness: 0.68
+    - _SpecularIntensity: 0.85
     - _WrapFactor: 0.6
     m_Colors:
     - _AmbientTint: {r: 0.53749996, g: 0.713, b: 0.876, a: 1}
     - _BaseColor: {r: 0.45, g: 0.72, b: 0.96, a: 1}
-    - _RimColor: {r: 0.6975, g: 0.846, b: 0.978, a: 1}
+    - _RimColor: {r: 1, g: 1, b: 1, a: 1}
     - _SSSColor: {r: 0.45, g: 0.72, b: 0.96, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

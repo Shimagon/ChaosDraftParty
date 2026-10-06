@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Unity.Cinemachine;
@@ -194,7 +195,7 @@ namespace ChaosDraftParty.Core
         [SerializeField] float speedDampTime = 0.1f;
 
         [Header("Gamepad Layout (Bumper Jumper preset)")]
-        [Tooltip("Bumper Jumper layout: ジャンプを buttonSouth (B) → rightShoulder (R) に移し、カメラリセットを RB → leftShoulder (L) に逃がす。Mirror's Edge / Tomb Raider / CoD MW preset の defacto。右親指過負荷の解消 option。【Play 開始前 (Edit Mode) に設定すること — Awake で 1 回 BuildInputActions するため Play 中の変更は再起動まで反映されない】Setting UI 化は M3 以降。")]
+        [Tooltip("Bumper Jumper layout: ジャンプを buttonSouth (B) → rightShoulder (R) に移し、Skill1=Y (buttonNorth) / Skill2=X (buttonWest) に逃がす。Mirror's Edge / Tomb Raider / CoD MW preset の defacto。右親指過負荷の解消 option。【Play 開始前 (Edit Mode) に設定すること — Awake で 1 回 BuildInputActions するため Play 中の変更は再起動まで反映されない】Setting UI 化は M3 以降。CameraReset は両 layout 共通で D-pad Down。")]
         [SerializeField] bool bumperJumperLayout = false;
 
         // Skill hooks: 一時的な speed/jump 倍率 runtime 状態。
@@ -210,6 +211,8 @@ namespace ChaosDraftParty.Core
 
         [Header("Debug")]
         [SerializeField] bool lockCursor = true;
+        [SerializeField] bool sandboxRespawnOnFall = true;
+        [SerializeField] Vector3 sandboxRespawnPosition = new(0f, 2.5f, 0f);
 
         public float CurrentPlanarSpeed => new Vector2(horizontalVel.x, horizontalVel.z).magnitude;
         public bool IsGrounded => characterController != null && characterController.isGrounded;
@@ -228,6 +231,20 @@ namespace ChaosDraftParty.Core
         // 右人差し指 ZL を解放し、ジャンプ B + 視点右スティックの同時操作負荷を解消する。
         InputAction walkModifierAction;
         InputAction cameraResetAction;
+        // Skill input actions (Genshin / Diablo / Apex defacto: PC=Q/E, Gamepad=RB/LB)。
+        // 発動は PlayerController 自身では行わず、SkillInputPressed event を Skills assembly 側の
+        // PlayerSkillRunner (or 等価 listener) が subscribe して実行する。
+        // Core asmdef は Skills を参照しない (Skills → Core 既存依存と循環するため)。
+        InputAction skillSlot1Action;
+        InputAction skillSlot2Action;
+
+        /// <summary>
+        /// Skill slot 入力 (Q/E/RB/LB) が performed した時の event。引数は slot 番号 (1 or 2)。
+        /// Owner only / KO 中 / crouch sequence 中は発火されない (PlayerController 側で gate 済)。
+        /// Skills assembly 側の listener (PlayerSkillRunner 等) がこれを subscribe して
+        /// SkillDefinition.Effect.Apply を実行する設計。
+        /// </summary>
+        public event Action<int> SkillInputPressed;
 
         Vector3 horizontalVel;
         float verticalVel;
@@ -323,6 +340,8 @@ namespace ChaosDraftParty.Core
             crouchAction?.Dispose();
             walkModifierAction?.Dispose();
             cameraResetAction?.Dispose();
+            skillSlot1Action?.Dispose();
+            skillSlot2Action?.Dispose();
         }
 
         void OnEnable()
@@ -333,6 +352,8 @@ namespace ChaosDraftParty.Core
             crouchAction?.Enable();
             walkModifierAction?.Enable();
             cameraResetAction?.Enable();
+            skillSlot1Action?.Enable();
+            skillSlot2Action?.Enable();
             if (lockCursor)
             {
                 Cursor.lockState = CursorLockMode.Locked;
@@ -348,6 +369,8 @@ namespace ChaosDraftParty.Core
             crouchAction?.Disable();
             walkModifierAction?.Disable();
             cameraResetAction?.Disable();
+            skillSlot1Action?.Disable();
+            skillSlot2Action?.Disable();
         }
 
         public override void OnNetworkSpawn()
@@ -467,17 +490,65 @@ namespace ChaosDraftParty.Core
 
             cameraResetAction = new InputAction("CameraReset", InputActionType.Button);
             cameraResetAction.AddBinding("<Keyboard>/r");
-            // Bumper Jumper layout 時は RB が Jump に取られるため、カメラリセットを LB に逃がす。
-            // 通常 layout 時は従来通り RB (User フィードバック「めちゃええやん」評価済の挙動を維持)。
-            cameraResetAction.AddBinding(bumperJumperLayout
-                ? "<Gamepad>/leftShoulder"
-                : "<Gamepad>/rightShoulder");
+            // Gamepad は D-pad Down に統一 (両 layout 共通、Skill1/Skill2 が RB/LB を専有するため衝突回避)。
+            // User 評価済の CameraReset 挙動を維持しつつ、Genshin/Apex defacto の「skill=bumper」配置と両立。
+            cameraResetAction.AddBinding("<Gamepad>/dpad/down");
             cameraResetAction.performed += ctx =>
             {
                 NoteInputDevice(ctx.control.device);
                 cameraResetActive = true;
                 lastManualLookTime = Time.time;
             };
+
+            // Skill1 (PC=Q, Gamepad=RB / Bumper Jumper layout は Y/buttonNorth に逃がす)
+            // Genshin Impact / Diablo IV / Apex Legends の defacto: PC Q/E + Gamepad RB/LB。
+            // Bumper Jumper 時は RB が Jump に取られるため Y (buttonNorth) に逃がす (face-button 系 fallback)。
+            skillSlot1Action = new InputAction("Skill1", InputActionType.Button);
+            skillSlot1Action.AddBinding("<Keyboard>/q");
+            skillSlot1Action.AddBinding(bumperJumperLayout
+                ? "<Gamepad>/buttonNorth"
+                : "<Gamepad>/rightShoulder");
+            skillSlot1Action.performed += ctx =>
+            {
+                NoteInputDevice(ctx.control.device);
+                TryFireSkillInput(1);
+            };
+
+            // Skill2 (PC=E, Gamepad=LB / Bumper Jumper 時は X/buttonWest に逃がす)
+            // Bumper Jumper 時は Skill1=Y (buttonNorth) との face-button 対称配置で X (buttonWest)
+            // に逃がす。CameraReset は両 layout 共通で D-pad Down のため LB は空いており、
+            // Bumper 時に LB 据置きも選択肢 (M3 Setting UI で切替可)。
+            skillSlot2Action = new InputAction("Skill2", InputActionType.Button);
+            skillSlot2Action.AddBinding("<Keyboard>/e");
+            skillSlot2Action.AddBinding(bumperJumperLayout
+                ? "<Gamepad>/buttonWest"
+                : "<Gamepad>/leftShoulder");
+            skillSlot2Action.performed += ctx =>
+            {
+                NoteInputDevice(ctx.control.device);
+                TryFireSkillInput(2);
+            };
+        }
+
+        /// <summary>
+        /// Skill input gate: Owner / KO / crouch sequence を check して event 発火。
+        /// listener (Skills assembly 側) は CD 管理 + SkillDefinition.Effect.Apply を実行する。
+        /// CD 管理を listener 側に置くのは asmdef 循環回避 (Core は Skills を参照しない) のため。
+        /// </summary>
+        void TryFireSkillInput(int slot)
+        {
+            // sandbox 単独再生対応 + Owner only (ApplyTemporarySpeedBoost と同じ guard、
+            // feedback_enabled_false_does_not_block_method_call.md 準拠)
+            if (IsSpawned && !IsOwner) return;
+
+            // KO 中は発動禁止
+            if (IsSpawned && !IsAlive.Value) return;
+
+            // crouch sequence (open/close 動作中) は発動禁止 (移動 lock と同じ条件、ApplyMovement L609 と同等)
+            bool moveLocked = crouchSequence != null && crouchSequence.IsRunning;
+            if (moveLocked) return;
+
+            SkillInputPressed?.Invoke(slot);
         }
 
         void Update()
@@ -504,12 +575,45 @@ namespace ChaosDraftParty.Core
                 IsAlive.Value = false;
                 Debug.Log($"[PlayerController] KO clientId={(IsOwner ? "self" : "remote")} pos={transform.position}");
             }
+            else if (!IsSpawned && sandboxRespawnOnFall && transform.position.y < koThresholdY && IsShrinkingIslandSandbox())
+            {
+                RespawnSandboxPlayer();
+            }
 
             // Editor DX: Escape で cursor 一時 unlock
             if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
             {
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
+            }
+        }
+
+        bool IsShrinkingIslandSandbox()
+        {
+            string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            return sceneName.Contains("ShrinkingIsland", StringComparison.OrdinalIgnoreCase);
+        }
+
+        void RespawnSandboxPlayer()
+        {
+            bool controllerWasEnabled = characterController != null && characterController.enabled;
+            if (controllerWasEnabled)
+            {
+                characterController.enabled = false;
+            }
+
+            transform.position = sandboxRespawnPosition;
+            horizontalVel = Vector3.zero;
+            verticalVel = 0f;
+            wasGrounded = false;
+            prevVerticalVel = 0f;
+            footSquash?.Restore();
+            squash?.Restore();
+            bodyDip?.Restore();
+
+            if (controllerWasEnabled)
+            {
+                characterController.enabled = true;
             }
         }
 
@@ -939,6 +1043,32 @@ namespace ChaosDraftParty.Core
             }
             jumpBoostMultiplier = multiplier;
             jumpBoostCharges = charges;
+        }
+
+        /// <summary>
+        /// Applies a stage-driven bounce. CharacterController does not receive Rigidbody forces,
+        /// so stage gimmicks push the controller velocity directly.
+        /// </summary>
+        public void ApplyBounce(float upwardSpeed)
+        {
+            ApplyBounce(Vector3.zero, upwardSpeed);
+        }
+
+        public void ApplyBounce(Vector3 planarVelocity, float upwardSpeed)
+        {
+            if (IsSpawned && !IsOwner) return;
+
+            if (planarVelocity.sqrMagnitude > 0.001f)
+            {
+                planarVelocity.y = 0f;
+                horizontalVel = planarVelocity;
+            }
+
+            verticalVel = Mathf.Max(verticalVel, upwardSpeed);
+            coyoteTimer = 0f;
+            jumpBufferTimer = 0f;
+            jumpCutQueued = false;
+            if (animator != null) animator.SetTrigger(JumpHash);
         }
     }
 }

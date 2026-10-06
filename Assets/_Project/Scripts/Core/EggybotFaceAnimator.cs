@@ -456,6 +456,17 @@ namespace ChaosDraftParty.Core
         // =====================================================================
         void SetMouth(MouthShape s)
         {
+            if (mouthMap == null)
+            {
+                mouthMap = new Dictionary<MouthShape, GameObject>
+                {
+                    { MouthShape.Smile, mouthSmile },
+                    { MouthShape.Open,  mouthOpen  },
+                    { MouthShape.Sad,   mouthSad   },
+                    { MouthShape.Happy, mouthHappy },
+                    { MouthShape.KO,    mouthKO    },
+                };
+            }
             foreach (var kv in mouthMap)
                 if (kv.Value != null) kv.Value.SetActive(kv.Key == s);
             currentMouth = s;

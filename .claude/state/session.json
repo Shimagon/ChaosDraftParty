@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "branch": "codex/unreal-migration",
+  "workflow_phase": "",
+  "modified_files": [
+    "C:\\Users\\taise\\.claude\\projects\\C--Users-taise-Documents-GitHub-ChaosDraftParty\\memory\\MEMORY.md",
+    "C:\\Users\\taise\\.claude\\projects\\C--Users-taise-Documents-GitHub-ChaosDraftParty\\memory\\project_pc_handoff_t7_2026-10-06.md",
+    "E:\\PC-handoff-2026-10-06\\00-READ-FIRST.txt",
+    "E:\\PC-handoff-2026-10-06\\secrets\\WHERE-SECRETS-ARE.txt"
+  ],
+  "recent_commits": [
+    "f9814ea docs: 新Codexアカウント用ブートストラップを追加",
+    "0f7db52 fix(scene): 縮む島 体感を v21 と完全一致 — CM/Volume を prefab 化 + 値継承",
+    "cbfa559 fix(minigame): 縮む島 Play 修復 + Tile visual feedback + Config SO"
+  ],
+  "session_duration": "68m 42s",
+  "tool_calls": 0,
+  "warnings_count": 12,
+  "saved_at": "2026-10-06T02:54:09Z",
+  "plan": {},
+  "verification": {},
+  "agent_context": {}
+}

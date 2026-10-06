@@ -30,6 +30,9 @@ namespace ChaosDraftParty.Core
         [Tooltip("床めり込み補正対象の Foot 球 (Foot_L, Foot_R)。FootSocket の child でも bone 直 child でも可。")]
         [SerializeField] Transform[] _feet;
 
+        [Tooltip("接地判定参照。null の場合は親から自動取得。落下中は clamp しない。")]
+        [SerializeField] PlayerController _player;
+
         [Header("Ground")]
         [Tooltip("床の Y 座標。Sandbox_v21 + ミニゲーム全部平面床なので 0 で十分。M3 で Raycast 化予定。")]
         [SerializeField] float _groundY = 0f;
@@ -42,9 +45,22 @@ namespace ChaosDraftParty.Core
         [Tooltip("補正の最大量 (m)。Animator が大きく足を上げてる瞬間に過補正しないよう上限。0.30 推奨。")]
         [SerializeField] float _maxClampDistance = 0.30f;
 
+        void Awake()
+        {
+            if (_player == null)
+            {
+                _player = GetComponentInParent<PlayerController>();
+            }
+        }
+
         void LateUpdate()
         {
             if (_feet == null || _feet.Length == 0) return;
+            if (_player != null && !_player.IsGrounded) return;
+            if (_player != null && _player.transform.position.y < _groundY - _maxClampDistance)
+            {
+                return;
+            }
 
             for (int i = 0; i < _feet.Length; i++)
             {

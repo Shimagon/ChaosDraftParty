@@ -59,6 +59,15 @@ namespace ChaosDraftParty.Minigames.ShrinkingIsland
         [Tooltip("ShrinkingIslandConfig SO。設定されている場合は SO 値を優先、null なら個別 SerializeField を使う。")]
         [SerializeField] private ShrinkingIslandConfig _config;
 
+        [Header("Stagger (Fall Guys defacto、64 tile 同時崩壊の知覚閾値最適化)")]
+        [Tooltip("Row 単位 stagger delay (秒)。Fall Guys Hex-a-gone defacto: 0.05-0.10s。同時崩壊体感を維持しつつ CPU spike を分散。")]
+        [SerializeField] private float _rowStaggerDelay = 0.08f;
+
+        [Tooltip("Stagger pattern (RowByRow=外周から順、Random=ランダム、Simultaneous=stagger 無)。")]
+        [SerializeField] private StaggerPattern _staggerPattern = StaggerPattern.RowByRow;
+
+        private enum StaggerPattern { Simultaneous, RowByRow, Random }
+
         // 各値の effective getter (config 優先、null なら fallback)
         // koThresholdY は PlayerController 側持ち、Manager は読まない
         private float EffectiveShrinkInterval => _config != null ? _config.ShrinkInterval : _shrinkInterval;
@@ -73,26 +82,95 @@ namespace ChaosDraftParty.Minigames.ShrinkingIsland
         private int _nextLayer;
         private Coroutine _shrinkRoutine;
         private bool _completedLogged;
+        private int _roundVersion;
+        private System.Random _rng;
+
+        // Stagger 用 row buffer (毎 layer 使い回し、heap alloc 回避)
+        private readonly List<Tile> _layerTilesBuffer = new();
+        private readonly List<List<Tile>> _rowGroupsBuffer = new();
+        private readonly Dictionary<int, List<Tile>> _rowGroupDict = new();
 
         public float KoThresholdY => _koThresholdY;
         public int GridSize => _gridSize;
 
+        private bool HasShrinkAuthority => !IsSpawned || IsServer;
+        private bool ShouldRunSandboxShrink => !IsSpawned && (NetworkManager.Singleton == null || !NetworkManager.Singleton.IsListening);
+
+        private void Awake()
+        {
+            // System.Random で seed (UnityEngine.Random は規約禁止)
+            _rng = new System.Random();
+        }
+
+        private void OnEnable()
+        {
+            if (_rng == null)
+            {
+                _rng = new System.Random();
+            }
+            if (Application.isPlaying && ShouldRunSandboxShrink)
+            {
+                BeginSandboxShrink();
+            }
+        }
+
+        private void OnDisable()
+        {
+            StopShrinkRoutine();
+        }
+
+        private void Start()
+        {
+            // Sandbox 直接 Play では NetworkManager を経由しないため OnNetworkSpawn が呼ばれない。
+            // その状態でも「縮む島」を試遊できるよう、single-player fallback として shrink を開始する。
+            if (!ShouldRunSandboxShrink)
+            {
+                return;
+            }
+
+            BeginSandboxShrink();
+        }
+
         public override void OnNetworkSpawn()
         {
+            StopShrinkRoutine();
             CollectTiles();
+            ResetRoundState();
             if (IsServer)
             {
-                _shrinkRoutine = StartCoroutine(ShrinkLoop());
+                _shrinkRoutine = StartCoroutine(ShrinkLoop(_roundVersion));
             }
         }
 
         public override void OnNetworkDespawn()
         {
-            if (_shrinkRoutine != null)
+            StopShrinkRoutine();
+        }
+
+        private void BeginSandboxShrink()
+        {
+            if (!Application.isPlaying)
             {
-                StopCoroutine(_shrinkRoutine);
-                _shrinkRoutine = null;
+                return;
             }
+
+            StopShrinkRoutine();
+            CollectTiles();
+            ResetRoundState();
+            _shrinkRoutine = StartCoroutine(ShrinkLoop(_roundVersion));
+        }
+
+        private void StopShrinkRoutine()
+        {
+            StopAllCoroutines();
+            _shrinkRoutine = null;
+        }
+
+        private void ResetRoundState()
+        {
+            _roundVersion++;
+            _nextLayer = 0;
+            _completedLogged = false;
         }
 
         /// <summary>
@@ -115,24 +193,33 @@ namespace ChaosDraftParty.Minigames.ShrinkingIsland
                 }
                 tile.ResetTile();
             }
+            ResetBouncePads();
 
-            _nextLayer = 0;
-            _completedLogged = false;
-
-            if (!IsServer)
+            if (!HasShrinkAuthority)
             {
+                ResetRoundState();
                 return;
             }
-            if (_shrinkRoutine != null)
-            {
-                StopCoroutine(_shrinkRoutine);
-            }
-            _shrinkRoutine = StartCoroutine(ShrinkLoop());
+            StopShrinkRoutine();
+            ResetRoundState();
+            _shrinkRoutine = StartCoroutine(ShrinkLoop(_roundVersion));
 
-            // client 側にも Reset を broadcast
-            if (IsSpawned)
+            // client 側にも Reset を broadcast。Sandbox 直接 Play では NetworkManager が無いので呼ばない。
+            if (IsSpawned && IsServer)
             {
                 ResetAllClientRpc();
+            }
+        }
+
+        private static void ResetBouncePads()
+        {
+            BouncePad[] pads = FindObjectsByType<BouncePad>(FindObjectsInactive.Include);
+            for (int i = 0; i < pads.Length; i++)
+            {
+                if (pads[i] != null)
+                {
+                    pads[i].ResetPad();
+                }
             }
         }
 
@@ -206,14 +293,22 @@ namespace ChaosDraftParty.Minigames.ShrinkingIsland
             return false;
         }
 
-        private IEnumerator ShrinkLoop()
+        private IEnumerator ShrinkLoop(int roundVersion)
         {
             yield return new WaitForSeconds(EffectiveInitialDelay);
+            if (roundVersion != _roundVersion)
+            {
+                yield break;
+            }
 
             int maxLayer = _gridSize / 2;
             while (_nextLayer < maxLayer)
             {
-                ShrinkLayer(_nextLayer);
+                if (roundVersion != _roundVersion)
+                {
+                    yield break;
+                }
+                yield return StartCoroutine(ShrinkLayerWithStagger(_nextLayer, roundVersion));
                 _nextLayer++;
                 if (_nextLayer >= maxLayer)
                 {
@@ -224,6 +319,10 @@ namespace ChaosDraftParty.Minigames.ShrinkingIsland
 
             // 全消失確認 (Fading + Gone まで含めて最後の tile が落ちるまで余韻待ち)
             yield return new WaitForSeconds(EffectiveWarningDuration + EffectiveFadeDuration);
+            if (roundVersion != _roundVersion)
+            {
+                yield break;
+            }
             if (!_completedLogged)
             {
                 _completedLogged = true;
@@ -233,6 +332,71 @@ namespace ChaosDraftParty.Minigames.ShrinkingIsland
 
         private void ShrinkLayer(int layer)
         {
+            // 旧 API (Simultaneous 互換): 内部で全 tile を同時 fade
+            CollectLayerTiles(layer, _layerTilesBuffer);
+            for (int i = 0; i < _layerTilesBuffer.Count; i++)
+            {
+                FadeSingleTile(_layerTilesBuffer[i]);
+            }
+        }
+
+        /// <summary>
+        /// Layer 内 tile を stagger pattern に従って順次 fade する coroutine。
+        /// - Simultaneous: 既存挙動 (全 tile を 1 frame で fade)
+        /// - RowByRow: 同 row (gridZ) ごとに同時 fade、row 間で _rowStaggerDelay 待機
+        /// - Random: shuffle した順で row group 化 (擬似ランダム連鎖)
+        /// </summary>
+        private IEnumerator ShrinkLayerWithStagger(int layerIndex, int roundVersion)
+        {
+            CollectLayerTiles(layerIndex, _layerTilesBuffer);
+
+            if (_staggerPattern == StaggerPattern.Simultaneous || _rowStaggerDelay <= 0f)
+            {
+                // 旧挙動: 全 tile 同時 fade
+                for (int i = 0; i < _layerTilesBuffer.Count; i++)
+                {
+                    FadeSingleTile(_layerTilesBuffer[i]);
+                }
+                yield break;
+            }
+
+            if (_staggerPattern == StaggerPattern.Random)
+            {
+                ShuffleTilesInPlace(_layerTilesBuffer);
+            }
+            else
+            {
+                // RowByRow: gridZ 昇順で sort (外周 layer なら自然に N→S 順)
+                SortTilesByRow(_layerTilesBuffer);
+            }
+
+            BuildRowGroups(_layerTilesBuffer, _rowGroupsBuffer, _rowGroupDict);
+
+            WaitForSeconds wait = new WaitForSeconds(_rowStaggerDelay);
+            for (int g = 0; g < _rowGroupsBuffer.Count; g++)
+            {
+                if (roundVersion != _roundVersion)
+                {
+                    yield break;
+                }
+                List<Tile> row = _rowGroupsBuffer[g];
+                for (int i = 0; i < row.Count; i++)
+                {
+                    FadeSingleTile(row[i]);
+                }
+                if (g < _rowGroupsBuffer.Count - 1)
+                {
+                    yield return wait;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 指定 layer の外周 tile を buffer に収集する (heap alloc 抑制のため呼び側が buffer 渡し)。
+        /// </summary>
+        private void CollectLayerTiles(int layer, List<Tile> buffer)
+        {
+            buffer.Clear();
             int min = layer;
             int max = _gridSize - 1 - layer;
 
@@ -251,10 +415,109 @@ namespace ChaosDraftParty.Minigames.ShrinkingIsland
                     {
                         continue;
                     }
-
-                    int linearIndex = z * _gridSize + x;
-                    StartFadeClientRpc(linearIndex, EffectiveWarningDuration, EffectiveFadeDuration);
+                    buffer.Add(tile);
                 }
+            }
+        }
+
+        private void FadeSingleTile(Tile tile)
+        {
+            if (tile == null)
+            {
+                return;
+            }
+            int linearIndex = tile.GridZ * _gridSize + tile.GridX;
+            if (IsSpawned)
+            {
+                StartFadeClientRpc(linearIndex, EffectiveWarningDuration, EffectiveFadeDuration);
+            }
+            else
+            {
+                tile.StartFade(EffectiveWarningDuration, EffectiveFadeDuration);
+            }
+        }
+
+        private static void SortTilesByRow(List<Tile> tiles)
+        {
+            // gridZ 昇順 (LINQ 禁止規約のため Sort comparer 使用)
+            tiles.Sort(CompareTileByGridZ);
+        }
+
+        private static int CompareTileByGridZ(Tile a, Tile b)
+        {
+            if (a == null && b == null)
+            {
+                return 0;
+            }
+            if (a == null)
+            {
+                return 1;
+            }
+            if (b == null)
+            {
+                return -1;
+            }
+            return a.GridZ.CompareTo(b.GridZ);
+        }
+
+        private void ShuffleTilesInPlace(List<Tile> tiles)
+        {
+            // Fisher-Yates (System.Random、UnityEngine.Random は規約禁止)
+            for (int i = tiles.Count - 1; i > 0; i--)
+            {
+                int j = _rng.Next(i + 1);
+                Tile tmp = tiles[i];
+                tiles[i] = tiles[j];
+                tiles[j] = tmp;
+            }
+        }
+
+        /// <summary>
+        /// tile を gridZ で row 化。buffer 渡しで heap alloc 抑制。
+        /// </summary>
+        private static void BuildRowGroups(List<Tile> source, List<List<Tile>> groups, Dictionary<int, List<Tile>> dict)
+        {
+            // 既存 group list の中身 clear (List 自体は使い回し)
+            for (int i = 0; i < groups.Count; i++)
+            {
+                if (groups[i] != null)
+                {
+                    groups[i].Clear();
+                }
+            }
+            dict.Clear();
+
+            int groupCount = 0;
+            for (int i = 0; i < source.Count; i++)
+            {
+                Tile tile = source[i];
+                if (tile == null)
+                {
+                    continue;
+                }
+                int row = tile.GridZ;
+                if (!dict.TryGetValue(row, out List<Tile> bucket))
+                {
+                    if (groupCount < groups.Count)
+                    {
+                        bucket = groups[groupCount];
+                    }
+                    else
+                    {
+                        bucket = new List<Tile>();
+                        groups.Add(bucket);
+                    }
+                    groupCount++;
+                    dict[row] = bucket;
+                }
+                bucket.Add(tile);
+            }
+
+            // groups 末尾の余剰 list は size 0 のまま使い回されるが、
+            // ループ側は groupCount を見ない (foreach 互換) ので余剰を切り詰める。
+            while (groups.Count > groupCount)
+            {
+                groups.RemoveAt(groups.Count - 1);
             }
         }
 
@@ -287,6 +550,7 @@ namespace ChaosDraftParty.Minigames.ShrinkingIsland
             if (_grid == null)
             {
                 CollectTiles();
+                ResetBouncePads();
                 return; // CollectTiles 内で Initialize → ResetTile 済
             }
             for (int i = 0; i < _allTiles.Count; i++)
@@ -298,12 +562,13 @@ namespace ChaosDraftParty.Minigames.ShrinkingIsland
                 }
                 tile.ResetTile();
             }
+            ResetBouncePads();
         }
 
         [ContextMenu("Force Shrink Next Layer")]
         private void DebugShrinkNext()
         {
-            if (!IsServer)
+            if (!HasShrinkAuthority)
             {
                 return;
             }

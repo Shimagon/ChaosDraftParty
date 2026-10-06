@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f81e470e7dbbc64baabd3fa116565f9, type: 3}
   m_Name: ShrinkingIslandConfig
   m_EditorClassIdentifier: ChaosDraftParty.Minigames::ChaosDraftParty.Minigames.ShrinkingIsland.ShrinkingIslandConfig
-  _initialDelay: 5
-  _shrinkInterval: 10
-  _warningDuration: 1
-  _fadeDuration: 0.5
+  _initialDelay: 6
+  _shrinkInterval: 14
+  _warningDuration: 1.2
+  _fadeDuration: 0.65
   _koThresholdY: -5

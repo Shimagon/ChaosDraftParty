@@ -1,0 +1,29 @@
+﻿[
+    {
+        "slug":  "rescue_bounce_pad",
+        "preview_id":  "019e5adb-f33f-7778-b067-ef1d20427cb5",
+        "refine_id":  "019e5add-b17a-77c3-80b3-56b8fd4c2044",
+        "credits_preview":  20,
+        "credits_refine":  10,
+        "path":  "Assets\\_Project\\ThirdParty\\Meshy\\Props\\ShrinkingIsland\\rescue_bounce_pad.glb",
+        "prompt":  "Low poly teal rescue trampoline bounce pad, round cushion with thick metal rim, four stubby feet, cheerful party game obstacle prop, flat shaded stylized, no text, no character"
+    },
+    {
+        "slug":  "orange_safety_bumper",
+        "preview_id":  "019e5adf-5169-7c0c-9fbd-43a4ec26da9d",
+        "refine_id":  "019e5ae0-8202-7454-a863-5cd622f25b4a",
+        "credits_preview":  20,
+        "credits_refine":  10,
+        "path":  "Assets\\_Project\\ThirdParty\\Meshy\\Props\\ShrinkingIsland\\orange_safety_bumper.glb",
+        "prompt":  "Low poly orange safety bumper half wall, rounded rectangular padded barrier with white stripes, arcade obstacle course prop, stylized flat shading, no text, no character"
+    },
+    {
+        "slug":  "warning_beacon_sign",
+        "preview_id":  "019e5ae1-fccb-77b7-8e39-778220275d3d",
+        "refine_id":  "019e5ae3-a639-7cfe-a52f-a0ff3e6ff833",
+        "credits_preview":  20,
+        "credits_refine":  10,
+        "path":  "Assets\\_Project\\ThirdParty\\Meshy\\Props\\ShrinkingIsland\\warning_beacon_sign.glb",
+        "prompt":  "Low poly warning hazard beacon sign, small triangular sign on short pole with red warning light, cute party obstacle course prop, stylized flat shading, no text, no character"
+    }
+]

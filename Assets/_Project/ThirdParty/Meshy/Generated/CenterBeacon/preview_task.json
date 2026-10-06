@@ -1,0 +1,33 @@
+﻿{
+    "id":  "019e5ee2-2c6c-7b8f-bea9-680e670a1f03",
+    "type":  "text-to-3d-preview",
+    "mode":  "preview",
+    "name":  "",
+    "model_type":  "standard",
+    "seed":  3197332528,
+    "art_style":  "realistic",
+    "texture_richness":  "",
+    "prompt":  "stylized floating toy arena goal beacon prop, three rounded torus rings around a soft capsule core, mint cyan and warm cream plastic, clean low-poly party game asset, no text, no letters, no character, isolated object, simple readable silhouette",
+    "negative_prompt":  "",
+    "texture_prompt":  "",
+    "texture_image_url":  "",
+    "status":  "SUCCEEDED",
+    "created_at":  1779708342381,
+    "progress":  100,
+    "started_at":  1779708342492,
+    "finished_at":  1779708430398,
+    "task_error":  null,
+    "model_urls":  {
+                       "glb":  "https://assets.meshy.ai/4efeb584-702b-4e86-a308-48448a1c41e0/tasks/019e5ee2-2c6c-7b8f-bea9-680e670a1f03/output/model.glb?Expires=4933267200\u0026Signature=KM~LhQ5MTfBQX9Y7xUb4l8ccBmUHt0Qc5y75C~xVK7IF0CebwJO4CIYEFe~N6yDVn2wI-n74AT8Mos7j3V45hPFv8TL7h6t3~vPhp-leqANxzcI8RxruZ-mYKdPCII6K3MQFUrau0a45HIdi4Tjxp32WMIzzVEbXwYsfUqYHGUyUpL30wszkeiavmEOOmm2QKj22EuOK-fiHflUCtK1JUS-CcO3dT0M6rUuk1xF5vdUDGSlCMCWl4UkAJuC3KDEoFrGIZa67L46fs~Cw6PLKdZZsNknbCuTItovZiLd2DVpbXVXOsfwuSlrIgrHJMe078XIL44bqVBEBg7S8zPtiDQ__\u0026Key-Pair-Id=K1VGYTHIYLM9UM",
+                       "fbx":  "https://assets.meshy.ai/4efeb584-702b-4e86-a308-48448a1c41e0/tasks/019e5ee2-2c6c-7b8f-bea9-680e670a1f03/output/model.fbx?Expires=4933267200\u0026Signature=p8gcVbZEC1m47wXMYgyBB0dfQ1t6Ln5iAsbDCYn1CKWCh13IeA8cTwS7WEMqm8b4dQQthBUN8kPVt9oCPt3XJBvzXuibaa5UmfYdw29BgPerIEGYaMX66zt0F3L~zkEfeiq0Pb8cvHQ0KbidDTgqa6xowW3Nx1fOvG-O4p2M~2p80X3KJohOY1-tcSi1kf96O1If23Pff97b6ICpDDs9YOcneCGF98OP7g1bpb~np8LoOrzVe538wxLohOOptoXUbZOI-2VSu-zMqXpV3dLBSLou2RgeLfb8QJJYe2HgeGWcQnP~xlnbxsndKV6oPRSuMQ3KB0G~Pk225SdqgqNCAw__\u0026Key-Pair-Id=K1VGYTHIYLM9UM",
+                       "usdz":  "https://assets.meshy.ai/4efeb584-702b-4e86-a308-48448a1c41e0/tasks/019e5ee2-2c6c-7b8f-bea9-680e670a1f03/output/model.usdz?Expires=4933267200\u0026Signature=FUeK0fljhnpslSJi0gb0Eaigdk6QIDpGRK5aYtaBS7mVslPhmf7tU5MXShmX~~56NH5YY9NtrKZ23QdvRm1NuFeSCEO7xm1t4e-PakSAupENvDCTU0Oj782qty6VfW5cjCifhE3fDao0odjRMiKYgcUXfmnV8yt8CEFVjBPKjsHM9U0VCqHCkN7j7FwRKwDtSZTwXHKjAzSHjawtCscN3p60vXhVY9MJB-V745-Pq~soyyp7IKxCiotnvCwDWrXbPU6MTBy97kOJP11bZjI9kREwLpPYclqawl9ypbw9ubMpA5yppBkaxzSSt5AxQox6BRP5egnOLLh~oNcAgwpyEQ__\u0026Key-Pair-Id=K1VGYTHIYLM9UM",
+                       "obj":  "https://assets.meshy.ai/4efeb584-702b-4e86-a308-48448a1c41e0/tasks/019e5ee2-2c6c-7b8f-bea9-680e670a1f03/output/model.obj?Expires=4933267200\u0026Signature=kdqt33WDB775YpnCcMAFhEqRd4wz~Qi6SjU4iooawMUhqlTGwjg9IaDpSz8ZMIMZCb64U6KdqaQGd89~8ElX-VSwPvItXF1KXNUPCjfvE1O8lDEI2LwVU3BCBq6IsgzXukIGGB9yb6AWLk~0KboeR-DyM8bC5yeTsrW37AiUY2mQbt42K7QiEWfVW8itvsv9t~EV-SlPRyPs13M9zHxhGz9m2p3ofwAEcDVPSjMnHCTBkS~7goEkLaY4TtAVoz~khH7Ng3hFiv7ZCBiTEL6Y5uTQFdfw5HqCF5dxXfe4bQMz3sLRv4bUrh-eLc2n~ObnqlguiSiCiZ~V0KGKesbKBg__\u0026Key-Pair-Id=K1VGYTHIYLM9UM",
+                       "stl":  "https://assets.meshy.ai/4efeb584-702b-4e86-a308-48448a1c41e0/tasks/019e5ee2-2c6c-7b8f-bea9-680e670a1f03/output/model.stl?Expires=4933267200\u0026Signature=lIaoNAj0X4ZDAeCx4qBZR4537WbOCLwr7DOCEr6YhKWlxUSMX20hKP5buy8UnSwBh1q6XpRv49CsE1SZ5HpVMb-FMqRPYWh4risYFq6FuGZiRzIheKtRi0NZ7L3WJ7SohlDAlAp~y0-IdEIOlWCcx~3rnoX0H4gW6ruHG3vUcMq6XOyfqYhJv1wdQgIidHjwAPrAu-I3GXggvZEg3GPcTW~9cQcxnxK0p0AasBPTp9KvA0LEuh2pAUg2BeVRxOKYHIeXzDqcc~o4WGPKtVArd--X87uz2k0kgv34Wm9k~4JwYHAdCBuEanOZ0JxiLvbdnC0EkVLE9gg7nhwnYi-6RQ__\u0026Key-Pair-Id=K1VGYTHIYLM9UM"
+                   },
+    "thumbnail_url":  "https://assets.meshy.ai/4efeb584-702b-4e86-a308-48448a1c41e0/tasks/019e5ee2-2c6c-7b8f-bea9-680e670a1f03/output/preview.png?Expires=4933267200\u0026Signature=lteO2QuXnJK6UDvlwAnhRAQVAcE3MUk3jGvd566oeUj2GDYCzhsOIepwnEewmZv4S80yyMARwuc7oXSn4tpzcPrJNzAU4nL6GKhO1nY4UX2brGo3IAjod3UUqkTOTR-uJ81l2~p8qLLviBtgDKyXqbwFXMmM9JigJ8WLMUqHOEEZ1Op1PkOiM8JsdFIhu-0DgveASR4QQ6VmDWhdOfL8eXPjKAIQ3cJA0~zLg4BjG28pai5ZvnF76bIZ5k1CShFMahGuvGkAFf4ieYSp83WrSUX9NQnGRD~rFB2ceeXTdSAIyIQLr1nAVoo7IExL8SM8pxBkG~t3XrZ8Asq9Np8hEA__\u0026Key-Pair-Id=K1VGYTHIYLM9UM",
+    "video_url":  "",
+    "texture_urls":  [
+
+                     ],
+    "consumed_credits":  20
+}
